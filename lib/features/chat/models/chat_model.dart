@@ -29,6 +29,7 @@ class ChatChannel extends Equatable {
   final String? sfuChannelUuid;
   final String? sfuServerUrl;
   final bool active;
+  final int? partnerId;
 
   const ChatChannel({
     required this.id,
@@ -50,6 +51,7 @@ class ChatChannel extends Equatable {
     this.sfuChannelUuid,
     this.sfuServerUrl,
     this.active = true,
+    this.partnerId,
   });
 
   factory ChatChannel.fromJson(Map<String, dynamic> json, String currentUserName, int currentPartnerId) {
@@ -90,6 +92,7 @@ class ChatChannel extends Equatable {
     String? imStatus,
     DateTime? lastInterestDt,
     String? image,
+    int? partnerId,
   }) {
     return ChatChannel(
       id: id,
@@ -111,6 +114,7 @@ class ChatChannel extends Equatable {
       sfuChannelUuid: sfuChannelUuid,
       sfuServerUrl: sfuServerUrl,
       active: active,
+      partnerId: partnerId ?? this.partnerId,
     );
   }
 
@@ -118,7 +122,7 @@ class ChatChannel extends Equatable {
   List<Object?> get props => [
     id, name, displayName, lastMessage, lastMessageTime,
     unreadCount, isPinned, memberCount, image, type,
-    imStatus, active
+    imStatus, active, partnerId
   ];
 }
 

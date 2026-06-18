@@ -230,7 +230,7 @@ class ChatCubit extends Cubit<ChatState> {
           (m) => (m['channel_id'] is List ? m['channel_id'][0] : m['channel_id']) == channel.id,
           orElse: () => {},
         );
-
+        int? channelPartnerId;
         String? imStatus;
         String? partnerImage;
         if (channel.type == ChannelType.chat) {
@@ -241,6 +241,9 @@ class ChatCubit extends Cubit<ChatState> {
           );
           if (otherMember != null) {
             final pid = otherMember['partner_id'] is List ? otherMember['partner_id'][0] : otherMember['partner_id'];
+            if (pid is int) {
+              channelPartnerId = pid;
+            }
             imStatus = partnerStatuses[pid];
             partnerImage = partnerImages[pid];
           }
@@ -303,6 +306,7 @@ class ChatCubit extends Cubit<ChatState> {
           lastMessage: lastMsgInfo?['body'] ?? '',
           lastMessageTime: lastMsgTime,
           lastMessageRaw: lastMsgDate,
+          partnerId: channelPartnerId,
         );
 
         if (updatedChannel.type == ChannelType.chat) dms.add(updatedChannel);
@@ -323,11 +327,16 @@ class ChatCubit extends Cubit<ChatState> {
       dms.sort(_sortChannels);
       channels.sort(_sortChannels);
 
-      emit(state.copyWith(status: ChatStatus.loaded, channels: channels, directMessages: dms));
+      if (!isClosed) {
+        emit(state.copyWith(status: ChatStatus.loaded, channels: channels, directMessages: dms));
+      }
     } catch (e) {
       debugPrint('================ CHAT CUBIT EXCEPTION (Fetch Channels) ================');
       debugPrint('Fetch Channels Error: $e');
       debugPrint('====================================================');
+      if (!isClosed) {
+        emit(state.copyWith(status: ChatStatus.error, errorMessage: e.toString()));
+      }
     }
   }
 
@@ -381,7 +390,8 @@ class ChatCubit extends Cubit<ChatState> {
           final channelMap = Map<String, dynamic>.from(result);
           final channel = ChatChannel.fromJson(channelMap, session.userName, session.partnerId);
           final formattedChannel = channel.copyWith(
-            displayName: _formatDisplayName(channel.displayName, session.userName, channel.type)
+            displayName: _formatDisplayName(channel.displayName, session.userName, channel.type),
+            partnerId: partnerId,
           );
           fetchChannels();
           return formattedChannel;
@@ -392,7 +402,8 @@ class ChatCubit extends Cubit<ChatState> {
           final channelMap = Map<String, dynamic>.from(result[0]);
           final channel = ChatChannel.fromJson(channelMap, session.userName, session.partnerId);
           final formattedChannel = channel.copyWith(
-            displayName: _formatDisplayName(channel.displayName, session.userName, channel.type)
+            displayName: _formatDisplayName(channel.displayName, session.userName, channel.type),
+            partnerId: partnerId,
           );
           fetchChannels();
           return formattedChannel;
@@ -405,7 +416,8 @@ class ChatCubit extends Cubit<ChatState> {
             final channelMap = Map<String, dynamic>.from(channelList[0]);
             final channel = ChatChannel.fromJson(channelMap, session.userName, session.partnerId);
             final formattedChannel = channel.copyWith(
-              displayName: _formatDisplayName(channel.displayName, session.userName, channel.type)
+              displayName: _formatDisplayName(channel.displayName, session.userName, channel.type),
+              partnerId: partnerId,
             );
             fetchChannels();
             return formattedChannel;
@@ -429,7 +441,8 @@ class ChatCubit extends Cubit<ChatState> {
             final channelMap = Map<String, dynamic>.from(channelRecords[0]);
             final channel = ChatChannel.fromJson(channelMap, session.userName, session.partnerId);
             final formattedChannel = channel.copyWith(
-              displayName: _formatDisplayName(channel.displayName, session.userName, channel.type)
+              displayName: _formatDisplayName(channel.displayName, session.userName, channel.type),
+              partnerId: partnerId,
             );
             fetchChannels();
             return formattedChannel;

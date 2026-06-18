@@ -34,9 +34,8 @@ class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderSt
     super.dispose();
   }
 
-  void _showContactPicker() async {
-    final allContacts = await context.read<ChatCubit>().fetchContacts();
-    if (!mounted) return;
+  void _showContactPicker() {
+    final Future<List<Map<String, dynamic>>> contactsFuture = context.read<ChatCubit>().fetchContacts();
 
     showModalBottomSheet(
       context: context,
@@ -44,14 +43,10 @@ class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderSt
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         String searchQuery = "";
+        int? loadingPartnerId;
         final l10n = AppLocalizations.of(sheetContext)!;
         return StatefulBuilder(
           builder: (builderContext, setModalState) {
-            final filteredContacts = allContacts.where((c) {
-              final name = (c['name'] ?? '').toString().toLowerCase();
-              return name.contains(searchQuery.toLowerCase());
-            }).toList();
-
             final isDark = Theme.of(builderContext).brightness == Brightness.dark;
             return Container(
               height: MediaQuery.of(builderContext).size.height * 0.85,
@@ -59,117 +54,191 @@ class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderSt
                 color: isDark ? Theme.of(builderContext).colorScheme.surface : Colors.white,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-                    child: Row(
+              child: Material(
+                type: MaterialType.transparency,
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: contactsFuture,
+                  builder: (futureContext, snapshot) {
+                    final isLoadingContacts = snapshot.connectionState == ConnectionState.waiting;
+                    final allContacts = snapshot.data ?? [];
+                    final filteredContacts = allContacts.where((c) {
+                      final name = (c['name'] ?? '').toString().toLowerCase();
+                      return name.contains(searchQuery.toLowerCase());
+                    }).toList();
+
+                    return Column(
                       children: [
-                        Text(
-                          l10n.start_new_chat,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(builderContext).colorScheme.onSurface,
-                            letterSpacing: -0.5,
+                        const SizedBox(height: 12),
+                        Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () => Navigator.pop(builderContext),
-                          icon: Icon(Icons.close_rounded, color: Colors.grey.shade400),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                          child: Row(
+                            children: [
+                              Text(
+                                l10n.start_new_chat,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(builderContext).colorScheme.onSurface,
+                                ),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                onPressed: () => Navigator.pop(builderContext),
+                                icon: Icon(Icons.close_rounded, color: Colors.grey.shade400),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!isLoadingContacts)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: TextField(
+                              onChanged: (value) {
+                                setModalState(() => searchQuery = value);
+                              },
+                              decoration: InputDecoration(
+                                hintText: l10n.search_people,
+                                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.indigo),
+                                filled: true,
+                                fillColor: Colors.grey.withOpacity(0.05),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                            ),
+                          ),
+                        if (!isLoadingContacts)
+                          const SizedBox(height: 16),
+                        Expanded(
+                          child: isLoadingContacts
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.indigo,
+                                  ),
+                                )
+                              : filteredContacts.isEmpty
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.person_search_rounded, size: 64, color: Colors.grey.shade200),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            searchQuery.isEmpty ? l10n.no_contacts_found : l10n.no_matches_for(searchQuery),
+                                            style: TextStyle(color: Colors.grey.shade400),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : ListView.separated(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      itemCount: filteredContacts.length,
+                                      separatorBuilder: (listContext, index) => const SizedBox(height: 4),
+                                      itemBuilder: (listContext, index) {
+                                        final contact = filteredContacts[index];
+                                        final partnerId = contact['id'];
+                                        final isLoading = partnerId != null && loadingPartnerId == partnerId;
+                                        return ListTile(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          leading: _buildContactAvatar(contact['image_128']),
+                                          title: Text(
+                                            contact['name'],
+                                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                          ),
+                                          subtitle: Text(
+                                            (contact['function'] is String ? contact['function'] : null) ??
+                                                (contact['email'] is String ? contact['email'] : null) ??
+                                                l10n.employee,
+                                            style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                                          ),
+                                          trailing: isLoading
+                                              ? const SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.indigo),
+                                                  ),
+                                                )
+                                              : null,
+                                          onTap: loadingPartnerId != null
+                                              ? null
+                                              : () async {
+                                                  if (partnerId != null) {
+                                                    // Check if a direct message channel already exists locally
+                                                    final chatCubit = context.read<ChatCubit>();
+                                                    ChatChannel? existingChannel;
+                                                    for (final ch in chatCubit.state.directMessages) {
+                                                      if (ch.partnerId == partnerId) {
+                                                        existingChannel = ch;
+                                                        break;
+                                                      }
+                                                    }
+
+                                                    if (existingChannel != null) {
+                                                      Navigator.pop(builderContext); // Close sheet instantly
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (navContext) => ChatDetailScreen(channel: existingChannel!),
+                                                        ),
+                                                      ).then((_) {
+                                                        if (mounted) {
+                                                          context.read<ChatCubit>().fetchChannels();
+                                                        }
+                                                      });
+                                                      return;
+                                                    }
+
+                                                    // Fallback to calling createDirectMessage if not cached locally
+                                                    setModalState(() {
+                                                      loadingPartnerId = partnerId;
+                                                    });
+                                                    try {
+                                                      final ChatChannel? channel = await context.read<ChatCubit>().createDirectMessage(partnerId);
+                                                      if (mounted) {
+                                                        Navigator.pop(builderContext); // Close sheet
+                                                        if (channel != null) {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (navContext) => ChatDetailScreen(channel: channel),
+                                                            ),
+                                                          ).then((_) {
+                                                            if (mounted) {
+                                                              context.read<ChatCubit>().fetchChannels();
+                                                            }
+                                                          });
+                                                        }
+                                                      }
+                                                    } catch (e) {
+                                                      if (mounted) {
+                                                        setModalState(() {
+                                                          loadingPartnerId = null;
+                                                        });
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                        );
+                                      },
+                                    ),
                         ),
                       ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: TextField(
-                      onChanged: (value) {
-                        setModalState(() => searchQuery = value);
-                      },
-                      decoration: InputDecoration(
-                        hintText: l10n.search_people,
-                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.indigo),
-                        filled: true,
-                        fillColor: Colors.grey.withOpacity(0.05),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: filteredContacts.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.person_search_rounded, size: 64, color: Colors.grey.shade200),
-                                const SizedBox(height: 16),
-                                Text(
-                                  searchQuery.isEmpty ? l10n.no_contacts_found : l10n.no_matches_for(searchQuery),
-                                  style: TextStyle(color: Colors.grey.shade400),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            itemCount: filteredContacts.length,
-                            separatorBuilder: (listContext, index) => const SizedBox(height: 4),
-                            itemBuilder: (listContext, index) {
-                              final contact = filteredContacts[index];
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                leading: _buildContactAvatar(contact['image_128']),
-                                title: Text(
-                                  contact['name'],
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                                ),
-                                subtitle: Text(
-                                  (contact['function'] is String ? contact['function'] : null) ??
-                                      (contact['email'] is String ? contact['email'] : null) ??
-                                      l10n.employee,
-                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-                                ),
-                                onTap: () async {
-                                  final partnerId = contact['id'];
-                                  if (partnerId != null) {
-                                    Navigator.pop(builderContext); // Close sheet
-                                    final ChatChannel? channel = await context.read<ChatCubit>().createDirectMessage(partnerId);
-                                    if (channel != null && mounted) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (navContext) => ChatDetailScreen(channel: channel),
-                                        ),
-                                      ).then((_) {
-                                        if (mounted) {
-                                          context.read<ChatCubit>().fetchChannels();
-                                        }
-                                      });
-                                    }
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
             );
           },

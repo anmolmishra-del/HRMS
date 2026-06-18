@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -424,61 +425,74 @@ class _MessageBubble extends StatelessWidget {
                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey),
               ),
             ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-            decoration: BoxDecoration(
-              color: message.isMe ? AppColors.indigo : Colors.grey.withOpacity(0.1),
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(20),
-                topRight: const Radius.circular(20),
-                bottomLeft: Radius.circular(message.isMe ? 20 : 0),
-                bottomRight: Radius.circular(message.isMe ? 0 : 20),
+          GestureDetector(
+            onLongPress: () {
+    Clipboard.setData(
+      ClipboardData(text: message.message),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Message copied'),
+      ),
+    );
+  },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+              decoration: BoxDecoration(
+                color: message.isMe ? AppColors.indigo : Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(message.isMe ? 20 : 0),
+                  bottomRight: Radius.circular(message.isMe ? 0 : 20),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (message.attachments != null && message.attachments!.isNotEmpty)
-                  _buildAttachments(context),
-                Text(
-                  message.message,
-                  style: TextStyle(
-                    color: message.isMe ? Colors.white : Theme.of(context).colorScheme.onSurface,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      message.formattedDate,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: message.isMe ? Colors.white.withOpacity(0.7) : Colors.grey,
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (message.attachments != null && message.attachments!.isNotEmpty)
+                    _buildAttachments(context),
+                  Text(
+                    message.message,
+                    style: TextStyle(
+                      color: message.isMe ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                      height: 1.4,
                     ),
-                    if (message.isMe) ...[
-                      const SizedBox(width: 4),
-                      BlocBuilder<ChatCubit, ChatState>(
-                        buildWhen: (previous, current) => 
-                            previous.partnerLastSeenMessageId != current.partnerLastSeenMessageId,
-                        builder: (context, state) {
-                          final isRead = state.partnerLastSeenMessageId != null && 
-                                        state.partnerLastSeenMessageId! >= message.id;
-                          return Icon(
-                            isRead ? Icons.done_all_rounded : Icons.done_rounded,
-                            size: 14,
-                            color: isRead ? Colors.cyanAccent : Colors.white.withOpacity(0.7),
-                          );
-                        },
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        message.formattedDate,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: message.isMe ? Colors.white.withOpacity(0.7) : Colors.grey,
+                        ),
                       ),
+                      if (message.isMe) ...[
+                        const SizedBox(width: 4),
+                        BlocBuilder<ChatCubit, ChatState>(
+                          buildWhen: (previous, current) => 
+                              previous.partnerLastSeenMessageId != current.partnerLastSeenMessageId,
+                          builder: (context, state) {
+                            final isRead = state.partnerLastSeenMessageId != null && 
+                                          state.partnerLastSeenMessageId! >= message.id;
+                            return Icon(
+                              isRead ? Icons.done_all_rounded : Icons.done_rounded,
+                              size: 14,
+                              color: isRead ? Colors.cyanAccent : Colors.white.withOpacity(0.7),
+                            );
+                          },
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],

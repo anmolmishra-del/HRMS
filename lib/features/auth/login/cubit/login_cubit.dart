@@ -266,53 +266,13 @@ class LoginCubit extends Cubit<LoginState> {
     ));
 
     final sessionData = await prefs.getObject('session');
+    final isLoggedIn = await prefs.getBool('isLoggedIn') ?? false;
 
-    if (sessionData != null && sessionData is Map && sessionData.isNotEmpty) {
-      final baseUrl =
-          await prefs.getString('baseUrl') ?? ApiConfig.baseUrl;
-
-      // Reconstruction of OdooSession
-      final session = OdooSession(
-        id: sessionData['id']?.toString() ?? '',
-        userId: sessionData['userId'] is int
-            ? sessionData['userId']
-            : int.parse(sessionData['userId']?.toString() ?? '0'),
-        partnerId: sessionData['partnerId'] is int
-            ? sessionData['partnerId']
-            : int.parse(sessionData['partnerId']?.toString() ?? '0'),
-        companyId: sessionData['companyId'] is int
-            ? sessionData['companyId']
-            : int.parse(sessionData['companyId']?.toString() ?? '0'),
-        allowedCompanies: const <Company>[],
-        userLogin: sessionData['userLogin']?.toString() ?? '',
-        userName: sessionData['userName']?.toString() ?? '',
-        userLang: sessionData['userLang']?.toString() ?? "en_US",
-        userTz: sessionData['userTz']?.toString() ?? "UTC",
-        isSystem: sessionData['isSystem'] is bool
-            ? sessionData['isSystem']
-            : false,
-        dbName: sessionData['dbName']?.toString() ?? 'ftprotech',
-        serverVersion: sessionData['serverVersion']?.toString() ?? "",
-      );
-
-      final client = OdooClient(baseUrl, sessionId: session);
-
-      try {
-        debugPrint('Checking Odoo session validity...');
-        await client.checkSession();
-        debugPrint('Session is valid.');
-
-        emit(state.copyWith(status: LoginStatus.success));
-      } catch (e) {
-        debugPrint('Session check failed or expired: $e');
-        // If session fails, clear credentials
-        await _clearSessionData(prefs);
-        emit(state.copyWith(status: LoginStatus.initial));
-      } finally {
-        client.close();
-      }
+    if (isLoggedIn && sessionData != null && sessionData is Map && sessionData.isNotEmpty) {
+      debugPrint('LoginCubit: Persistent session found. Auto-login successful.');
+      emit(state.copyWith(status: LoginStatus.success));
     } else {
-      debugPrint('No saved session found.');
+      debugPrint('LoginCubit: No saved session or not logged in.');
       emit(state.copyWith(status: LoginStatus.initial));
     }
   }

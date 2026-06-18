@@ -160,7 +160,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primaryPurple),
+        Icon(icon, size: 20, color: AppColors.brightBlue),
         const SizedBox(width: 8),
         Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
       ],
@@ -235,7 +235,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
           lastDate: DateTime.now().add(const Duration(days: 365)),
           builder: (context, child) => Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: Theme.of(context).colorScheme.copyWith(primary: AppColors.primaryPurple),
+              colorScheme: Theme.of(context).colorScheme.copyWith(primary: AppColors.brightBlue),
             ),
             child: child!,
           ),
@@ -285,14 +285,17 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
               ),
             ],
           ),
-          child: SwitchListTile(
-            title: Text(l10n.half_day, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
-            value: _isHalfDay,
-            activeColor: AppColors.primaryPurple,
-            onChanged: (val) => setState(() {
-              _isHalfDay = val;
-              if (val) _endDate = _startDate;
-            }),
+          child: Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              title: Text(l10n.half_day, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+              value: _isHalfDay,
+              activeColor: AppColors.blue,
+              onChanged: (val) => setState(() {
+                _isHalfDay = val;
+                if (val) _endDate = _startDate;
+              }),
+            ),
           ),
         ),
         if (_isHalfDay) ...[
@@ -317,9 +320,9 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryPurple : Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+            color: isSelected ? AppColors.blue : Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isSelected ? AppColors.primaryPurple : Colors.grey.shade200),
+            border: Border.all(color: isSelected ? AppColors.brightBlue : Colors.grey.shade200),
           ),
           child: Text(label, 
             style: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold, fontSize: 13)
@@ -365,7 +368,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       child: ElevatedButton(
         onPressed: isLoading ? null : () => _submit(context, l10n),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryPurple,
+          backgroundColor: AppColors.brightBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 0,
         ),

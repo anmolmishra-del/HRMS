@@ -167,7 +167,9 @@ class ProfileCubit extends Cubit<ProfileState> {
         // Save fresh data keyed to the current user
         await prefs.saveObject('employee_data', fullData);
 
-        emit(state.copyWith(status: ProfileStatus.success, employee: employee));
+        if (!isClosed) {
+          emit(state.copyWith(status: ProfileStatus.success, employee: employee));
+        }
       } finally {
         odooService.close();
       }

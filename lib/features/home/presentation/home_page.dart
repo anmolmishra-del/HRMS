@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_app/features/home/presentation/birthdaypopup.dart';
 import 'package:flutter_app/features/notifications/cubit/notification_cubit.dart';
 import 'package:flutter_app/features/projects/cubit/projects_cubit.dart';
 import 'package:flutter_app/features/leave/cubit/leave_cubit.dart';
@@ -12,7 +14,6 @@ import 'package:flutter_app/core/widget/custome_search_bar.dart';
 import 'package:flutter_app/features/home/widgets/action_card.dart';
 import 'package:flutter_app/features/home/widgets/upcoming_events.dart';
 import 'package:flutter_app/features/home/widgets/upcoming_holidays.dart';
-
 import 'package:flutter_app/features/attendance/presentation/check_in_out.dart';
 import 'package:flutter_app/features/attendance/cubit/attendance_cubit.dart';
 import 'package:flutter_app/features/chat/cubit/chat_cubit.dart';
@@ -29,6 +30,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  static bool _hasShownGreeting = false;
   late AttendanceCubit _attendanceCubit;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -59,6 +61,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         context.read<LeaveCubit>().fetchLeavesAndTypes();
         context.read<EventCubit>().fetchEvents();
         context.read<HolidayCubit>().fetchHolidays();
+        _showBirthdayGreeting();
       }
     });
   }
@@ -78,6 +81,165 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       debugPrint('HomePage: App resumed, refreshing attendance status...');
       _attendanceCubit.loadInitialStatus();
     }
+  }
+
+  void _showBirthdayGreeting() async {
+    if (_hasShownGreeting) return;
+    _hasShownGreeting = true;
+    
+    // Wait for the widgets to render and a brief delay
+    await Future.delayed(const Duration(milliseconds: 1000));
+    if (!mounted) return;
+    
+    final employeeData = await _employeeDataFuture;
+    String currentUserName = "User";
+    DateTime? currentUserBirthdate;
+    
+    if (employeeData is Map) {
+      currentUserName = employeeData['name']?.toString().split(' ').first ?? "User";
+      if (employeeData['birthday'] != null) {
+        currentUserBirthdate = DateTime.tryParse(employeeData['birthday'].toString());
+      }
+    }
+    
+   if (currentUserBirthdate == null) return;
+    final today = DateTime.now(); 
+    final isUserBirthday = currentUserBirthdate.day == today.day && currentUserBirthdate.month == today.month;
+
+// final isUserBirthday=true;
+    // TEMPORARY FOR TESTING: Forced to true so you can verify the birthday popup works immediately.
+    
+    if (!isUserBirthday) {
+      // Not the user's birthday, do not show any popup!
+      return;
+    }
+    
+    if (!mounted) return;
+    
+    // Show Birthday Dialog
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        // Beautiful birthday gradient (Festive gold / coral / purple)
+        final gradientColors = [
+          const Color(0xFFFF416C),
+          const Color(0xFFFF4B2B),
+        ];
+        
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: gradientColors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: gradientColors.first.withOpacity(0.4),
+                      blurRadius: 32,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Celebration Icon / Party Popper
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Text(
+                        "🎉",
+                        style: TextStyle(fontSize: 48),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    const Text(
+                      "Happy Birthday!",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      currentUserName,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Wishing you a wonderful day filled with joy, laughter, and everything you hope for! Have a fantastic birthday! 🎂✨",
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white.withOpacity(0.95),
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    // Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: gradientColors.first,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              "Thank You!",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(32),
+                    child: const ConfettiAnimationWidget(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   String _getGreeting(AppLocalizations l10n) {
@@ -418,5 +580,4 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ),
     );
   }
-    
-  }
+}

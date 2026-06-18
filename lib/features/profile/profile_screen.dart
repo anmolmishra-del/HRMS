@@ -570,7 +570,7 @@ class ProfileScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 40),
+                            // const SizedBox(height: 10),
                           ],
                         ),
                       ),
@@ -642,7 +642,7 @@ class ProfileScreen extends StatelessWidget {
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: Colors.white.withOpacity(0.1),
+      backgroundColor: Colors.black.withOpacity(0.1),
       child: avatarImage ??
           Icon(
             Icons.person,
@@ -676,22 +676,25 @@ class _ProfileCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (title != null) ...[
-            Text(
-              title!,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade400,
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (title != null) ...[
+              Text(
+                title!,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade400,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
+            ],
+            child,
           ],
-          child,
-        ],
+        ),
       ),
     );
   }

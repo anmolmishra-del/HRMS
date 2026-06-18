@@ -71,6 +71,7 @@ class CheckInOutCard extends StatelessWidget {
           if (progress > 1.0) progress = 1.0;
 
           return Container(
+            
             padding: EdgeInsets.symmetric(
               horizontal: isShortScreen ? 12 : 24,
               vertical: isShortScreen ? 12 : 24,
@@ -93,6 +94,7 @@ class CheckInOutCard extends StatelessWidget {
               ],
             ),
             child: Column(
+              
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
