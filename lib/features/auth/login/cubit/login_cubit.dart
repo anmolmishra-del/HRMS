@@ -4,6 +4,7 @@ import 'package:flutter_app/network/odoo_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:flutter_app/core/constants/api_config.dart';
+import 'package:flutter_app/core/services/firebase_service.dart';
 import 'login_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
@@ -206,6 +207,27 @@ class LoginCubit extends Cubit<LoginState> {
 
       await prefs.saveString('partner_id', session.partnerId.toString());
       debugPrint('Partner ID Saved: ${session.partnerId}');
+
+      // Send FCM token to Odoo backend
+      try {
+        final fcmToken = await AppFirebaseService().getFCMToken();
+        if (fcmToken != null) {
+          debugPrint('FCM Token retrieved: $fcmToken. Updating Odoo res.users...');
+          await odooService.executeModelMethod(
+            'res.users',
+            'write',
+            [
+              [session.userId],
+              {'token': fcmToken}
+            ],
+          );
+          debugPrint('FCM Token updated successfully in Odoo.');
+        } else {
+          debugPrint('FCM Token is null, skipping update.');
+        }
+      } catch (e) {
+        debugPrint('Error updating FCM Token in Odoo: $e');
+      }
 
       debugPrint('--- Login Process Success ---');
       emit(state.copyWith(status: LoginStatus.success));

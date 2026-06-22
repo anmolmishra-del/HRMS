@@ -22,8 +22,17 @@ class ChatCubit extends Cubit<ChatState> {
   // This is used to suppress stale unread counts from the server for a short window.
   final Map<int, DateTime> _channelReadTimestamps = {};
 
+  // Track message IDs that have been deleted locally to prevent background polling/web-sockets from restoring them prematurely.
+  final Set<int> _deletedMessageIds = {};
+
+  // Store the logged-in user's partner ID synchronously to enable zero-latency optimistic updates
+  int? _myPartnerId;
+
   Future<void> initChat() async {
     emit(state.copyWith(status: ChatStatus.loading));
+    final prefs = SharedPref();
+    final partnerIdStr = await prefs.getString('partner_id');
+    _myPartnerId = int.tryParse(partnerIdStr ?? '0') ?? 0;
     await fetchChannels();
     _startPolling(); // Always start reliable background polling
     _initWebSockets();
@@ -458,7 +467,7 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
-  Future<void> fetchMessages(int channelId, {bool quiet = false}) async {
+  Future<void> fetchMessages(int channelId, {bool quiet = false, int? excludeMessageId}) async {
     try {
       // Stamp: record that we read this channel RIGHT NOW
       _channelReadTimestamps[channelId] = DateTime.now();
@@ -491,12 +500,16 @@ class ChatCubit extends Cubit<ChatState> {
       final session = OdooSession.fromJson(sobj);
       final client = OdooClient(baseUrl, sessionId: session);
 
+      final partnerIdStr = await prefs.getString('partner_id');
+      final partnerId = int.tryParse(partnerIdStr ?? '0') ?? 0;
+      _myPartnerId = partnerId; // Keep the cached ID synchronized
+
       final response = await client.callKw({
         'model': 'mail.message',
         'method': 'search_read',
         'args': [[['res_id', '=', channelId], ['model', '=', 'discuss.channel']]],
         'kwargs': {
-          'fields': ['id', 'date', 'author_id', 'body', 'message_type', 'attachment_ids', 'subject', 'subtype_id', 'partner_ids', 'needaction', 'starred_partner_ids'],
+          'fields': ['id', 'date', 'author_id', 'body', 'message_type', 'attachment_ids', 'subject', 'subtype_id', 'partner_ids', 'needaction', 'starred_partner_ids', 'parent_id'],
           'limit': 50,
           'order': 'date desc'
         }
@@ -519,6 +532,11 @@ class ChatCubit extends Cubit<ChatState> {
       }
 
       for (var msg in (response as List)) {
+        // Skip messages that have been deleted locally to prevent race conditions during background sync
+        if (_deletedMessageIds.contains(msg['id'])) {
+          continue;
+        }
+
         final authorId = msg['author_id'] is List ? msg['author_id'][0] : 0;
         final date = _parseOdooDate(msg['date']) ?? DateTime.now();
         final List<ChatAttachment> msgAttachments = [];
@@ -527,6 +545,14 @@ class ChatCubit extends Cubit<ChatState> {
             if (attachmentMap.containsKey(id)) msgAttachments.add(attachmentMap[id]!);
           }
         }
+        
+        final parentId = msg['parent_id'] is List 
+            ? msg['parent_id'][0] 
+            : (msg['parent_id'] is int ? msg['parent_id'] : null);
+        final parentMessagePreview = msg['parent_id'] is List 
+            ? msg['parent_id'][1]?.toString() 
+            : null;
+
         messages.add(ChatMessage(
           id: msg['id'],
           sender: msg['author_id'] is List ? msg['author_id'][1] : 'Unknown',
@@ -534,9 +560,11 @@ class ChatCubit extends Cubit<ChatState> {
           message: _stripHtml(msg['body'] ?? ''),
           date: date,
           formattedDate: DateFormat('h:mm a').format(date),
-          isMe: authorId == session.partnerId,
+          isMe: authorId == partnerId,
           messageType: msg['message_type'],
           attachments: msgAttachments,
+          parentId: parentId,
+          parentMessagePreview: parentMessagePreview,
         ));
       }
 
@@ -638,9 +666,22 @@ class ChatCubit extends Cubit<ChatState> {
         debugPrint('ChatCubit: Seen-status update error: $e');
       }
 
+      final List<ChatMessage> finalMessages;
+      if (state.currentChatId == channelId.toString()) {
+        // Prepend any locally sending or failed messages so background syncs don't overwrite/hide them.
+        // We exclude the specific excludeMessageId to allow smooth transition after a successful send.
+        final sendingMessages = state.activeMessages
+            .where((m) => m.status == MessageStatus.sending || m.status == MessageStatus.failed)
+            .where((m) => m.id != excludeMessageId)
+            .toList();
+        finalMessages = [...sendingMessages, ...messages];
+      } else {
+        finalMessages = messages;
+      }
+
       emit(state.copyWith(
         status: ChatStatus.loaded,
-        activeMessages: messages,
+        activeMessages: finalMessages,
         currentChatId: channelId.toString(),
         partnerLastSeenMessageId: partnerLastSeenId,
       ));
@@ -656,6 +697,7 @@ class ChatCubit extends Cubit<ChatState> {
 
   void clearActiveChat(int channelId) {
     _channelReadTimestamps[channelId] = DateTime.now();
+    _deletedMessageIds.clear();
     emit(state.clearCurrentChat());
   }
 
@@ -663,15 +705,53 @@ class ChatCubit extends Cubit<ChatState> {
     // Handled automatically in fetchMessages
   }
 
-  Future<bool> sendMessage(int channelId, String text, {List<ChatAttachment>? attachments}) async {
+  /// Sends a message to the channel. This method is OPTIMISTIC: it immediately constructs
+  /// a temporary message with a [MessageStatus.sending] state and prepends it to the UI,
+  /// then performs the backend attachment uploads and message posting in the background.
+  /// On success, it fetches fresh messages from the server. On failure, it updates the status to [MessageStatus.failed].
+  Future<bool> sendMessage(int channelId, String text, {List<ChatAttachment>? attachments, int? parentId}) async {
+    // Generate a unique temporary ID (negative to avoid conflict with DB IDs)
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    
+    // Retrieve partnerId synchronously from cached _myPartnerId (loaded in initChat/fetchMessages)
+    final partnerId = _myPartnerId ?? 0;
+    
+    final tempMessage = ChatMessage(
+      id: tempId,
+      sender: 'You',
+      senderId: partnerId,
+      message: text,
+      date: DateTime.now(),
+      formattedDate: DateFormat('h:mm a').format(DateTime.now()),
+      isMe: true,
+      status: MessageStatus.sending,
+      parentId: parentId,
+      attachments: attachments,
+    );
+
+    // Save a backup of the original messages list for fallback
+    final List<ChatMessage> originalMessages = List<ChatMessage>.from(state.activeMessages);
+    
+    // Optimistically insert the sending message at index 0 (bottom of the reversed list)
+    // This executes COMPLETELY SYNCHRONOUSLY at the start of the call (no async gaps before emit),
+    // ensuring the message is displayed instantly on screen without any flicker or disappearance.
+    emit(state.copyWith(activeMessages: [tempMessage, ...originalMessages]));
+    debugPrint('ChatCubit: Optimistically added sending message $tempId to UI.');
+
+    final prefs = SharedPref();
+
     try {
-      final prefs = SharedPref();
       final sobj = await prefs.getObject('session');
       final baseUrl = await prefs.getString('baseUrl');
-      if (baseUrl == null || sobj == null) return false;
+      if (baseUrl == null || sobj == null) {
+        debugPrint('ChatCubit: Missing session info, rolling back message.');
+        emit(state.copyWith(activeMessages: originalMessages));
+        return false;
+      }
       final session = OdooSession.fromJson(sobj);
       final client = OdooClient(baseUrl, sessionId: session);
 
+      // Upload any attachments if present
       final List<int> attachmentIds = [];
       if (attachments != null) {
         for (var att in attachments) {
@@ -688,10 +768,19 @@ class ChatCubit extends Cubit<ChatState> {
               }],
               'kwargs': {},
             });
-            if (res != null) attachmentIds.add(res is int ? res : int.parse(res.toString()));
+            if (res != null) {
+              final newId = res is int ? res : int.parse(res.toString());
+              attachmentIds.add(newId);
+              if (att.bytes != null) {
+                _attachmentCache[newId] = att.bytes!;
+                debugPrint('ChatCubit: Cached bytes for new attachment $newId in _attachmentCache.');
+              }
+            }
           }
         }
       }
+
+      // Post the message text to Odoo discuss channel
       await client.callKw({
         'model': 'discuss.channel',
         'method': 'message_post',
@@ -700,13 +789,22 @@ class ChatCubit extends Cubit<ChatState> {
           'body': text,
           'message_type': 'comment',
           'subtype_xmlid': 'mail.mt_comment',
+          if (parentId != null) 'parent_id': parentId,
           if (attachmentIds.isNotEmpty) 'attachment_ids': attachmentIds
         },
       });
-      await fetchMessages(channelId, quiet: true);
+
+      debugPrint('ChatCubit: Backend message post for $tempId succeeded. Refreshing...');
+      
+      // Fetch the actual server records and exclude the tempId from prepending
+      // to ensure a smooth transition from optimistic local state to database state.
+      await fetchMessages(channelId, quiet: true, excludeMessageId: tempId);
       return true;
     } catch (e) {
       debugPrint('Send Message Error: $e');
+      // On failure, update the status of this temporary message to failed
+      final failedMessages = state.activeMessages.map((m) => m.id == tempId ? m.copyWith(status: MessageStatus.failed) : m).toList();
+      emit(state.copyWith(activeMessages: failedMessages));
       return false;
     }
   }
@@ -757,6 +855,11 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
+  /// Returns the cached attachment bytes synchronously if available, otherwise returns null.
+  Uint8List? getCachedAttachment(int attachmentId) {
+    return _attachmentCache[attachmentId];
+  }
+
   String _formatDisplayName(String name, String currentUserName, ChannelType type) {
     if (type != ChannelType.chat) return name;
     final parts = name.split(',').map((s) => s.trim()).toList();
@@ -793,8 +896,59 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
+  /// Deletes a message from Odoo using the unlink method and removes it from the local state list.
+  /// This method is OPTIMISTIC: it immediately removes the message from the UI state,
+  /// runs the backend call in the background, and rolls back the UI state if the backend call fails.
+  /// Returns [true] if the backend call succeeds, [false] otherwise.
+  Future<bool> deleteMessage(int messageId) async {
+    // Keep a backup of the original messages in case we need to roll back
+    final originalMessages = List<ChatMessage>.from(state.activeMessages);
+
+    // Track the deleted message ID locally to prevent background polling or websockets from restoring it
+    _deletedMessageIds.add(messageId);
+
+    // Optimistically update the UI instantly by removing the message from the local list
+    final updatedMessages = state.activeMessages.where((m) => m.id != messageId).toList();
+    emit(state.copyWith(activeMessages: updatedMessages));
+    debugPrint('ChatCubit: Optimistically removed message $messageId from UI.');
+
+    try {
+      final prefs = SharedPref();
+      final sobj = await prefs.getObject('session');
+      final baseUrl = await prefs.getString('baseUrl');
+      if (baseUrl == null || sobj == null) {
+        debugPrint('ChatCubit: Missing session info, rolling back message deletion.');
+        // Clean up from the deleted set and roll back the UI
+        _deletedMessageIds.remove(messageId);
+        emit(state.copyWith(activeMessages: originalMessages));
+        return false;
+      }
+
+      final session = OdooSession.fromJson(sobj);
+      final client = OdooClient(baseUrl, sessionId: session);
+
+      // Call the unlink method on the mail.message model in Odoo to delete the record
+      await client.callKw({
+        'model': 'mail.message',
+        'method': 'unlink',
+        'args': [[messageId]],
+        'kwargs': {},
+      });
+
+      debugPrint('ChatCubit: Backend unlink for message $messageId succeeded.');
+      return true;
+    } catch (e) {
+      debugPrint('ChatCubit: Error deleting message $messageId: $e. Rolling back UI.');
+      // Clean up from the deleted set and roll back the UI state to restore the deleted message on failure
+      _deletedMessageIds.remove(messageId);
+      emit(state.copyWith(activeMessages: originalMessages));
+      return false;
+    }
+  }
+
   void clearData() {
     _channelReadTimestamps.clear();
+    _deletedMessageIds.clear();
     _attachmentCache.clear();
     _pollingTimer?.cancel();
     emit(const ChatState());

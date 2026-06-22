@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
@@ -19,11 +21,24 @@ import 'package:flutter_app/features/projects/cubit/project_tasks_cubit.dart';
 import 'package:flutter_app/features/document/cubit/document_cubit.dart';
 import 'package:flutter_app/routes.dart';
 
+import 'package:flutter_app/core/services/firebase_service.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Background message: ${message.notification?.title}");
+  await AppFirebaseService().showLocalNotification(message);
+}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppFirebaseService().initialize();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

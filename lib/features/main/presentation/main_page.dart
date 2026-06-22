@@ -9,11 +9,17 @@ import 'package:flutter_app/features/profile/profile_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
+import 'package:flutter_app/core/services/firebase_service.dart';
+
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppFirebaseService().checkAndHandlePendingNotification(context);
+    });
+
     return BlocProvider(
       create: (_) => MainCubit(),
               child: BlocBuilder<MainCubit, MainState>(

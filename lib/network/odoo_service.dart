@@ -2,9 +2,11 @@ import 'package:intl/intl.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
+
 class OdooService {
   final String baseUrl;
   OdooClient _client;
+  Set<String>? _supportedNotificationFields;
 
   OdooService(this.baseUrl, {OdooSession? session})
     : _client = OdooClient(baseUrl, sessionId: session);
@@ -13,10 +15,40 @@ class OdooService {
   void setSession(OdooSession session) {
     _client.close();
     _client = OdooClient(baseUrl, sessionId: session);
+    // Clear cache when session/user changes
+    _supportedNotificationFields = null;
   }
 
   void close() {
     _client.close();
+  }
+
+  /// Fetches the supported fields for the mail.notification model dynamically and caches them.
+  Future<Set<String>> getSupportedNotificationFields() async {
+    if (_supportedNotificationFields != null) {
+      return _supportedNotificationFields!;
+    }
+    try {
+      final response = await executeModelMethod(
+        'mail.notification',
+        'fields_get',
+        [],
+        kwargs: {
+          'attributes': ['type'],
+        },
+        silent: true,
+      );
+      if (response is Map) {
+        _supportedNotificationFields = response.keys.map((k) => k.toString()).toSet();
+        debugPrint('OdooService: mail.notification supported fields detected: $_supportedNotificationFields');
+      } else {
+        _supportedNotificationFields = {};
+      }
+    } catch (e) {
+      debugPrint('OdooService: fields_get for mail.notification failed: $e');
+      _supportedNotificationFields = {};
+    }
+    return _supportedNotificationFields!;
   }
 
   /// Authenticates the user with the Odoo backend.
@@ -633,6 +665,25 @@ class OdooService {
   /// Fetches notifications for a specific partner.
   Future<List<dynamic>> fetchNotifications(int partnerId) async {
     debugPrint('OdooService: fetchNotifications partnerId=$partnerId - Fetching metadata...');
+    
+    // Check supported fields dynamically
+    final supportedFields = await getSupportedNotificationFields();
+    final requestedFields = [
+      'id', 
+      'notification_status', 
+      'mail_message_id', 
+      'notification_type',
+      'failure_type', 
+      'failure_reason', 
+      'res_partner_id'
+    ];
+    if (supportedFields.contains('is_read')) {
+      requestedFields.add('is_read');
+    }
+    if (supportedFields.contains('read_date')) {
+      requestedFields.add('read_date');
+    }
+
     // 1. Fetch notification metadata
     final notifications = await executeModelMethod(
       'mail.notification',
@@ -643,10 +694,7 @@ class OdooService {
           ['res_partner_id', '=', partnerId],
           ['notification_type', '=', 'inbox']
         ],
-        'fields': [
-          'id', 'notification_status', 'mail_message_id', 'notification_type',
-          'failure_type', 'failure_reason', 'res_partner_id', 'is_read', 'read_date'
-        ],
+        'fields': requestedFields,
         'order': 'id desc',
         'limit': 50,
       },
@@ -707,16 +755,29 @@ class OdooService {
   /// Marks a notification as read.
   Future<void> markNotificationAsRead(int notificationId) async {
     debugPrint('OdooService: markNotificationAsRead notificationId=$notificationId');
-    await executeModelMethod(
-      'mail.notification',
-      'write',
-      [[notificationId], {
-        'is_read': true,
-        'read_date': DateTime.now().toUtc().toIso8601String(),
-      }],
-      silent: true,
-    );
-    debugPrint('OdooService: markNotificationAsRead - Success');
+    
+    // Check supported fields dynamically
+    final supportedFields = await getSupportedNotificationFields();
+    final Map<String, dynamic> writeValues = {};
+    
+    if (supportedFields.contains('is_read')) {
+      writeValues['is_read'] = true;
+    }
+    if (supportedFields.contains('read_date')) {
+      writeValues['read_date'] = DateTime.now().toUtc().toIso8601String();
+    }
+
+    if (writeValues.isNotEmpty) {
+      await executeModelMethod(
+        'mail.notification',
+        'write',
+        [[notificationId], writeValues],
+        silent: true,
+      );
+      debugPrint('OdooService: markNotificationAsRead - Success with $writeValues');
+    } else {
+      debugPrint('OdooService: markNotificationAsRead - Skipping write since no read status fields are supported on the server');
+    }
   }
 
   /// Fetches companies.

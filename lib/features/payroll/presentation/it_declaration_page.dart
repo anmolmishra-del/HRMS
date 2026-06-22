@@ -6,6 +6,8 @@ import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter_app/network/payroll_api_service.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
+import 'package:flutter_app/core/utils/shared_pref.dart';
+
 class ItDeclarationPage extends StatefulWidget {
   const ItDeclarationPage({super.key});
 
@@ -33,8 +35,18 @@ class _ItDeclarationPageState extends State<ItDeclarationPage> {
       final profileState = context.read<ProfileCubit>().state;
       _employeeId = profileState.employee?.id;
 
+      if (_employeeId == null) {
+        final prefs = SharedPref();
+        final empIdStr = await prefs.getString('employee_id');
+        if (empIdStr != null && empIdStr.isNotEmpty) {
+          _employeeId = int.tryParse(empIdStr);
+        }
+      }
+
       if (_employeeId != null) {
         await _cubit!.loadInitialData(_employeeId!);
+      } else {
+        debugPrint('ItDeclarationPage: Employee ID is null, could not load declarations');
       }
     } catch (e) {
       debugPrint('Error initializing PayrollApiService: $e');
@@ -534,133 +546,135 @@ class _ItDeclarationPageState extends State<ItDeclarationPage> {
                       ),
                       child: Theme(
                         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                        child: ExpansionTile(
-                          iconColor: const Color(0xFF4e54c8),
-                          collapsedIconColor: Colors.grey,
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  periodName,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              _buildStateBadge(decState),
-                            ],
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Row(
+                        child: Material(
+                          child: ExpansionTile(
+                            iconColor: const Color(0xFF4e54c8),
+                            collapsedIconColor: Colors.grey,
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF4e54c8).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
+                                Expanded(
                                   child: Text(
-                                    taxRegime == 'OLD'
-                                        ? l10n.old_regime
-                                        : (taxRegime == 'NEW' ? l10n.new_regime : '$taxRegime Regime'),
-                                    style: const TextStyle(
-                                      color: Color(0xFF4e54c8),
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    periodName,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${l10n.total}: ₹${totalInv.toStringAsFixed(0)}',
-                                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.bold),
-                                ),
+                                _buildStateBadge(decState),
                               ],
                             ),
-                          ),
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Row(
                                 children: [
-                                  const Divider(height: 16),
-                                  const SizedBox(height: 8),
-                                  if (returnReason.isNotEmpty) ...[
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(12),
-                                      margin: const EdgeInsets.only(bottom: 16),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.dangerRed.withOpacity(0.05),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: AppColors.dangerRed.withOpacity(0.2)),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.warning_amber_rounded, color: AppColors.dangerRed, size: 20),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Text(
-                                              '${l10n.returned_label}: $returnReason',
-                                              style: const TextStyle(color: AppColors.dangerRed, fontSize: 12.5, fontWeight: FontWeight.w600),
-                                            ),
-                                          ),
-                                        ],
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF4e54c8).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      taxRegime == 'OLD'
+                                          ? l10n.old_regime
+                                          : (taxRegime == 'NEW' ? l10n.new_regime : '$taxRegime Regime'),
+                                      style: const TextStyle(
+                                        color: Color(0xFF4e54c8),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ],
-
-                                  if (isDraft) ...[
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: ElevatedButton.icon(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green,
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                              elevation: 0,
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                            ),
-                                            onPressed: () {
-                                              _cubit!.submitDeclaration(decId, _employeeId!);
-                                            },
-                                            icon: const Icon(Icons.send_rounded, size: 16, color: Colors.white),
-                                            label: Text(l10n.submit, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                  ],
-
-                                  Row(
-                                    children: [
-                                      if (isDraft) ...[
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: AppColors.dangerRed,
-                                              side: BorderSide(color: AppColors.dangerRed.withOpacity(0.5)),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                            ),
-                                            onPressed: () {
-                                              _cubit!.deleteDeclaration(decId, _employeeId!);
-                                            },
-                                            icon: const Icon(Icons.delete_outline, size: 16),
-                                            label: Text(l10n.delete, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${l10n.total}: ₹${totalInv.toStringAsFixed(0)}',
+                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(height: 16),
+                                    const SizedBox(height: 8),
+                                    if (returnReason.isNotEmpty) ...[
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(12),
+                                        margin: const EdgeInsets.only(bottom: 16),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.dangerRed.withOpacity(0.05),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: AppColors.dangerRed.withOpacity(0.2)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.warning_amber_rounded, color: AppColors.dangerRed, size: 20),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                '${l10n.returned_label}: $returnReason',
+                                                style: const TextStyle(color: AppColors.dangerRed, fontSize: 12.5, fontWeight: FontWeight.w600),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                          
+                                    if (isDraft) ...[
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.green,
+                                                foregroundColor: Colors.white,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                elevation: 0,
+                                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                              ),
+                                              onPressed: () {
+                                                _cubit!.submitDeclaration(decId, _employeeId!);
+                                              },
+                                              icon: const Icon(Icons.send_rounded, size: 16, color: Colors.white),
+                                              label: Text(l10n.submit, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                    ],
+                          
+                                    Row(
+                                      children: [
+                                        if (isDraft) ...[
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: AppColors.dangerRed,
+                                                side: BorderSide(color: AppColors.dangerRed.withOpacity(0.5)),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                              ),
+                                              onPressed: () {
+                                                _cubit!.deleteDeclaration(decId, _employeeId!);
+                                              },
+                                              icon: const Icon(Icons.delete_outline, size: 16),
+                                              label: Text(l10n.delete, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

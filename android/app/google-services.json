@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "964633436087",
+    "project_id": "hrmsopzento",
+    "storage_bucket": "hrmsopzento.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964633436087:android:70c07509085602c5b11232",
+        "android_client_info": {
+          "package_name": "com.srivyn.opzento"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChjKRtaXC1gbgX2RVE0KD_G4CzFgZxM4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

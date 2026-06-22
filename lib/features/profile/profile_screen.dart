@@ -392,12 +392,12 @@ class ProfileScreen extends StatelessWidget {
                                     title: l10n.reimbursements,
                                     onTap: () => Navigator.pushNamed(context, Routes.reimbursements),
                                   ),
-                                  _buildDivider(context),
-                                  _SettingTile(
-                                    icon: Icons.school_outlined,
-                                    title: l10n.training_learning,
-                                    onTap: () => Navigator.pushNamed(context, Routes.learnTraing),
-                                  ),
+                                  // _buildDivider(context),
+                                  // _SettingTile(
+                                  //   icon: Icons.school_outlined,
+                                  //   title: l10n.training_learning,
+                                  //   onTap: () => Navigator.pushNamed(context, Routes.learnTraing),
+                                  // ),
                                   _buildDivider(context),
                                   _SettingTile(
                                     icon: Icons.assignment_turned_in_outlined,
@@ -664,9 +664,7 @@ class _ProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -677,23 +675,28 @@ class _ProfileCard extends StatelessWidget {
         ],
       ),
       child: Material(
-        type: MaterialType.transparency,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (title != null) ...[
-              Text(
-                title!,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade400,
+        color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: padding ?? const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title != null) ...[
+                Text(
+                  title!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade400,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
+              ],
+              child,
             ],
-            child,
-          ],
+          ),
         ),
       ),
     );

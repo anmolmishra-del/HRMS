@@ -14,6 +14,7 @@ class ApiConfig {
   static const String dbName = 'pmt_test';
 
   // 🛠️ ALTERNATE TESTING (Odoo 18)
-  // static const String baseUrl = 'https://test-h-r-m-s-18.odoo.com';
-  // static const String dbName = 'test-h-r-m-s-18';
+  // static const String baseUrl = 'http://192.168.88.18:2025';
+  // static const String dbName = 'ftp_live_may_08_2026';
+// }
 }

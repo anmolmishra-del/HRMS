@@ -413,16 +413,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ),
                 ),
                 _searchQuery.isEmpty ? SliverPadding(
-                  padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).size.height < 780 ? 12 : 10, 20, 0), // Extra bottom padding for floating nav bar
+                  padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).size.height < 780 ? 12 : 10, 20, 20), // Extra bottom padding for floating nav bar
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       const CheckInOutCard(),
                       // const SizedBox(height: 10),
                       const AttendanceActions(),
-                      const SizedBox(height: 24),
-                      const UpcomingHolidaysSection(),
-                      const SizedBox(height: 24),
-                      const UpcomingEventsSection(),
+                       const SizedBox(height: 10),
+                      // const UpcomingHolidaysSection(),
+                      // const SizedBox(height: 24),
+                      // const UpcomingEventsSection(),
                     ]),
                   ),
                 ) : SliverPadding(

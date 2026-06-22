@@ -181,26 +181,26 @@ class CurrentMonthCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.net_salary,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
+                  GestureDetector(
+                    onTap: onToggleShowSalary,
+                    child: Row(
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.net_salary,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: onToggleShowSalary,
-                        child: Icon(
+                        const SizedBox(width: 8),
+                        Icon(
                           showSalary ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                           color: Colors.white70,
                           size: 18,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(

@@ -148,6 +148,7 @@ class ChatMessage extends Equatable {
   final bool needAction;
   final List<int>? starredPartnerIds;
   final int? parentId;
+  final String? parentMessagePreview;
   final List<int>? reactionIds;
 
   const ChatMessage({
@@ -170,6 +171,7 @@ class ChatMessage extends Equatable {
     this.needAction = false,
     this.starredPartnerIds,
     this.parentId,
+    this.parentMessagePreview,
     this.reactionIds,
   });
 
@@ -197,6 +199,7 @@ class ChatMessage extends Equatable {
       needAction: needAction,
       starredPartnerIds: starredPartnerIds,
       parentId: parentId,
+      parentMessagePreview: parentMessagePreview,
       reactionIds: reactionIds,
     );
   }
@@ -204,7 +207,7 @@ class ChatMessage extends Equatable {
   @override
   List<Object?> get props => [
     id, senderId, message, date, formattedDate,
-    isMe, type, status, attachments
+    isMe, type, status, attachments, parentId, parentMessagePreview
   ];
 }
 

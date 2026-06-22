@@ -4,7 +4,9 @@ import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/routes.dart';
 import 'package:flutter_app/core/utils/responsive_util.dart';
 class AttendanceActions extends StatelessWidget {
-  const AttendanceActions({super.key});
+  const AttendanceActions({super.key, this.itemCount = 8});
+
+  final int itemCount;
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +62,12 @@ class AttendanceActions extends StatelessWidget {
       },
     ];
 
+    final visibleActions = actions.take(itemCount).toList();
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: actions.length,
+      itemCount: visibleActions.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: ResponsiveUtil.getCrossAxisCount(context, mobile: 2, tablet: 4),
         crossAxisSpacing: 12,
@@ -71,7 +75,7 @@ class AttendanceActions extends StatelessWidget {
         childAspectRatio: ResponsiveUtil.isTablet(context) ? 2.5 : 2.2,
       ),
       itemBuilder: (context, index) {
-        final action = actions[index];
+        final action = visibleActions[index];
 
         return AttendanceActionCard(
           title: action['title'] as String,
