@@ -809,7 +809,7 @@ class _DocBoxPageState extends State<DocBoxPage> {
                             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                           ),
                           onPressed: () async {
-                            final result = await FilePicker.platform.pickFiles(
+                            final result = await FilePicker.pickFiles(
                               type: FileType.any,
                             );
                             if (result != null && result.files.single.path != null) {

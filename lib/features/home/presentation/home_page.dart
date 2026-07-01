@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_app/features/home/presentation/birthdaypopup.dart';
 import 'package:flutter_app/features/notifications/cubit/notification_cubit.dart';
@@ -10,7 +9,7 @@ import 'package:flutter_app/features/profile/cubit/holiday_cubit.dart';
 import 'package:flutter_app/routes.dart';
 import 'package:flutter_app/core/utils/shared_pref.dart';
 import 'package:flutter_app/core/constants/app_colors.dart';
-import 'package:flutter_app/core/widget/custome_search_bar.dart';
+import 'package:flutter_app/core/widget/portal_header.dart';
 import 'package:flutter_app/features/home/widgets/action_card.dart';
 import 'package:flutter_app/features/home/widgets/upcoming_events.dart';
 import 'package:flutter_app/features/home/widgets/upcoming_holidays.dart';
@@ -21,6 +20,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter_app/features/profile/cubit/profile_state.dart';
+import 'package:flutter_app/features/home/widgets/ats_launcher_card.dart';
+import 'package:flutter_app/ats/features/bottomnavbar/recruiter/presention/recruiteer_main_layout.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -298,118 +299,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   toolbarHeight: MediaQuery.of(context).size.height < 780 ? 145 : 170, // Fixed height for header content
-                  flexibleSpace: Container(
-                    padding: EdgeInsets.fromLTRB(
-                      20, 
-                      MediaQuery.of(context).padding.top + (MediaQuery.of(context).size.height < 780 ? 8 : 16), 
-                      20, 
-                      MediaQuery.of(context).size.height < 780 ? 12 : 24
-                    ),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.indigo,
-                          AppColors.brightBlue,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
-                      ),
-                    ),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Positioned(
-                          top: -40,
-                          right: -40,
-                          child: CircleAvatar(
-                            radius: 80,
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 20,
-                          left: -20,
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundColor: Colors.white.withValues(alpha: 0.03),
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Image.asset(
-                                        'assets/images/opsen.png',
-                                        height: 32,
-                                        width: 32,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    FutureBuilder<dynamic>(
-                                      future: _employeeDataFuture,
-                                      builder: (context, snapshot) {
-                                        String name = "User";
-                                        if (snapshot.hasData && snapshot.data is Map) {
-                                          name = snapshot.data['name']?.toString().split(' ').first ?? "User";
-                                        }
-                                        return Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              _getGreeting(l10n),
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white.withValues(alpha: 0.8),
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                            Text(
-                                              name,
-                                              style: const TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    _buildNotificationIcon(context),
-                                    const SizedBox(width: 12),
-                                    _buildProfileMenu(context),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: MediaQuery.of(context).size.height < 780 ? 12 : 24),
-                            CustomSearchBar(
-                              controller: _searchController,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                  flexibleSpace: PortalHeader(
+                    activePortal: 'hrms',
+                    onPortalChanged: (val) async {
+                      if (val == 'ats') {
+                        await SharedPref().saveString('selected_portal', 'ats');
+                        _openAtsPortal(context);
+                      }
+                    },
+                    searchController: _searchController,
+                    onSearchChanged: (val) {
+                      setState(() {
+                        _searchQuery = val;
+                      });
+                    },
                   ),
                 ),
                 _searchQuery.isEmpty ? SliverPadding(
@@ -417,7 +320,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       const CheckInOutCard(),
-                      // const SizedBox(height: 10),
                       const AttendanceActions(),
                        const SizedBox(height: 10),
                       // const UpcomingHolidaysSection(),
@@ -463,6 +365,77 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _openAtsPortal(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 650),
+        reverseTransitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return const RecruiterMainLayout();
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          );
+
+          return FadeTransition(
+            opacity: curvedAnimation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 0.08),
+                end: Offset.zero,
+              ).animate(curvedAnimation),
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.96, end: 1.0).animate(curvedAnimation),
+                child: child,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPortalDropdown(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: 'hrms',
+          dropdownColor: AppColors.indigo,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 18),
+          selectedItemBuilder: (BuildContext context) {
+            return [
+              const Center(child: Text('HRMS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+              const Center(child: Text('ATS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+            ];
+          },
+          items: const [
+            DropdownMenuItem(
+              value: 'hrms',
+              child: Text('HRMS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+            ),
+            DropdownMenuItem(
+              value: 'ats',
+              child: Text('ATS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+            ),
+          ],
+          onChanged: (val) {
+            if (val == 'ats') {
+              _openAtsPortal(context);
+            }
+          },
         ),
       ),
     );

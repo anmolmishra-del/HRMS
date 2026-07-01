@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_app/features/profile/pages/personal_information.dart';
 import 'package:flutter_app/features/auth/login_screen.dart';
+import 'package:flutter_app/ats/routes/app_routes.dart' as ats;
 import 'package:flutter_app/features/main/presentation/main_page.dart';
 import 'package:flutter_app/features/onboard/onboard_page.dart';
 import 'package:flutter_app/features/payroll/payroll_screen.dart';
@@ -93,6 +94,19 @@ class Routes {
   }
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
+    // Delegate ATS routes directly to the ATS routing system
+    if (settings.name == ats.AppRoutes.recruitermainlayout ||
+        settings.name == ats.AppRoutes.candidate ||
+        settings.name == ats.AppRoutes.candidatepage ||
+        settings.name == ats.AppRoutes.resume ||
+        settings.name == ats.AppRoutes.editprofile ||
+        settings.name == ats.AppRoutes.onboard ||
+        settings.name == ats.AppRoutes.signup ||
+        settings.name == ats.AppRoutes.mainlayout ||
+        settings.name == ats.AppRoutes.splashPage) {
+      return ats.AppRoutes.generateRoute(settings);
+    }
+
     final routes = getAll();
     final builder = routes[settings.name];
     if (builder != null) {

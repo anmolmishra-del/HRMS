@@ -39,11 +39,20 @@ class ProfileCubit extends Cubit<ProfileState> {
             'Using cached profile data for employee: $currentEmployeeId',
           );
           try {
+            final atsProfileImage = await prefs.getString('ats_profile_image');
+            if (atsProfileImage != null && atsProfileImage.isNotEmpty) {
+              cachedData['image_1920'] = atsProfileImage;
+            }
             final employee = Employee.fromJson(
               cachedData as Map<String, dynamic>,
             );
+            final cachedIsAtsEnabled = await prefs.getBool('is_ats_enabled') ?? false;
             emit(
-              state.copyWith(status: ProfileStatus.success, employee: employee),
+              state.copyWith(
+                status: ProfileStatus.success, 
+                employee: employee,
+                isAtsEnabled: cachedIsAtsEnabled,
+              ),
             );
           } catch (e) {
             debugPrint('Error parsing cached employee data: $e');
@@ -155,6 +164,11 @@ class ProfileCubit extends Cubit<ProfileState> {
         fullData['resume_line_ids'] = results[0];
         fullData['employee_skill_ids'] = results[1];
 
+        final atsProfileImage = await prefs.getString('ats_profile_image');
+        if (atsProfileImage != null && atsProfileImage.isNotEmpty) {
+          fullData['image_1920'] = atsProfileImage;
+        }
+
         final employee = Employee.fromJson(fullData);
 
         debugPrint('--- EMPLOYEE DATA DEBUG ---');
@@ -164,11 +178,48 @@ class ProfileCubit extends Cubit<ProfileState> {
         debugPrint('Full JSON data: ${jsonEncode(fullData)}');
         debugPrint('---------------------------');
 
+        // Fetch ATS Access from master.control using current Odoo user session
+        bool isAtsEnabled = false;
+        try {
+          final List<dynamic> accessResponse = await odooService.executeModelMethod(
+            'master.control',
+            'search_read',
+            [],
+            kwargs: {
+              'domain': [
+                ['user_ids', 'in', [session.userId]],
+                ['code', '=', 'ats'],
+              ],
+              'fields': ['id', 'code'],
+            },
+            silent: true,
+          );
+          if (accessResponse.isNotEmpty) {
+            isAtsEnabled = true;
+          }
+          debugPrint('ProfileCubit: fetched ATS access via master.control = $isAtsEnabled');
+        } catch (e) {
+          debugPrint('ProfileCubit: master.control access check failed: $e. Falling back to local heuristic.');
+          // Fallback to local heuristic check
+          isAtsEnabled = (employee.jobTitle?.toLowerCase().contains('recruiter') ?? false) ||
+                         (employee.jobId?.name.toLowerCase().contains('recruiter') ?? false) ||
+                         (employee.departmentId?.name.toLowerCase().contains('recruitment') ?? false) ||
+                         (employee.departmentId?.name.toLowerCase().contains('recruiting') ?? false) ||
+                         (employee.workEmail?.toLowerCase().contains('recruiter') ?? false);
+        }
+
+        // Save ATS access status to SharedPreferences
+        await prefs.saveBool('is_ats_enabled', isAtsEnabled);
+
         // Save fresh data keyed to the current user
         await prefs.saveObject('employee_data', fullData);
 
         if (!isClosed) {
-          emit(state.copyWith(status: ProfileStatus.success, employee: employee));
+          emit(state.copyWith(
+            status: ProfileStatus.success, 
+            employee: employee,
+            isAtsEnabled: isAtsEnabled,
+          ));
         }
       } finally {
         odooService.close();

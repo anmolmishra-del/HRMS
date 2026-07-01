@@ -20,6 +20,12 @@ import 'package:flutter_app/features/projects/cubit/projects_cubit.dart';
 import 'package:flutter_app/features/projects/cubit/project_tasks_cubit.dart';
 import 'package:flutter_app/features/document/cubit/document_cubit.dart';
 import 'package:flutter_app/routes.dart';
+import 'package:flutter_app/ats/features/jobs/cubit/job_cubit.dart';
+import 'package:flutter_app/ats/features/my_applications/cubit/my_application_cubit.dart';
+import 'package:flutter_app/ats/features/interview_schedule/cubit/interview_cubit.dart';
+import 'package:flutter_app/ats/features/profile/cubit/profile_cubit.dart';
+import 'package:flutter_app/ats/features/auth/cubit/login_cubit.dart';
+import 'package:flutter_app/ats/features/candidatefolder/candidate/cubit/candidate_cubit.dart';
 
 import 'package:flutter_app/core/services/firebase_service.dart';
 
@@ -59,6 +65,12 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => ProjectsCubit()),
         BlocProvider(create: (context) => ProjectTasksCubit()),
         BlocProvider(create: (context) => DocumentCubit()..fetchDocuments()),
+        BlocProvider(create: (context) => JobCubit()),
+        BlocProvider(create: (context) => MyApplicationCubit()),
+        BlocProvider(create: (context) => InterviewScheduleCubit()),
+        BlocProvider(create: (context) => RecruiterProfileCubit()),
+        BlocProvider(create: (context) => AtsLoginCubit()),
+        BlocProvider(create: (context) => CandidateCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {

@@ -41,7 +41,7 @@ class AppFirebaseService {
       );
 
       await flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
+       settings:  initializationSettings,
         onDidReceiveNotificationResponse: (NotificationResponse response) {
           debugPrint('AppFirebaseService: onDidReceiveNotificationResponse actionId=${response.actionId}');
           if (response.actionId == 'reply' && response.input?.isNotEmpty == true) {
@@ -256,11 +256,12 @@ class AppFirebaseService {
     final notifId = channelId ?? 999;
 
     await flutterLocalNotificationsPlugin.show(
-      notifId,
-      title,
-      body,
-      platformChannelSpecifics,
-      payload: channelIdVal.toString(),
+      
+      id: notifId,
+  title: title,
+  body: body,
+  notificationDetails: platformChannelSpecifics,
+  payload: channelIdVal.toString(),
     );
   }
 

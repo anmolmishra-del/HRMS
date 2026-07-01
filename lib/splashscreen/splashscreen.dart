@@ -185,7 +185,13 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       if (loginCubit.state.status == LoginStatus.success) {
-        Navigator.pushReplacementNamed(context, Routes.main);
+        final selectedPortal = await prefs.getString('selected_portal') ?? 'hrms';
+        if (!mounted) return;
+        if (selectedPortal == 'ats') {
+          Navigator.pushReplacementNamed(context, '/recruitermainlayout');
+        } else {
+          Navigator.pushReplacementNamed(context, Routes.main);
+        }
       } else {
         Navigator.pushReplacementNamed(context, Routes.login);
       }

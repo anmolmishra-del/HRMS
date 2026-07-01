@@ -45,7 +45,7 @@ class _NewExpensePageState extends State<NewExpensePage> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'pdf', 'png', 'jpeg'],
     );
