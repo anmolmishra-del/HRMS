@@ -89,16 +89,26 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         'permanent_street',
         'application_status',
         'stage_id',
+        'recruitment_stage_id',
       ];
 
       final List<String> activeFields = fieldsInfo != null
           ? requestedFields.where((f) => fieldsInfo!.containsKey(f)).toList()
           : requestedFields;
 
+      final currentYear = DateTime.now().year;
+      final startOfYear = '$currentYear-01-01 00:00:00';
+
       final res = await _svc.executeModelMethod(
         'hr.applicant',
         'search_read',
-        [[]],
+        [[
+          ['active', '=', true],
+          ['create_date', '>=', startOfYear],
+          '|',
+          ['employee_id', '=', false],
+          ['emp_is_active', '=', true]
+        ]],
         kwargs: {
           'fields': activeFields,
         },
@@ -106,7 +116,21 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
 
       if (res is List) {
         final parsed = res.map((e) => HrApplicant.fromJson(Map<String, dynamic>.from(e))).toList();
-        emit(state.copyWith(applications: parsed, isLoading: false));
+        
+        // Dynamically append any stage names present on loaded applications
+        final List<String> currentStages = List<String>.from(state.stages);
+        for (final app in parsed) {
+          final sName = app.stageName;
+          if (sName.isNotEmpty && !currentStages.contains(sName)) {
+            currentStages.add(sName);
+          }
+        }
+
+        emit(state.copyWith(
+          applications: parsed,
+          stages: currentStages,
+          isLoading: false,
+        ));
       } else {
         emit(state.copyWith(isLoading: false));
       }
@@ -149,6 +173,31 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         if (medRes is List) mediums = List<Map<String, dynamic>>.from(medRes);
       } catch (_) {}
 
+      List<String> stages = ['All'];
+      try {
+        final stagesRes = await _svc.executeModelMethod(
+          'hr.recruitment.stage',
+          'search_read',
+          [[]],
+          kwargs: {
+            'fields': ['name'],
+            'order': 'sequence, id',
+          },
+        );
+        if (stagesRes is List && stagesRes.isNotEmpty) {
+          final loadedStages = stagesRes
+              .map((e) => e['name']?.toString() ?? '')
+              .where((name) => name.isNotEmpty && name.toLowerCase() != 'false')
+              .toList();
+          stages.addAll(loadedStages);
+        }
+      } catch (se) {
+        print("[ApplicationsCubit] Fetch stages failed: $se");
+      }
+      // if (stages.length == 1) {
+      //   stages = ['All', 'Ongoing', 'Hired', 'Refused', 'Archived'];
+      // }
+
       final List<Map<String, dynamic>> parsedCandidates = candidatesRes is List
           ? List<Map<String, dynamic>>.from(candidatesRes.map((e) => {
               'id': e['id'],
@@ -167,6 +216,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         skillTypes: skillTypes,
         sources: sources,
         mediums: mediums,
+        stages: stages,
       ));
     } catch (e) {
       print("[ApplicationsCubit] loadDropdowns error: $e");

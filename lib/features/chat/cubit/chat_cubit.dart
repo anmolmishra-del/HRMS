@@ -135,6 +135,9 @@ class ChatCubit extends Cubit<ChatState> {
             'last_interest_dt'
           ],
         },
+        'context': {
+          'sudo': true,
+        },
       });
 
       final channelIds = (channelMembers as List)
@@ -182,10 +185,11 @@ class ChatCubit extends Cubit<ChatState> {
       if (partnerIdsToFetch.isNotEmpty) {
         final partners = await client.callKw({
           'model': 'res.partner',
-          'method': 'read',
-          'args': [partnerIdsToFetch, ['im_status', 'image_128']],
+          'method': 'search_read',
+          'args': [],
           'kwargs': {
-            'context': {'bin_size': false}
+            'domain': [['id', 'in', partnerIdsToFetch]],
+            'fields': ['id', 'im_status', 'image_128'],
           },
         });
         for (var p in (partners as List)) {

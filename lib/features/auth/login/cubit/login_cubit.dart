@@ -90,6 +90,7 @@ class LoginCubit extends Cubit<LoginState> {
       debugPrint(
         'Method: authenticate - Result: Session ID ${session.id}, User ID ${session.userId}',
       );
+      
 
       final prefs = SharedPref();
       await prefs.saveObject('session', session);
@@ -205,8 +206,29 @@ class LoginCubit extends Cubit<LoginState> {
       debugPrint('User belongs to Internal User group (96): $isInternal');
       await prefs.saveBool('isInternalUser', isInternal);
 
-      await prefs.saveString('partner_id', session.partnerId.toString());
-      debugPrint('Partner ID Saved: ${session.partnerId}');
+      // Fetch actual partner_id from res.users to avoid mismatches
+      int actualPartnerId = session.partnerId;
+      try {
+        final List<dynamic> userRes = await odooService.executeModelMethod(
+          'res.users',
+          'search_read',
+          [],
+          kwargs: {
+            'domain': [['id', '=', session.userId]],
+            'fields': ['partner_id'],
+          },
+          silent: true,
+        );
+        if (userRes.isNotEmpty && userRes[0] is Map && userRes[0]['partner_id'] is List) {
+          actualPartnerId = userRes[0]['partner_id'][0] as int;
+          debugPrint('Fetched actual partner_id from res.users: $actualPartnerId');
+        }
+      } catch (e) {
+        debugPrint('Error fetching actual partner_id from res.users: $e');
+      }
+
+      await prefs.saveString('partner_id', actualPartnerId.toString());
+      debugPrint('Partner ID Saved: $actualPartnerId');
 
       // Send FCM token to Odoo backend
       try {

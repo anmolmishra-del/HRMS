@@ -54,7 +54,7 @@ class ApplicationsListPage extends StatelessWidget {
                 // Horizontal Tabs for Status/Stages
                 _buildStageTabs(cubit, state),
 
-                const SizedBox(height: 8),
+                // const SizedBox(height: 8),
 
                 // Applications List
                 Expanded(
@@ -121,15 +121,15 @@ class ApplicationsListPage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Odoo Recruitment",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withOpacity(0.85),
-                          letterSpacing: 1.1,
-                        ),
-                      ),
+                      // Text(
+                      //   "Odoo Recruitment",
+                      //   style: TextStyle(
+                      //     fontSize: 13,
+                      //     fontWeight: FontWeight.w600,
+                      //     color: Colors.white.withOpacity(0.85),
+                      //     letterSpacing: 1.1,
+                      //   ),
+                      // ),
                       const SizedBox(height: 4),
                        Text(
                         "Applications",
@@ -180,7 +180,7 @@ class ApplicationsListPage extends StatelessWidget {
   }
 
   Widget _buildStageTabs(ApplicationsCubit cubit, ApplicationsState state) {
-    final tabs = ['All', 'Ongoing', 'Hired', 'Refused', 'Archived'];
+    final tabs = state.stages;
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(vertical: 12),

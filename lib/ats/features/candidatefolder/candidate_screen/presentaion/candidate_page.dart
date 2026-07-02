@@ -275,7 +275,7 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
         // 1. CANDIDATE STATUS INFO (Formerly Meta & Actions Tab)
         _buildInfoCard("Candidate Status Info", [
           _buildDetailRow(Icons.calendar_month_outlined, "Availability Date", DateFormat('dd MMMM yyyy').format(candidate.availability)),
-          _buildDetailRow(Icons.bookmark_outline, "Recruitment Stage", candidate.stage),
+          _buildDetailRow(Icons.bookmark_outline, "Recruitment Stage", candidate.stageName),
           // _buildDetailRow(Icons.app_registration_outlined, "Job Application Link", candidate.linkedApplicationId ?? "None (Draft)"),
         ]),
         if (candidate.categIds.isNotEmpty) ...[

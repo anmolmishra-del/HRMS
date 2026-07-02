@@ -131,10 +131,16 @@ class AtsLoginCubit extends Cubit<AtsLoginState> {
         },
       });
 
+      int actualPartnerId = session.partnerId;
       if (userResult != null && userResult is List && userResult.isNotEmpty) {
         final userData = userResult[0] as Map<String, dynamic>;
         await prefs.saveObject('user_profile', userData);
         debugPrint('User profile saved successfully.');
+        
+        final partnerVal = userData['partner_id'];
+        if (partnerVal is List && partnerVal.isNotEmpty) {
+          actualPartnerId = partnerVal[0] as int;
+        }
       } else {
         debugPrint('Failed to fetch user profile.');
       }
@@ -147,8 +153,8 @@ class AtsLoginCubit extends Cubit<AtsLoginState> {
       debugPrint('User belongs to Internal User group (96): $isInternal');
       await prefs.saveBool('isInternalUser', isInternal);
 
-      await prefs.saveString('partner_id', session.partnerId.toString());
-      debugPrint('Partner ID Saved: ${session.partnerId}');
+      await prefs.saveString('partner_id', actualPartnerId.toString());
+      debugPrint('Partner ID Saved: $actualPartnerId');
 
       debugPrint('--- Login Process Success ---');
       emit(state.copyWith(status: AtsLoginStatus.success));

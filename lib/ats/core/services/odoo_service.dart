@@ -31,34 +31,64 @@ class OdooService {
     return _client.authenticate(db, username, password);
   }
 
-  // (Removed hr.employee fetching methods per user request)
+Future<int?> getInternalUserGroupId() async {
+  final response = await executeModelMethod(
+    'ir.model.data',
+    'search_read',
+    [],
+    kwargs: {
+      'domain': [
+        ['module', '=', 'base'],
+        ['name', '=', 'group_user'],
+      ],
+      'fields': ['res_id'],
+      'limit': 1,
+    },
+  );
 
-  /// Checks if the user belongs to the 'Internal User' group (group ID 96).
-  Future<bool> isInternalUser(int userId) async {
-    debugPrint('OdooService: isInternalUser userId=$userId');
-    final response = await executeModelMethod(
-      'res.users',
-      'search_read',
-      [],
-      kwargs: {
-        'context': {'bin_size': true},
-        'domain': [
-          ['id', '=', userId],
-        ],
-        'fields': ['groups_id'],
-      },
-    );
-
-    if (response == null || response is! List || response.isEmpty) {
-      return false;
-    }
-
-    final groups = response[0]['groups_id'] as List<dynamic>? ?? [];
-    const internalUserGroupId = 96;
-    final isInternal = groups.contains(internalUserGroupId);
-    debugPrint('OdooService: isInternalUser=$isInternal');
-    return isInternal;
+  if (response == null || response is! List || response.isEmpty) {
+    return null;
   }
+
+  return response.first['res_id'] as int?;
+}
+  /// Checks if the user belongs to the 'Internal User' group (group ID 96).
+ Future<bool> isInternalUser(int userId) async {
+  debugPrint('OdooService: isInternalUser userId=$userId');
+
+  final internalGroupId = await getInternalUserGroupId();
+
+  if (internalGroupId == null) {
+    debugPrint('Unable to fetch Internal User group ID.');
+    return false;
+  }
+
+  final response = await executeModelMethod(
+    'res.users',
+    'search_read',
+    [],
+    kwargs: {
+      'domain': [
+        ['id', '=', userId],
+      ],
+      'fields': ['groups_id'],
+    },
+  );
+
+  if (response == null || response is! List || response.isEmpty) {
+    return false;
+  }
+
+  final groups = List<int>.from(response.first['groups_id'] ?? []);
+
+  final isInternal = groups.contains(internalGroupId);
+
+  debugPrint(
+    'Internal Group ID: $internalGroupId, User Groups: $groups, Is Internal: $isInternal',
+  );
+
+  return isInternal;
+}
 
   Future<void> ensureSession() async {
     if (_client.sessionId != null && _client.sessionId!.id.isNotEmpty) return;

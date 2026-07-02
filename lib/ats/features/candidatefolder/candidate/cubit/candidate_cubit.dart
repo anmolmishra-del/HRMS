@@ -136,6 +136,7 @@ class CandidateCubit extends Cubit<CandidateState> {
         'availability',
         'company_id',
         'stage_id',
+        'recruitment_stage_id',
         'resume',
         'candidate_skill_ids',
         'skill_ids',
@@ -172,7 +173,7 @@ class CandidateCubit extends Cubit<CandidateState> {
       final candidatesRes = await _svc.executeModelMethod(
         'hr.candidate',
         'search_read',
-        [[]],
+        [[['active', '=', true]]],
         kwargs: {
           'fields': activeFields,
         },
@@ -311,7 +312,7 @@ class CandidateCubit extends Cubit<CandidateState> {
           final compVal = e['company_id'];
           final compName = compVal is List && compVal.length > 1 ? compVal[1].toString() : '';
 
-          final stageVal = e['stage_id'];
+           final stageVal = e['stage_id'] ?? e['recruitment_stage_id'];
           final stageName = stageVal is List && stageVal.length > 1 ? stageVal[1].toString() : 'Applied';
 
           DateTime avail = DateTime.now();
@@ -404,7 +405,14 @@ class CandidateCubit extends Cubit<CandidateState> {
             companyId: compName,
             skills: parsedSkills,
             image: parsedImage,
-            stage: stageName.contains('Screening') ? 'Screening' : (stageName.contains('HR') ? 'HR Round' : (stageName.contains('Tech') ? 'Technical Round' : 'Applied')),
+            stage: stageName.contains('Screening') 
+                ? 'Screening' 
+                : (stageName.contains('HR') 
+                    ? 'HR Round' 
+                    : (stageName.contains('Tech') || stageName.contains('Interview')
+                        ? 'Technical Round' 
+                        : 'Applied')),
+            stageName: stageName,
           ).computeSkillIds().computeMatchingSkillIds(state.activeRequiredSkills);
         }).toList();
 
@@ -611,7 +619,7 @@ class CandidateCubit extends Cubit<CandidateState> {
   void moveCandidate(String email, String newStage) {
     final updated = state.candidates.map((c) {
       if (c.emailFrom == email) {
-        return c.copyWith(stage: newStage);
+        return c.copyWith(stage: newStage, stageName: newStage);
       }
       return c;
     }).toList();
@@ -620,7 +628,7 @@ class CandidateCubit extends Cubit<CandidateState> {
     
     // Also update selected candidate if it matches
     if (state.selectedCandidate?.emailFrom == email) {
-      final updatedSel = state.selectedCandidate!.copyWith(stage: newStage);
+      final updatedSel = state.selectedCandidate!.copyWith(stage: newStage, stageName: newStage);
       emit(state.copyWith(selectedCandidate: updatedSel));
     }
   }

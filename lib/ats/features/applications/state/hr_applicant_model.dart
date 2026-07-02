@@ -128,9 +128,9 @@ class HrApplicant {
     this.marital = '',
     this.privateStreet = '',
     this.permanentStreet = '',
-    this.applicationStatus = 'Ongoing',
+    this.applicationStatus = '',
     this.stageId = '',
-    this.stageName = 'Applied',
+    this.stageName = '',
   });
 
   factory HrApplicant.fromJson(Map<String, dynamic> json) {
@@ -238,9 +238,13 @@ class HrApplicant {
       marital: getString(json['marital']),
       privateStreet: getString(json['private_street']),
       permanentStreet: getString(json['permanent_street']),
-      applicationStatus: getString(json['application_status']).isNotEmpty ? getString(json['application_status']) : 'Ongoing',
-      stageId: getM2oId(json['stage_id'])?.toString() ?? '',
-      stageName: getM2oName(json['stage_id']).isNotEmpty ? getM2oName(json['stage_id']) : 'Applied',
+      applicationStatus: getString(json['application_status']).isNotEmpty ? getString(json['application_status']) : '',
+      stageId: (getM2oId(json['stage_id']) ?? getM2oId(json['recruitment_stage_id']))?.toString() ?? '',
+      stageName: getM2oName(json['stage_id']).isNotEmpty 
+          ? getM2oName(json['stage_id']) 
+          : (getM2oName(json['recruitment_stage_id']).isNotEmpty 
+              ? getM2oName(json['recruitment_stage_id']) 
+              : 'Applied'),
     );
   }
 

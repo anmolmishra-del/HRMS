@@ -476,15 +476,15 @@ class _JobPageState extends State<JobPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Odoo Recruitment",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withOpacity(0.85),
-                          letterSpacing: 1.1,
-                        ),
-                      ),
+                      // Text(
+                      //   "Odoo Recruitment",
+                      //   style: TextStyle(
+                      //     fontSize: 13,
+                      //     fontWeight: FontWeight.w600,
+                      //     color: Colors.white.withOpacity(0.85),
+                      //     letterSpacing: 1.1,
+                      //   ),
+                      // ),
                       const SizedBox(height: 4),
                        Text(
                         "Job Positions",

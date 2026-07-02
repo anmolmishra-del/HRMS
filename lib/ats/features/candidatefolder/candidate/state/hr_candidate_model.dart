@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 class HrCandidateSkill {
   final String skillTypeId; // Many2one(hr.skill.type)
@@ -66,6 +65,8 @@ class HrCandidate {
   final double matchingSkillPercentage; // _compute_matching_skill_ids
   final List<String> computedSkillsList; // _compute_skill_ids
   final String stage; // Applied, Screening, HR Round, Technical Round, Presentation
+  final String? _stageName; // Raw stage name from Odoo
+  String get stageName => _stageName ?? stage;
   final String? linkedApplicationId;
 
   const HrCandidate({
@@ -90,8 +91,9 @@ class HrCandidate {
     this.matchingSkillPercentage = 0.0,
     this.computedSkillsList = const [],
     this.stage = "Applied",
+    String? stageName,
     this.linkedApplicationId,
-  });
+  }) : _stageName = stageName;
 
   String get fullName => "${firstName}${middleName != null && middleName!.isNotEmpty ? ' $middleName' : ''} $lastName";
 
@@ -142,14 +144,12 @@ class HrCandidate {
     };
   }
 
-  /// 🛠️ Odoo Method: Create Job Application
-  /// This method creates a Job Application record for the selected Candidate based on the active Job Position.
-  /// Generates applicant records linked to the selected job and redirects to the Applications view.
   HrCandidate actionCreateApplication(String jobPositionId) {
     final appId = "APP-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
     return copyWith(
       linkedApplicationId: appId,
       stage: "Applied",
+      stageName: "Applied",
     );
   }
 
@@ -175,6 +175,7 @@ class HrCandidate {
     double? matchingSkillPercentage,
     List<String>? computedSkillsList,
     String? stage,
+    String? stageName,
     String? linkedApplicationId,
   }) {
     return HrCandidate(
@@ -199,6 +200,7 @@ class HrCandidate {
       matchingSkillPercentage: matchingSkillPercentage ?? this.matchingSkillPercentage,
       computedSkillsList: computedSkillsList ?? this.computedSkillsList,
       stage: stage ?? this.stage,
+      stageName: stageName ?? this.stageName,
       linkedApplicationId: linkedApplicationId ?? this.linkedApplicationId,
     );
   }

@@ -20,6 +20,8 @@ class ApplicationsState {
   final List<Map<String, dynamic>> sources;
   final List<Map<String, dynamic>> mediums;
 
+  final List<String> stages;
+
   const ApplicationsState({
     required this.applications,
     this.selectedApplication,
@@ -27,6 +29,7 @@ class ApplicationsState {
     this.error,
     required this.searchQuery,
     required this.selectedTab,
+    required this.stages,
     required this.jobs,
     required this.recruiters,
     required this.departments,
@@ -47,6 +50,7 @@ class ApplicationsState {
       error: null,
       searchQuery: '',
       selectedTab: 'All',
+      stages: [''],
       jobs: [],
       recruiters: [],
       departments: [],
@@ -67,6 +71,7 @@ class ApplicationsState {
     String? Function()? error,
     String? searchQuery,
     String? selectedTab,
+    List<String>? stages,
     List<Map<String, dynamic>>? jobs,
     List<Map<String, dynamic>>? recruiters,
     List<Map<String, dynamic>>? departments,
@@ -85,6 +90,7 @@ class ApplicationsState {
       error: error != null ? error() : this.error,
       searchQuery: searchQuery ?? this.searchQuery,
       selectedTab: selectedTab ?? this.selectedTab,
+      stages: stages ?? this.stages,
       jobs: jobs ?? this.jobs,
       recruiters: recruiters ?? this.recruiters,
       departments: departments ?? this.departments,

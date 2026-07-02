@@ -267,15 +267,24 @@ class DashboardCubit extends Cubit<DashboardState> {
           print("[DashboardCubit] fields_get for hr.applicant failed: $fe");
         }
 
-        final List<String> requestedAppFields = ['id', 'name', 'partner_name', 'job_id', 'stage_id', 'create_date'];
+        final List<String> requestedAppFields = ['id', 'name', 'partner_name', 'job_id', 'stage_id', 'recruitment_stage_id', 'create_date'];
         final List<String> activeAppFields = fieldsInfo != null
             ? requestedAppFields.where((f) => fieldsInfo!.containsKey(f) == true).toList()
             : ['id', 'name'];
 
+        final currentYear = DateTime.now().year;
+        final startOfYear = '$currentYear-01-01 00:00:00';
+
         applicationsRes = await service.executeModelMethod(
           'hr.applicant',
           'search_read',
-          [[]],
+          [[
+            ['active', '=', true],
+            ['create_date', '>=', startOfYear],
+            '|',
+            ['employee_id', '=', false],
+            ['emp_is_active', '=', true]
+          ]],
           kwargs: {
             'fields': activeAppFields,
           },

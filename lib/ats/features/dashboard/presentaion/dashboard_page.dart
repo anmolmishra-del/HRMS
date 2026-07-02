@@ -179,7 +179,7 @@ class DashboardPage extends StatelessWidget {
                                   : 'General Position';
 
                               // Extract stage name
-                              final stageVal = app['stage_id'];
+                              final stageVal = app['stage_id'] ?? app['recruitment_stage_id'];
                               final stageName =
                                   stageVal is List && stageVal.length > 1
                                   ? stageVal[1].toString()
