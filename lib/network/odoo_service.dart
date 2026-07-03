@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
@@ -227,8 +226,11 @@ class OdooService {
     required DateTime fromDate,
     required DateTime toDate,
   }) async {
-    final String fromStr = DateFormat('yyyy-MM-dd 00:00:00').format(fromDate);
-    final String toStr = DateFormat('yyyy-MM-dd 23:59:59').format(toDate);
+    final DateTime localStart = DateTime(fromDate.year, fromDate.month, fromDate.day);
+    final DateTime localEnd = DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59);
+
+    final String fromStr = localStart.toUtc().toIso8601String().replaceAll('T', ' ').substring(0, 19);
+    final String toStr = localEnd.toUtc().toIso8601String().replaceAll('T', ' ').substring(0, 19);
 
     final response = await executeModelMethod(
       'hr.attendance',

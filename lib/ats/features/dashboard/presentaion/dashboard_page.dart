@@ -4,6 +4,7 @@ import 'package:flutter_app/core/utils/shared_pref.dart';
 import 'package:flutter_app/routes.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
+import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/ats/core/constants/app_colors.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../state/dashboard_state.dart';
@@ -20,6 +21,7 @@ class DashboardPage extends StatelessWidget {
         body: BlocBuilder<DashboardCubit, DashboardState>(
           builder: (context, state) {
             final cubit = context.read<DashboardCubit>();
+            final l10n = AppLocalizations.of(context);
             return Column(
               children: [
                 PortalHeader(
@@ -51,37 +53,165 @@ class DashboardPage extends StatelessWidget {
                             state.error!,
                             style: const TextStyle(color: Colors.red),
                           ),
-                        // GRID
-                        GridView.builder(
-                          shrinkWrap: true,
-                        
-                          physics: const NeverScrollableScrollPhysics(),
-                        
-                          itemCount: state.titles.length,
-                        
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                        
-                                crossAxisSpacing: 16,
-                        
-                                mainAxisSpacing: 16,
-                        
-                                childAspectRatio: 1.4,
+                        const SizedBox(height: 20),
+                        // 📈 HORIZONTAL PERFORMANCE CARDS
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            children: [
+                              _HorizontalCard(
+                                title: l10n?.ats_job_positions ?? "Job Positions",
+                                count: state.counts.isNotEmpty ? state.counts[0] : 0,
+                                icon: Icons.work_outline_rounded,
+                                color: const Color(0xFF3B82F6),
+                                label: l10n?.ats_open_roles ?? "Open roles",
                               ),
-                        
-                          itemBuilder: (context, index) {
-                            return _Card(
-                              title: state.titles[index],
-                        
-                              count:
-                                  state.counts.isNotEmpty &&
-                                      index < state.counts.length
-                                  ? state.counts[index]
-                                  : 0,
-                            );
-                          },
+                              const SizedBox(width: 12),
+                              _HorizontalCard(
+                                title: l10n?.ats_applications ?? "Applications",
+                                count: state.counts.length > 1 ? state.counts[1] : 0,
+                                icon: Icons.dashboard_outlined,
+                                color: const Color(0xFF8B5CF6),
+                                label: l10n?.ats_applications ?? "Applications",
+                              ),
+                              const SizedBox(width: 12),
+                              _HorizontalCard(
+                                title: l10n?.ats_candidates ?? "Candidates",
+                                count: state.counts.length > 2 ? state.counts[2] : 0,
+                                icon: Icons.groups_outlined,
+                                color: const Color(0xFF10B981),
+                                label: l10n?.ats_candidates ?? "Candidates",
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(height: 16),
+
+                        // 📊 WEEKLY PERFORMANCE CHART CARD
+                        Container(
+                          width: double.infinity,
+                          height: 160,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Theme.of(context).dividerColor,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              // Decorative Shape
+                              Positioned(
+                                right: -25,
+                                top: -25,
+                                child: Container(
+                                  width: 110,
+                                  height: 110,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF3B82F6).withOpacity(0.04),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 30,
+                                bottom: -20,
+                                child: Container(
+                                  width: 70,
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF8B5CF6).withOpacity(0.03),
+                                  ),
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          l10n?.ats_this_week ?? "This week",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6) ?? const Color(0xFF94A3B8),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          l10n != null 
+                                              ? l10n.ats_new_applications_came_in(state.newApplicationsThisWeek)
+                                              : "${state.newApplicationsThisWeek} new applications came in",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                                            height: 1.25,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 4,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: List.generate(7, (index) {
+                                        final val = state.weeklyCounts[index];
+                                        final maxVal = state.weeklyCounts.reduce((a, b) => a > b ? a : b);
+                                        final double pct = maxVal > 0 ? (val / maxVal) : 0.0;
+                                        final double height = 8 + (pct * 62);
+                                        final bool isHighlighted = index == 6;
+
+                                        return Column(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            Container(
+                                              width: 10,
+                                              height: height,
+                                              decoration: BoxDecoration(
+                                                color: isHighlighted
+                                                    ? const Color(0xFF3B82F6)
+                                                    : const Color(0xFF475569).withOpacity(0.25),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              _getDayLabel(index),
+                                              style: TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.bold,
+                                                color: isHighlighted
+                                                    ? const Color(0xFF3B82F6)
+                                                    : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5) ?? const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
 
                       
 
@@ -90,7 +220,7 @@ class DashboardPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                              Text(
-                              "Recent Applications",
+                              l10n?.ats_recent_applications ?? "Recent Applications",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
@@ -102,9 +232,9 @@ class DashboardPage extends StatelessWidget {
                                 onPressed: () {
                                   if (onTabChanged != null) onTabChanged!(2);
                                 },
-                                child: const Text(
-                                  "View All",
-                                  style: TextStyle(
+                                child: Text(
+                                  l10n?.ats_view_all ?? "View All",
+                                  style: const TextStyle(
                                     color: const Color(0xFF3B82F6),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 13,
@@ -113,7 +243,7 @@ class DashboardPage extends StatelessWidget {
                               ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        // const SizedBox(height: 12),
 
                         if (state.isLoading)
                           const Center(
@@ -143,14 +273,14 @@ class DashboardPage extends StatelessWidget {
                                   color: Color(0xFF94A3B8),
                                 ),
                                 SizedBox(height: 8),
-                                Text(
-                                  "No recent applications",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF64748B),
+                                  Text(
+                                    l10n?.ats_no_recent_applications ?? "No recent applications",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF64748B),
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           )
@@ -323,6 +453,14 @@ class DashboardPage extends StatelessWidget {
       ),
     );
   }
+
+  String _getDayLabel(int index) {
+    final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final todayWeekday = DateTime.now().weekday;
+    final weekdayIndex = (todayWeekday - 1 - (6 - index)) % 7;
+    final idx = weekdayIndex < 0 ? weekdayIndex + 7 : weekdayIndex;
+    return days[idx];
+  }
 }
 
 class _ChartBar extends StatelessWidget {
@@ -374,149 +512,72 @@ class _ChartBar extends StatelessWidget {
   }
 }
 
-class _Card extends StatelessWidget {
+class _HorizontalCard extends StatelessWidget {
   final String title;
   final int count;
+  final IconData icon;
+  final Color color;
+  final String label;
 
-  const _Card({required this.title, required this.count});
-
-  // IconData getIcon() {
-  //   switch (title) {
-  //     case "Open Positions":
-  //       return Icons.work_outline;
-  //     case "New Applications":
-  //       return Icons.description_outlined;
-  //     case "Interviews Today":
-  //       return Icons.calendar_today;
-  //     case "Offers Pending":
-  //       return Icons.timelapse;
-  //     case "Hired This Month":
-  //       return Icons.person;
-  //     default:
-  //       return Icons.cancel;
-  //   }
-  // }
-  IconData getIcon() {
-    switch (title) {
-      case "Open Positions":
-        return Icons.work_outline_rounded;
-
-      case "New Applications":
-        return Icons.description_outlined;
-
-      case "Candidates":
-        return Icons.groups_outlined;
-
-      default:
-        return Icons.dashboard_outlined;
-    }
-  }
-
-  Color getColor() {
-    switch (title) {
-      case "Open Positions":
-        return Colors.blue;
-
-      case "New Applications":
-        return Colors.orange;
-
-      case "Candidates":
-        return Colors.green;
-
-      default:
-        return Colors.grey;
-    }
-  }
+  const _HorizontalCard({
+    required this.title,
+    required this.count,
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: 140, // 👈 control card height
+      width: 125,
+      height: 125,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 20,
-            offset: Offset(0, 10),
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-
-      //     decoration: BoxDecoration(
-      //   gradient: LinearGradient(
-      //     colors: [
-      //       getColor().withOpacity(.15),
-      //       Colors.white,
-      //     ],
-      //     begin: Alignment.topLeft,
-      //     end: Alignment.bottomRight,
-      //   ),
-      //   borderRadius: BorderRadius.circular(22),
-      //   border: Border.all(
-      //     color: Colors.grey.shade400,
-      //   ),
-      //   boxShadow: [
-      //     BoxShadow(
-      //       color: getColor().withOpacity(.08),
-      //       blurRadius: 15,
-      //       offset: const Offset(0, 8),
-      //     ),
-      //   ],
-      // ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          /// TITLE
-          Text(
-            title,
-
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-
-            maxLines: 2,
-
-            overflow: TextOverflow.ellipsis,
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
           ),
-
-          const Spacer(),
-
-          /// ICON + NUMBER
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: getColor().withOpacity(.15),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: getColor().withOpacity(.2)),
-                ),
-                child: Icon(
-                  getIcon(),
-                  shadows: [Shadow(color: Colors.red)],
-                  color: getColor(),
-                  size: 28,
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
               Text(
                 "$count",
-
-                style: const TextStyle(
-                  fontSize: 28,
-
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  height: 1.0,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6) ?? const Color(0xFF64748B),
                 ),
               ),
             ],

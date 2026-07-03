@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_app/ats/core/constants/app_colors.dart';
+import 'package:flutter_app/l10n/app_localizations.dart';
+import 'package:flutter_app/ats/utils/ats_localization.dart';
 import '../cubit/applications_cubit.dart';
 import '../state/applications_state.dart';
 import '../state/hr_applicant_model.dart';
@@ -19,6 +21,7 @@ class ApplicationsListPage extends StatelessWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: BlocBuilder<ApplicationsCubit, ApplicationsState>(
           builder: (context, state) {
+            final l10n = AppLocalizations.of(context);
             final cubit = context.read<ApplicationsCubit>();
             final searchLower = state.searchQuery.toLowerCase();
 
@@ -42,7 +45,6 @@ class ApplicationsListPage extends StatelessWidget {
                   app.jobName.toLowerCase().contains(searchLower) ||
                   app.degreeName.toLowerCase().contains(searchLower) ||
                   app.userName.toLowerCase().contains(searchLower);
-
               return matchesTab && matchesSearch;
             }).toList();
 
@@ -61,7 +63,7 @@ class ApplicationsListPage extends StatelessWidget {
                   child: state.isLoading
                       ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                       : filtered.isEmpty
-                          ? _buildEmptyState(state.selectedTab)
+                          ? _buildEmptyState(context, state.selectedTab)
                           : ListView.builder(
                               padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 100),
                               physics: const BouncingScrollPhysics(),
@@ -80,6 +82,7 @@ class ApplicationsListPage extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, ApplicationsCubit cubit, ApplicationsState state) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 16, 20, 24),
@@ -132,8 +135,8 @@ class ApplicationsListPage extends StatelessWidget {
                       // ),
                       const SizedBox(height: 4),
                        Text(
-                        "Applications",
-                        style: TextStyle(
+                        l10n?.ats_applications ?? "Applications",
+                        style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -152,7 +155,7 @@ class ApplicationsListPage extends StatelessWidget {
                 onChanged: cubit.search,
                 style:  TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF0F172A), fontSize: 15),
                 decoration: InputDecoration(
-                  hintText: "Search subject, job, email, or candidate...",
+                  hintText: l10n?.ats_search_apps_hint ?? "Search subject, job, email, or candidate...",
                   hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 22),
                   filled: true,
@@ -214,7 +217,7 @@ class ApplicationsListPage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  tab,
+                  AtsLocalizations.getStage(context, tab),
                   style: TextStyle(
                     color: isActive ? Colors.white : const Color(0xFF64748B),
                     fontWeight: FontWeight.bold,
@@ -230,6 +233,7 @@ class ApplicationsListPage extends StatelessWidget {
   }
 
   Widget _buildApplicationCard(BuildContext context, HrApplicant app, ApplicationsCubit cubit) {
+    final l10n = AppLocalizations.of(context);
     Color statusColor = Colors.orange;
     if (app.applicationStatus == 'Hired') statusColor = Colors.green;
     if (app.applicationStatus == 'Refused') statusColor = Colors.red;
@@ -292,7 +296,7 @@ class ApplicationsListPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              "Candidate: ${app.candidateName}",
+                              "${l10n?.ats_candidate_prefix ?? "Candidate"}: ${app.candidateName}",
                               style: TextStyle(fontSize: 13, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                             ),
                           ],
@@ -305,7 +309,7 @@ class ApplicationsListPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          app.applicationStatus,
+                          AtsLocalizations.getStage(context, app.applicationStatus),
                           style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -319,14 +323,14 @@ class ApplicationsListPage extends StatelessWidget {
                       Icon(Icons.work_outline, size: 16, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                       const SizedBox(width: 6),
                       Text(
-                        app.jobName.isNotEmpty ? app.jobName : "No job linked",
+                        app.jobName.isNotEmpty ? app.jobName : (l10n?.ats_no_job_linked ?? "No job linked"),
                         style: TextStyle(fontSize: 12, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontWeight: FontWeight.w500),
                       ),
                       const Spacer(),
                       Icon(Icons.person_outline, size: 16, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                       const SizedBox(width: 4),
                       Text(
-                        app.userName.isNotEmpty ? app.userName : "Unassigned",
+                        app.userName.isNotEmpty ? app.userName : (l10n?.ats_unassigned ?? "Unassigned"),
                         style: TextStyle(fontSize: 12, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontWeight: FontWeight.w500),
                       ),
                     ],
@@ -337,13 +341,13 @@ class ApplicationsListPage extends StatelessWidget {
                       Icon(Icons.bookmark_border, size: 16, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                       const SizedBox(width: 6),
                       Text(
-                        "Stage: ${app.stageName}",
+                        "${l10n?.ats_stage_prefix ?? "Stage"}: ${AtsLocalizations.getStage(context, app.stageName)}",
                         style: TextStyle(fontSize: 12, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                       ),
                       const Spacer(),
                       if (app.availability != null)
                         Text(
-                          "Avail: ${DateFormat('dd MMM').format(app.availability!)}",
+                          "${l10n?.ats_avail_prefix ?? "Avail"}: ${DateFormat('dd MMM').format(app.availability!)}",
                           style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                         ),
                     ],
@@ -357,7 +361,8 @@ class ApplicationsListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(String tab) {
+  Widget _buildEmptyState(BuildContext context, String tab) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -365,7 +370,9 @@ class ApplicationsListPage extends StatelessWidget {
           Icon(Icons.folder_open_outlined, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 12),
           Text(
-            "No applications in '$tab' stage",
+            l10n != null 
+                ? l10n.ats_no_applications_in_stage(AtsLocalizations.getStage(context, tab))
+                : "No applications in '$tab' stage",
             style: TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],

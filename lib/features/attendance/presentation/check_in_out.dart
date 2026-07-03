@@ -16,8 +16,8 @@ class CheckInOutCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.of(context).size.height;
     final isShortScreen = screenHeight < 780;
-    double size = isShortScreen ? 90 : 150;
-    double strokeWidth = isShortScreen ? 6 : 10;
+    double size = isShortScreen ? 70 : 120;
+    double strokeWidth = isShortScreen ? 5 : 8;
 
     return BlocListener<AttendanceCubit, AttendanceState>(
       listener: (context, state) {
@@ -73,12 +73,12 @@ class CheckInOutCard extends StatelessWidget {
           return Container(
             
             padding: EdgeInsets.symmetric(
-              horizontal: isShortScreen ? 12 : 24,
-              vertical: isShortScreen ? 12 : 24,
+              horizontal: isShortScreen ? 10 : 18,
+              vertical: isShortScreen ? 10 : 18,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.08) : Colors.grey.shade200,
                 width: 1,
@@ -86,10 +86,10 @@ class CheckInOutCard extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: Theme.of(context).brightness == Brightness.dark 
-                      ? AppColors.primaryPurple.withOpacity(0.15) 
-                      : AppColors.primaryPurple.withOpacity(0.12),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
+                      ? AppColors.primaryPurple.withOpacity(0.12) 
+                      : AppColors.primaryPurple.withOpacity(0.1),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -125,7 +125,7 @@ class CheckInOutCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: isShortScreen ? 8 : 24),
+                SizedBox(height: isShortScreen ? 6 : 16),
                 Stack(
                   alignment: Alignment.center,
                   children: [
@@ -136,7 +136,7 @@ class CheckInOutCard extends StatelessWidget {
                         value: progress,
                         strokeWidth: strokeWidth,
                         strokeCap: StrokeCap.round,
-                        backgroundColor: AppColors.progressBg.withOpacity(0.5),
+                        backgroundColor: AppColors.progressBg.withOpacity(0.45),
                         valueColor: AlwaysStoppedAnimation(isCheckedIn ? AppColors.orange : AppColors.successGreen),
                       ),
                     ),
@@ -144,26 +144,26 @@ class CheckInOutCard extends StatelessWidget {
                       children: [
                         Text(todayHoursStr,
                             style: TextStyle(
-                                fontSize: isShortScreen ? 18 : 28,
+                                fontSize: isShortScreen ? 16 : 24,
                                 fontWeight: FontWeight.w900,
                                 color: isCheckedIn ? AppColors.orange : AppColors.successGreen)),
                         const SizedBox(height: 2),
-                        Text(l10n.working_hours, style: const TextStyle(color: AppColors.textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                        Text(l10n.working_hours, style: const TextStyle(color: AppColors.textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ],
                 ),
-                SizedBox(height: isShortScreen ? 8 : 24),
+                SizedBox(height: isShortScreen ? 8 : 18),
                 Container(
                   width: double.infinity,
-                  height: isShortScreen ? 40 : 56,
+                  height: isShortScreen ? 38 : 48,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: (isCheckedIn ? AppColors.dangerRed : AppColors.successGreen).withOpacity(0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+                        color: (isCheckedIn ? AppColors.dangerRed : AppColors.successGreen).withOpacity(0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -172,23 +172,23 @@ class CheckInOutCard extends StatelessWidget {
                       backgroundColor: isCheckedIn ? AppColors.dangerRed : AppColors.successGreen,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     ),
                     onPressed: isLoading ? null : () => context.read<AttendanceCubit>().toggleAttendance(),
                     child: isLoading
                         ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 18,
+                            height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                           )
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(isCheckedIn ? Icons.logout_rounded : Icons.login_rounded, size: isShortScreen ? 18 : 22),
-                              const SizedBox(width: 12),
+                              Icon(isCheckedIn ? Icons.logout_rounded : Icons.login_rounded, size: isShortScreen ? 16 : 20),
+                              const SizedBox(width: 10),
                               Text(
                                 isCheckedIn ? l10n.check_out : l10n.check_in,
-                                style: TextStyle(fontSize: isShortScreen ? 14 : 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                style: TextStyle(fontSize: isShortScreen ? 13 : 15, fontWeight: FontWeight.bold, letterSpacing: 0.4),
                               ),
                             ],
                           ),

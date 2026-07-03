@@ -2823,6 +2823,342 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Good evening'**
   String get good_evening;
+
+  /// No description provided for @ats_home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get ats_home;
+
+  /// No description provided for @ats_jobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Jobs'**
+  String get ats_jobs;
+
+  /// No description provided for @ats_applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Applications'**
+  String get ats_applications;
+
+  /// No description provided for @ats_candidates.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidates'**
+  String get ats_candidates;
+
+  /// No description provided for @ats_profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get ats_profile;
+
+  /// No description provided for @ats_open_roles.
+  ///
+  /// In en, this message translates to:
+  /// **'Open roles'**
+  String get ats_open_roles;
+
+  /// No description provided for @ats_this_week.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get ats_this_week;
+
+  /// No description provided for @ats_new_applications_came_in.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new applications came in'**
+  String ats_new_applications_came_in(num count);
+
+  /// No description provided for @ats_recent_applications.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Applications'**
+  String get ats_recent_applications;
+
+  /// No description provided for @ats_view_all.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get ats_view_all;
+
+  /// No description provided for @ats_no_recent_applications.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent applications'**
+  String get ats_no_recent_applications;
+
+  /// No description provided for @ats_job_positions.
+  ///
+  /// In en, this message translates to:
+  /// **'Job Positions'**
+  String get ats_job_positions;
+
+  /// No description provided for @ats_search_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search ...'**
+  String get ats_search_hint;
+
+  /// No description provided for @ats_no_jobs_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No job requisitions found'**
+  String get ats_no_jobs_found;
+
+  /// No description provided for @ats_tweak_filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Try tweaking your search or filters'**
+  String get ats_tweak_filters;
+
+  /// No description provided for @ats_recruitment.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruitment'**
+  String get ats_recruitment;
+
+  /// No description provided for @ats_candidates_folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidates Folder'**
+  String get ats_candidates_folder;
+
+  /// No description provided for @ats_search_candidate_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search name, degree, email, or skill...'**
+  String get ats_search_candidate_hint;
+
+  /// No description provided for @tab_all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get tab_all;
+
+  /// No description provided for @tab_new.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get tab_new;
+
+  /// No description provided for @tab_screening.
+  ///
+  /// In en, this message translates to:
+  /// **'Screening'**
+  String get tab_screening;
+
+  /// No description provided for @tab_first_interview.
+  ///
+  /// In en, this message translates to:
+  /// **'First Interview'**
+  String get tab_first_interview;
+
+  /// No description provided for @tab_second_interview.
+  ///
+  /// In en, this message translates to:
+  /// **'Second Interview'**
+  String get tab_second_interview;
+
+  /// No description provided for @tab_offered.
+  ///
+  /// In en, this message translates to:
+  /// **'Offered'**
+  String get tab_offered;
+
+  /// No description provided for @tab_hired.
+  ///
+  /// In en, this message translates to:
+  /// **'Hired'**
+  String get tab_hired;
+
+  /// No description provided for @tab_refused.
+  ///
+  /// In en, this message translates to:
+  /// **'Refused'**
+  String get tab_refused;
+
+  /// No description provided for @tab_ij.
+  ///
+  /// In en, this message translates to:
+  /// **'IJ'**
+  String get tab_ij;
+
+  /// No description provided for @tab_hr_stage.
+  ///
+  /// In en, this message translates to:
+  /// **'HR Stage'**
+  String get tab_hr_stage;
+
+  /// No description provided for @tab_contract_proposal.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract Proposal'**
+  String get tab_contract_proposal;
+
+  /// No description provided for @tab_contract_signed.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract Signed'**
+  String get tab_contract_signed;
+
+  /// No description provided for @tab_published.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get tab_published;
+
+  /// No description provided for @tab_unpublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpublished'**
+  String get tab_unpublished;
+
+  /// No description provided for @tab_ongoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get tab_ongoing;
+
+  /// No description provided for @ats_no_candidates.
+  ///
+  /// In en, this message translates to:
+  /// **'No candidates in this stage'**
+  String get ats_no_candidates;
+
+  /// No description provided for @ats_search_apps_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search subject, job, email, or candidate...'**
+  String get ats_search_apps_hint;
+
+  /// No description provided for @ats_candidate_prefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidate'**
+  String get ats_candidate_prefix;
+
+  /// No description provided for @ats_stage_prefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage'**
+  String get ats_stage_prefix;
+
+  /// No description provided for @ats_avail_prefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Avail'**
+  String get ats_avail_prefix;
+
+  /// No description provided for @ats_no_job_linked.
+  ///
+  /// In en, this message translates to:
+  /// **'No job linked'**
+  String get ats_no_job_linked;
+
+  /// No description provided for @ats_unassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Unassigned'**
+  String get ats_unassigned;
+
+  /// No description provided for @ats_no_applications_in_stage.
+  ///
+  /// In en, this message translates to:
+  /// **'No applications in \'{stage}\' stage'**
+  String ats_no_applications_in_stage(String stage);
+
+  /// No description provided for @this_week.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get this_week;
+
+  /// No description provided for @working_hours_logged.
+  ///
+  /// In en, this message translates to:
+  /// **'Working hours logged'**
+  String get working_hours_logged;
+
+  /// No description provided for @duration_mins.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} mins'**
+  String duration_mins(int minutes);
+
+  /// No description provided for @duration_mins_one.
+  ///
+  /// In en, this message translates to:
+  /// **'1 min'**
+  String get duration_mins_one;
+
+  /// No description provided for @duration_hours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hrs'**
+  String duration_hours(int hours);
+
+  /// No description provided for @duration_hours_one.
+  ///
+  /// In en, this message translates to:
+  /// **'1 hr'**
+  String get duration_hours_one;
+
+  /// No description provided for @duration_hours_mins.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hrs {minutes} mins'**
+  String duration_hours_mins(int hours, int minutes);
+
+  /// No description provided for @my_profile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get my_profile;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @not_specified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get not_specified;
+
+  /// No description provided for @information.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get information;
+
+  /// No description provided for @member_since.
+  ///
+  /// In en, this message translates to:
+  /// **'Member Since'**
+  String get member_since;
+
+  /// No description provided for @designation.
+  ///
+  /// In en, this message translates to:
+  /// **'Designation'**
+  String get designation;
+
+  /// No description provided for @website.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get website;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
 }
 
 class _AppLocalizationsDelegate

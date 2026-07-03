@@ -1422,4 +1422,182 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get good_evening => 'शुभ संध्या';
+
+  @override
+  String get ats_home => 'होम';
+
+  @override
+  String get ats_jobs => 'नौकरियां';
+
+  @override
+  String get ats_applications => 'आवेदन';
+
+  @override
+  String get ats_candidates => 'उम्मीदवार';
+
+  @override
+  String get ats_profile => 'प्रोफ़ाइल';
+
+  @override
+  String get ats_open_roles => 'खुले पद';
+
+  @override
+  String get ats_this_week => 'इस सप्ताह';
+
+  @override
+  String ats_new_applications_came_in(num count) {
+    return '$count नए आवेदन आए हैं';
+  }
+
+  @override
+  String get ats_recent_applications => 'हाल के आवेदन';
+
+  @override
+  String get ats_view_all => 'सभी देखें';
+
+  @override
+  String get ats_no_recent_applications => 'कोई हालिया आवेदन नहीं';
+
+  @override
+  String get ats_job_positions => 'नौकरी के पद';
+
+  @override
+  String get ats_search_hint => 'खोजें ...';
+
+  @override
+  String get ats_no_jobs_found => 'कोई नौकरी की आवश्यकता नहीं मिली';
+
+  @override
+  String get ats_tweak_filters => 'अपनी खोज या फ़िल्टर को बदलने का प्रयास करें';
+
+  @override
+  String get ats_recruitment => 'भर्ती';
+
+  @override
+  String get ats_candidates_folder => 'उम्मीदवार फ़ोल्डर';
+
+  @override
+  String get ats_search_candidate_hint => 'नाम, डिग्री, ईमेल या कौशल खोजें...';
+
+  @override
+  String get tab_all => 'सभी';
+
+  @override
+  String get tab_new => 'नया';
+
+  @override
+  String get tab_screening => 'जांच';
+
+  @override
+  String get tab_first_interview => 'पहला साक्षात्कार';
+
+  @override
+  String get tab_second_interview => 'दूसरा साक्षात्कार';
+
+  @override
+  String get tab_offered => 'प्रस्तावित';
+
+  @override
+  String get tab_hired => 'काम पर रखा';
+
+  @override
+  String get tab_refused => 'अस्वीकृत';
+
+  @override
+  String get tab_ij => 'आईजे';
+
+  @override
+  String get tab_hr_stage => 'एचआर चरण';
+
+  @override
+  String get tab_contract_proposal => 'अनुबंध प्रस्ताव';
+
+  @override
+  String get tab_contract_signed => 'अनुबंध पर हस्ताक्षर';
+
+  @override
+  String get tab_published => 'प्रकाशित';
+
+  @override
+  String get tab_unpublished => 'अप्रकाशित';
+
+  @override
+  String get tab_ongoing => 'चालू';
+
+  @override
+  String get ats_no_candidates => 'इस चरण में कोई उम्मीदवार नहीं है';
+
+  @override
+  String get ats_search_apps_hint => 'विषय, नौकरी, ईमेल या उम्मीदवार खोजें...';
+
+  @override
+  String get ats_candidate_prefix => 'उम्मीदवार';
+
+  @override
+  String get ats_stage_prefix => 'चरण';
+
+  @override
+  String get ats_avail_prefix => 'उपलब्धता';
+
+  @override
+  String get ats_no_job_linked => 'कोई नौकरी लिंक नहीं';
+
+  @override
+  String get ats_unassigned => 'अनाबंटित';
+
+  @override
+  String ats_no_applications_in_stage(String stage) {
+    return '\'$stage\' चरण में कोई आवेदन नहीं';
+  }
+
+  @override
+  String get this_week => 'इस सप्ताह';
+
+  @override
+  String get working_hours_logged => 'कार्य घंटे लॉग किए गए';
+
+  @override
+  String duration_mins(int minutes) {
+    return '$minutes मिनट';
+  }
+
+  @override
+  String get duration_mins_one => '1 मिनट';
+
+  @override
+  String duration_hours(int hours) {
+    return '$hours घंटे';
+  }
+
+  @override
+  String get duration_hours_one => '1 घंटा';
+
+  @override
+  String duration_hours_mins(int hours, int minutes) {
+    return '$hours घंटे $minutes मिनट';
+  }
+
+  @override
+  String get my_profile => 'मेरी प्रोफ़ाइल';
+
+  @override
+  String get unknown => 'अज्ञात';
+
+  @override
+  String get not_specified => 'निर्दिष्ट नहीं';
+
+  @override
+  String get information => 'जानकारी';
+
+  @override
+  String get member_since => 'सदस्यता की तिथि';
+
+  @override
+  String get designation => 'पद';
+
+  @override
+  String get website => 'वेबसाइट';
+
+  @override
+  String get settings => 'सेटिंग्स';
 }

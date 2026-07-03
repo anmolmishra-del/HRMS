@@ -1426,4 +1426,185 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get good_evening => 'శుభ సాయంత్రం';
+
+  @override
+  String get ats_home => 'హోమ్';
+
+  @override
+  String get ats_jobs => 'ఉద్యోగాలు';
+
+  @override
+  String get ats_applications => 'అప్లికేషన్లు';
+
+  @override
+  String get ats_candidates => 'అభ్యర్థులు';
+
+  @override
+  String get ats_profile => 'ప్రొఫైల్';
+
+  @override
+  String get ats_open_roles => 'ఓపెన్ పొజిషన్లు';
+
+  @override
+  String get ats_this_week => 'ఈ వారం';
+
+  @override
+  String ats_new_applications_came_in(num count) {
+    return '$count కొత్త అప్లికేషన్లు వచ్చాయి';
+  }
+
+  @override
+  String get ats_recent_applications => 'ఇటీవలి అప్లికేషన్లు';
+
+  @override
+  String get ats_view_all => 'అన్నీ చూడండి';
+
+  @override
+  String get ats_no_recent_applications => 'ఇటీవలి అప్లికేషన్లు లేవు';
+
+  @override
+  String get ats_job_positions => 'ఉద్యోగ స్థానాలు';
+
+  @override
+  String get ats_search_hint => 'వెతకండి ...';
+
+  @override
+  String get ats_no_jobs_found => 'ఉద్యోగ అభ్యర్థనలు కనుగొనబడలేదు';
+
+  @override
+  String get ats_tweak_filters =>
+      'మీ శోధన లేదా ఫిల్టర్‌లను సర్దుబాటు చేయడానికి ప్రయత్నించండి';
+
+  @override
+  String get ats_recruitment => 'నియామకం';
+
+  @override
+  String get ats_candidates_folder => 'అభ్యర్థుల ఫోల్డర్';
+
+  @override
+  String get ats_search_candidate_hint =>
+      'పేరు, డిగ్రీ, ఈమెయిల్ లేదా నైపుణ్యం వెతకండి...';
+
+  @override
+  String get tab_all => 'అన్నీ';
+
+  @override
+  String get tab_new => 'కొత్త';
+
+  @override
+  String get tab_screening => 'స్క్రీనింగ్';
+
+  @override
+  String get tab_first_interview => 'మొదటి ఇంటర్వ్యూ';
+
+  @override
+  String get tab_second_interview => 'రెండవ ఇంటర్వ్యూ';
+
+  @override
+  String get tab_offered => 'ఆఫర్ చేయబడింది';
+
+  @override
+  String get tab_hired => 'నియమించబడ్డారు';
+
+  @override
+  String get tab_refused => 'తిరస్కరించబడింది';
+
+  @override
+  String get tab_ij => 'ఐజే';
+
+  @override
+  String get tab_hr_stage => 'హెచ్ఆర్ స్టేజ్';
+
+  @override
+  String get tab_contract_proposal => 'ఒప్పందం ప్రతిపాదన';
+
+  @override
+  String get tab_contract_signed => 'ఒప్పందం సంతకం చేయబడింది';
+
+  @override
+  String get tab_published => 'ప్రచురించబడింది';
+
+  @override
+  String get tab_unpublished => 'ప్రచురించబడలేదు';
+
+  @override
+  String get tab_ongoing => 'కొనసాగుతోంది';
+
+  @override
+  String get ats_no_candidates => 'ఈ దశలో అభ్యర్థులు లేరు';
+
+  @override
+  String get ats_search_apps_hint =>
+      'విషయం, ఉద్యోగం, ఈమెయిల్ లేదా అభ్యర్థిని వెతకండి...';
+
+  @override
+  String get ats_candidate_prefix => 'అభ్యర్థి';
+
+  @override
+  String get ats_stage_prefix => 'దశ';
+
+  @override
+  String get ats_avail_prefix => 'అందుబాటు';
+
+  @override
+  String get ats_no_job_linked => 'ఏ ఉద్యోగమూ లింక్ చేయబడలేదు';
+
+  @override
+  String get ats_unassigned => 'కేటాయించబడలేదు';
+
+  @override
+  String ats_no_applications_in_stage(String stage) {
+    return '\'$stage\' దశలో అప్లికేషన్లు లేవు';
+  }
+
+  @override
+  String get this_week => 'ఈ వారం';
+
+  @override
+  String get working_hours_logged => 'పని గంటలు నమోదయ్యాయి';
+
+  @override
+  String duration_mins(int minutes) {
+    return '$minutes నిమిషాలు';
+  }
+
+  @override
+  String get duration_mins_one => '1 నిమిషం';
+
+  @override
+  String duration_hours(int hours) {
+    return '$hours గంటలు';
+  }
+
+  @override
+  String get duration_hours_one => '1 గంట';
+
+  @override
+  String duration_hours_mins(int hours, int minutes) {
+    return '$hours గంటలు $minutes నిమిషాలు';
+  }
+
+  @override
+  String get my_profile => 'నా ప్రొఫైల్';
+
+  @override
+  String get unknown => 'తెలియదు';
+
+  @override
+  String get not_specified => 'పేర్కొనబడలేదు';
+
+  @override
+  String get information => 'సమాచారం';
+
+  @override
+  String get member_since => 'సభ్యత్వం తేదీ';
+
+  @override
+  String get designation => 'హుద్దా';
+
+  @override
+  String get website => 'వెబ్‌సైట్';
+
+  @override
+  String get settings => 'సెట్టింగ్‌లు';
 }

@@ -231,6 +231,22 @@ class _AttendanceCard extends StatelessWidget {
   final dynamic record;
   const _AttendanceCard({required this.record});
 
+  String _formatDuration(double hours, AppLocalizations l10n) {
+    if (hours <= 0) return l10n.duration_mins(0);
+    final int totalMinutes = (hours * 60).round();
+    final int h = totalMinutes ~/ 60;
+    final int m = totalMinutes % 60;
+    if (h > 0) {
+      if (m > 0) {
+        return l10n.duration_hours_mins(h, m);
+      } else {
+        return h == 1 ? l10n.duration_hours_one : l10n.duration_hours(h);
+      }
+    } else {
+      return m == 1 ? l10n.duration_mins_one : l10n.duration_mins(m);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -260,6 +276,12 @@ class _AttendanceCard extends StatelessWidget {
     }
 
     final bool isClosed = checkOut != null;
+
+    double displayWorkedHours = workedHours;
+    if (!isClosed) {
+      displayWorkedHours = DateTime.now().difference(checkIn).inSeconds / 3600.0;
+      if (displayWorkedHours < 0) displayWorkedHours = 0.0;
+    }
 
     // Check if location data was captured
     final bool hasInLoc = inLat != null && inLat != 0.0;
@@ -327,12 +349,12 @@ class _AttendanceCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${workedHours.toStringAsFixed(2)} hrs',
+                      _formatDuration(displayWorkedHours, l10n),
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).primaryColor),
                     ),
                     if (overtimeHours > 0)
                       Text(
-                        '+${overtimeHours.toStringAsFixed(2)} OT',
+                        '+${_formatDuration(overtimeHours, l10n)} OT',
                         style: const TextStyle(fontSize: 11, color: AppColors.successGreen, fontWeight: FontWeight.w600),
                       ),
                   ],

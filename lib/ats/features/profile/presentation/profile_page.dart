@@ -7,6 +7,7 @@ import 'package:flutter_app/ats/routes/app_routes.dart';
 import 'package:flutter_app/ats/features/auth/cubit/login_cubit.dart';
 import 'package:flutter_app/core/theme/theme_cubit.dart';
 import 'package:flutter_app/routes.dart';
+import 'package:flutter_app/l10n/app_localizations.dart';
 
 class RecruiterProfilePage extends StatelessWidget {
   final bool showBackButton;
@@ -14,6 +15,7 @@ class RecruiterProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -66,14 +68,14 @@ class RecruiterProfilePage extends StatelessWidget {
                           ),
                         ),
                       // Title
-                      const Positioned(
+                      Positioned(
                         top: 60,
                         left: 0,
                         right: 0,
                         child: Center(
                           child: Text(
-                            'My Profile',
-                            style: TextStyle(
+                            l10n.my_profile,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 22,
@@ -117,6 +119,7 @@ class RecruiterProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileCard(BuildContext context, RecruiterProfileState state) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = Theme.of(context).textTheme.bodyLarge?.color ?? (isDark ? Colors.white : const Color(0xFF0F172A));
     final secondaryTextColor = Theme.of(context).textTheme.bodyMedium?.color ?? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
@@ -163,7 +166,7 @@ class RecruiterProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            state.name.isEmpty ? 'Unknown' : state.name,
+            state.name.isEmpty ? l10n.unknown : state.name,
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
@@ -192,6 +195,7 @@ class RecruiterProfilePage extends StatelessWidget {
   }
 
   Widget _buildContactTile(BuildContext context, IconData icon, String text, Color color) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = Theme.of(context).textTheme.bodyLarge?.color ?? (isDark ? Colors.white : const Color(0xFF0F172A));
 
@@ -208,7 +212,7 @@ class RecruiterProfilePage extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: Text(
-            text.isEmpty ? 'Not specified' : text,
+            text.isEmpty ? l10n.not_specified : text,
             style: TextStyle(
               fontSize: 15,
               color: primaryTextColor,
@@ -341,6 +345,7 @@ class RecruiterProfilePage extends StatelessWidget {
   }
 
   Widget _buildInfoSection(BuildContext context, RecruiterProfileState state) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = Theme.of(context).textTheme.bodyLarge?.color ?? (isDark ? Colors.white : const Color(0xFF0F172A));
     final dividerColor = Theme.of(context).dividerColor;
@@ -365,7 +370,7 @@ class RecruiterProfilePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Information",
+            l10n.information,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -374,13 +379,13 @@ class RecruiterProfilePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          _infoRow(context, "Member Since", state.memberSince),
+          _infoRow(context, l10n.member_since, state.memberSince),
           Divider(height: 24, color: dividerColor),
-          _infoRow(context, "Company", state.company),
+          _infoRow(context, l10n.company, state.company),
           Divider(height: 24, color: dividerColor),
-          _infoRow(context, "Designation", state.designation),
+          _infoRow(context, l10n.designation, state.designation),
           Divider(height: 24, color: dividerColor),
-          _infoRow(context, "Website", state.website),
+          _infoRow(context, l10n.website, state.website),
         ],
       ),
     );
@@ -415,6 +420,7 @@ class RecruiterProfilePage extends StatelessWidget {
   }
 
   Widget _buildSettingsSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = Theme.of(context).cardColor;
     final primaryTextColor = Theme.of(context).textTheme.bodyLarge?.color ?? (isDark ? Colors.white : const Color(0xFF0F172A));
@@ -441,7 +447,7 @@ class RecruiterProfilePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Settings",
+            l10n.settings,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -464,7 +470,7 @@ class RecruiterProfilePage extends StatelessWidget {
                 child: const Icon(Icons.language_outlined, color: Colors.blue, size: 20),
               ),
               title: Text(
-                "Languages",
+                l10n.language,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -490,7 +496,7 @@ class RecruiterProfilePage extends StatelessWidget {
                 child: const Icon(Icons.notifications_outlined, color: Colors.purple, size: 20),
               ),
               title: Text(
-                "Notifications",
+                l10n.notifications,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -523,7 +529,7 @@ class RecruiterProfilePage extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    "Dark Mode",
+                    l10n.dark_mode,
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -543,6 +549,7 @@ class RecruiterProfilePage extends StatelessWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
@@ -572,9 +579,9 @@ class RecruiterProfilePage extends StatelessWidget {
             }
           },
           icon: const Icon(Icons.logout, size: 22),
-          label: const Text(
-            "Logout",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          label: Text(
+            l10n.logout,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red.shade400,

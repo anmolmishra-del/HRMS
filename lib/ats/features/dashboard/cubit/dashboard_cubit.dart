@@ -329,9 +329,26 @@ class DashboardCubit extends Cubit<DashboardState> {
         openPositions = jobsRes.length;
       }
 
+      final List<int> weeklyCounts = List.filled(7, 0);
+      int newApplicationsThisWeek = 0;
+
       if (applicationsRes is List) {
-        totalApplications =
-            applicationsRes.length;
+        totalApplications = applicationsRes.length;
+        
+        final today = DateTime.now();
+        for (var app in applicationsRes) {
+          final createDateStr = app['create_date']?.toString();
+          if (createDateStr != null) {
+            final createDate = DateTime.tryParse(createDateStr);
+            if (createDate != null) {
+              final difference = today.difference(createDate).inDays;
+              if (difference >= 0 && difference < 7) {
+                weeklyCounts[6 - difference]++;
+              }
+            }
+          }
+        }
+        newApplicationsThisWeek = weeklyCounts.reduce((a, b) => a + b);
       }
 
       if (candidatesRes is List) {
@@ -353,6 +370,8 @@ class DashboardCubit extends Cubit<DashboardState> {
             totalApplications.toDouble(),
             totalCandidates.toDouble(),
           ],
+          weeklyCounts: weeklyCounts,
+          newApplicationsThisWeek: newApplicationsThisWeek,
           recentApplications: recentAppsList,
           recentCandidates: [],
           error: null,

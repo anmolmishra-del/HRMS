@@ -454,5 +454,99 @@
   "total": "Total",
   "good_morning": "Good morning",
   "good_afternoon": "Good afternoon",
-  "good_evening": "Good evening"
+  "good_evening": "Good evening",
+  "ats_home": "Home",
+  "ats_jobs": "Jobs",
+  "ats_applications": "Applications",
+  "ats_candidates": "Candidates",
+  "ats_profile": "Profile",
+  "ats_open_roles": "Open roles",
+  "ats_this_week": "This week",
+  "ats_new_applications_came_in": "{count} new applications came in",
+  "@ats_new_applications_came_in": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "ats_recent_applications": "Recent Applications",
+  "ats_view_all": "View all",
+  "ats_no_recent_applications": "No recent applications",
+  "ats_job_positions": "Job Positions",
+  "ats_search_hint": "Search ...",
+  "ats_no_jobs_found": "No job requisitions found",
+  "ats_tweak_filters": "Try tweaking your search or filters",
+  "ats_recruitment": "Recruitment",
+  "ats_candidates_folder": "Candidates Folder",
+  "ats_search_candidate_hint": "Search name, degree, email, or skill...",
+  "tab_all": "All",
+  "tab_new": "New",
+  "tab_screening": "Screening",
+  "tab_first_interview": "First Interview",
+  "tab_second_interview": "Second Interview",
+  "tab_offered": "Offered",
+  "tab_hired": "Hired",
+  "tab_refused": "Refused",
+  "tab_ij": "IJ",
+  "tab_hr_stage": "HR Stage",
+  "tab_contract_proposal": "Contract Proposal",
+  "tab_contract_signed": "Contract Signed",
+  "tab_published": "Published",
+  "tab_unpublished": "Unpublished",
+  "tab_ongoing": "Ongoing",
+  "ats_no_candidates": "No candidates in this stage",
+  "ats_search_apps_hint": "Search subject, job, email, or candidate...",
+  "ats_candidate_prefix": "Candidate",
+  "ats_stage_prefix": "Stage",
+  "ats_avail_prefix": "Avail",
+  "ats_no_job_linked": "No job linked",
+  "ats_unassigned": "Unassigned",
+  "ats_no_applications_in_stage": "No applications in '{stage}' stage",
+  "@ats_no_applications_in_stage": {
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "this_week": "This week",
+  "working_hours_logged": "Working hours logged",
+  "duration_mins": "{minutes} mins",
+  "@duration_mins": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "duration_mins_one": "1 min",
+  "duration_hours": "{hours} hrs",
+  "@duration_hours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "duration_hours_one": "1 hr",
+  "duration_hours_mins": "{hours} hrs {minutes} mins",
+  "@duration_hours_mins": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "my_profile": "My Profile",
+  "unknown": "Unknown",
+  "not_specified": "Not specified",
+  "information": "Information",
+  "member_since": "Member Since",
+  "designation": "Designation",
+  "website": "Website",
+  "settings": "Settings"
 }

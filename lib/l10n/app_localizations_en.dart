@@ -1422,4 +1422,184 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get good_evening => 'Good evening';
+
+  @override
+  String get ats_home => 'Home';
+
+  @override
+  String get ats_jobs => 'Jobs';
+
+  @override
+  String get ats_applications => 'Applications';
+
+  @override
+  String get ats_candidates => 'Candidates';
+
+  @override
+  String get ats_profile => 'Profile';
+
+  @override
+  String get ats_open_roles => 'Open roles';
+
+  @override
+  String get ats_this_week => 'This week';
+
+  @override
+  String ats_new_applications_came_in(num count) {
+    return '$count new applications came in';
+  }
+
+  @override
+  String get ats_recent_applications => 'Recent Applications';
+
+  @override
+  String get ats_view_all => 'View all';
+
+  @override
+  String get ats_no_recent_applications => 'No recent applications';
+
+  @override
+  String get ats_job_positions => 'Job Positions';
+
+  @override
+  String get ats_search_hint => 'Search ...';
+
+  @override
+  String get ats_no_jobs_found => 'No job requisitions found';
+
+  @override
+  String get ats_tweak_filters => 'Try tweaking your search or filters';
+
+  @override
+  String get ats_recruitment => 'Recruitment';
+
+  @override
+  String get ats_candidates_folder => 'Candidates Folder';
+
+  @override
+  String get ats_search_candidate_hint =>
+      'Search name, degree, email, or skill...';
+
+  @override
+  String get tab_all => 'All';
+
+  @override
+  String get tab_new => 'New';
+
+  @override
+  String get tab_screening => 'Screening';
+
+  @override
+  String get tab_first_interview => 'First Interview';
+
+  @override
+  String get tab_second_interview => 'Second Interview';
+
+  @override
+  String get tab_offered => 'Offered';
+
+  @override
+  String get tab_hired => 'Hired';
+
+  @override
+  String get tab_refused => 'Refused';
+
+  @override
+  String get tab_ij => 'IJ';
+
+  @override
+  String get tab_hr_stage => 'HR Stage';
+
+  @override
+  String get tab_contract_proposal => 'Contract Proposal';
+
+  @override
+  String get tab_contract_signed => 'Contract Signed';
+
+  @override
+  String get tab_published => 'Published';
+
+  @override
+  String get tab_unpublished => 'Unpublished';
+
+  @override
+  String get tab_ongoing => 'Ongoing';
+
+  @override
+  String get ats_no_candidates => 'No candidates in this stage';
+
+  @override
+  String get ats_search_apps_hint =>
+      'Search subject, job, email, or candidate...';
+
+  @override
+  String get ats_candidate_prefix => 'Candidate';
+
+  @override
+  String get ats_stage_prefix => 'Stage';
+
+  @override
+  String get ats_avail_prefix => 'Avail';
+
+  @override
+  String get ats_no_job_linked => 'No job linked';
+
+  @override
+  String get ats_unassigned => 'Unassigned';
+
+  @override
+  String ats_no_applications_in_stage(String stage) {
+    return 'No applications in \'$stage\' stage';
+  }
+
+  @override
+  String get this_week => 'This week';
+
+  @override
+  String get working_hours_logged => 'Working hours logged';
+
+  @override
+  String duration_mins(int minutes) {
+    return '$minutes mins';
+  }
+
+  @override
+  String get duration_mins_one => '1 min';
+
+  @override
+  String duration_hours(int hours) {
+    return '$hours hrs';
+  }
+
+  @override
+  String get duration_hours_one => '1 hr';
+
+  @override
+  String duration_hours_mins(int hours, int minutes) {
+    return '$hours hrs $minutes mins';
+  }
+
+  @override
+  String get my_profile => 'My Profile';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get not_specified => 'Not specified';
+
+  @override
+  String get information => 'Information';
+
+  @override
+  String get member_since => 'Member Since';
+
+  @override
+  String get designation => 'Designation';
+
+  @override
+  String get website => 'Website';
+
+  @override
+  String get settings => 'Settings';
 }

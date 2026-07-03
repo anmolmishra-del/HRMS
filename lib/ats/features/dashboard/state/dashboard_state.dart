@@ -7,6 +7,9 @@ class DashboardState {
   final List<double> chartValues;
   final String name;  
   
+  final List<int> weeklyCounts;
+  final int newApplicationsThisWeek;
+
   // Lists for dashboard preview
   final List<Map<String, dynamic>> recentApplications;
   final List<Map<String, dynamic>> recentCandidates;
@@ -19,6 +22,8 @@ class DashboardState {
     required this.counts,
     required this.chartValues,
     required this.name,
+    required this.weeklyCounts,
+    required this.newApplicationsThisWeek,
     required this.recentApplications,
     required this.recentCandidates,
   });
@@ -38,6 +43,8 @@ factory DashboardState.initial() {
 
     counts: [],
     chartValues: [],
+    weeklyCounts: [0, 0, 0, 0, 0, 0, 0],
+    newApplicationsThisWeek: 0,
     recentApplications: [],
     recentCandidates: [],
   );
@@ -51,6 +58,8 @@ factory DashboardState.initial() {
     List<int>? counts,
     List<double>? chartValues,
     String? name,
+    List<int>? weeklyCounts,
+    int? newApplicationsThisWeek,
     List<Map<String, dynamic>>? recentApplications,
     List<Map<String, dynamic>>? recentCandidates,
   }) {
@@ -62,6 +71,8 @@ factory DashboardState.initial() {
       titles: titles ?? this.titles,
       counts: counts ?? this.counts,
       chartValues: chartValues ?? this.chartValues,
+      weeklyCounts: weeklyCounts ?? this.weeklyCounts,
+      newApplicationsThisWeek: newApplicationsThisWeek ?? this.newApplicationsThisWeek,
       recentApplications: recentApplications ?? this.recentApplications,
       recentCandidates: recentCandidates ?? this.recentCandidates,
     );

@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_app/ats/core/constants/app_colors.dart';
 import 'package:flutter_app/ats/features/candidatefolder/candidate_screen/presentaion/candidate_page.dart';
+import 'package:flutter_app/l10n/app_localizations.dart';
+import 'package:flutter_app/ats/utils/ats_localization.dart';
 
 import '../cubit/candidate_cubit.dart';
 import '../state/candidate_state.dart';
@@ -21,6 +23,7 @@ class CandidatePage extends StatelessWidget {
           print("[DEBUG] CandidatePage BlocBuilder rebuilt. Candidates count: ${state.candidates.length}, Selected Tab: ${state.selectedTab}");
           
           final cubit = context.read<CandidateCubit>();
+          final l10n = AppLocalizations.of(context);
           final tabCounts = state.tabCounts;
           final searchLower = state.searchQuery.toLowerCase();
         
@@ -81,18 +84,18 @@ class CandidatePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Recruitment",
-                                style: TextStyle(
+                                l10n?.ats_recruitment ?? "Recruitment",
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white.withOpacity(0.85),
+                                  color: Colors.white,
                                   letterSpacing: 1.2,
                                 ),
                               ),
                               const SizedBox(height: 4),
                                Text(
-                                "Candidates Folder",
-                                style: TextStyle(
+                                l10n?.ats_candidates_folder ?? "Candidates Folder",
+                                style: const TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
@@ -107,7 +110,7 @@ class CandidatePage extends StatelessWidget {
                         onChanged: cubit.search,
                         style:  TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF0F172A), fontSize: 15),
                         decoration: InputDecoration(
-                          hintText: "Search name, degree, email, or skill...",
+                          hintText: l10n?.ats_search_candidate_hint ?? "Search name, degree, email, or skill...",
                           hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                           prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 22),
                           filled: true,
@@ -223,7 +226,7 @@ class CandidatePage extends StatelessWidget {
                   : filtered.isEmpty
                       ? Center(
                           child: Text(
-                            "No candidates in this stage.",
+                            l10n?.ats_no_candidates ?? "No candidates in this stage.",
                             style: TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w500),
                           ),
                         )

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/core/constants/app_colors.dart';
 import 'package:flutter_app/ats/features/dashboard/presentaion/dashboard_page.dart';
+import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/ats/utils/shared_ref.dart';
 import 'package:flutter_app/ats/routes/app_routes.dart';
 import 'package:flutter_app/ats/features/candidatefolder/candidate/presentaion/candidate_page.dart';
@@ -51,13 +52,16 @@ class _RecruiterMainLayoutState extends State<RecruiterMainLayout> {
 
 
 
-  final List<_NavItem> navItems = const [
-    _NavItem(icon: Icons.home_rounded, activeIcon: Icons.home_rounded, label: "Home"),
-    _NavItem(icon: Icons.work_outline_rounded, activeIcon: Icons.work_rounded, label: "Jobs"),
-    _NavItem(icon: Icons.description_outlined, activeIcon: Icons.description, label: "Applications"),
-    _NavItem(icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded, label: "Candidates"),
-    _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: "Profile"),
-  ];
+  List<_NavItem> _getNavItems(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      _NavItem(icon: Icons.home_rounded, activeIcon: Icons.home_rounded, label: l10n?.ats_home ?? "Home"),
+      _NavItem(icon: Icons.work_outline_rounded, activeIcon: Icons.work_rounded, label: l10n?.ats_jobs ?? "Jobs"),
+      _NavItem(icon: Icons.description_outlined, activeIcon: Icons.description, label: l10n?.ats_applications ?? "Applications"),
+      _NavItem(icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded, label: l10n?.ats_candidates ?? "Candidates"),
+      _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: l10n?.ats_profile ?? "Profile"),
+    ];
+  }
 
   void onTabChanged(int index) {
     print("[DEBUG] RecruiterMainLayout: Tab changed from $currentIndex to $index");
@@ -80,6 +84,7 @@ class _RecruiterMainLayoutState extends State<RecruiterMainLayout> {
   }
 
   Widget _buildBottomNav() {
+    final items = _getNavItems(context);
     return Container(
       margin: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -97,7 +102,7 @@ class _RecruiterMainLayoutState extends State<RecruiterMainLayout> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(
-          navItems.length,
+          items.length,
           (index) => _buildNavItem(index),
         ),
       ),
@@ -105,7 +110,8 @@ class _RecruiterMainLayoutState extends State<RecruiterMainLayout> {
   }
 
   Widget _buildNavItem(int index) {
-    final item = navItems[index];
+    final items = _getNavItems(context);
+    final item = items[index];
     final isSelected = currentIndex == index;
 
     return GestureDetector(

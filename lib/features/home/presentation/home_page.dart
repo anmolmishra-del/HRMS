@@ -22,6 +22,7 @@ import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter_app/features/profile/cubit/profile_state.dart';
 import 'package:flutter_app/features/home/widgets/ats_launcher_card.dart';
 import 'package:flutter_app/ats/features/bottomnavbar/recruiter/presention/recruiteer_main_layout.dart';
+import 'package:flutter_app/features/home/widgets/weekly_working_hours_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -320,6 +321,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       const CheckInOutCard(),
+                       const SizedBox(height: 10),
+
+                      const WeeklyWorkingHoursCard(),
+                      // const SizedBox(height: 10),
+                      Text(
+                        l10n.quick_actions,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                      // const SizedBox(height: 12),
                       const AttendanceActions(),
                        const SizedBox(height: 10),
                       // const UpcomingHolidaysSection(),
@@ -484,6 +498,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       },
     );
   }
+  
 
   Widget _buildProfileMenu(BuildContext context) {
     return GestureDetector(

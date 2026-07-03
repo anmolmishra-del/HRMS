@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_app/l10n/app_localizations.dart';
+import 'package:flutter_app/ats/utils/ats_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_app/ats/core/constants/api_config.dart';
@@ -122,6 +124,7 @@ class _JobPageState extends State<JobPage> {
             },
             builder: (context, state) {
               final cubit = context.read<JobCubit>();
+              final l10n = AppLocalizations.of(context);
               
               // FILTER LOGIC
               List<JobData> filteredJobs = state.jobs.where((job) {
@@ -160,9 +163,9 @@ class _JobPageState extends State<JobPage> {
                     ),
                     child: Row(
                       children: [
-                        Expanded(child: _tab("All", state.selectedTab, cubit)),
-                        Expanded(child: _tab("Published", state.selectedTab, cubit)),
-                        Expanded(child: _tab("Unpublished", state.selectedTab, cubit)),
+                        Expanded(child: _tab("All", l10n?.tab_all ?? "All", state.selectedTab, cubit)),
+                        Expanded(child: _tab("Published", l10n?.tab_published ?? "Published", state.selectedTab, cubit)),
+                        Expanded(child: _tab("Unpublished", l10n?.tab_unpublished ?? "Unpublished", state.selectedTab, cubit)),
                       ],
                     ),
                   ),
@@ -187,7 +190,7 @@ class _JobPageState extends State<JobPage> {
                                 Icon(Icons.work_off_outlined, size: 64, color: Colors.grey),
                                 const SizedBox(height: 12),
                                  Text(
-                                  "No job requisitions found",
+                                  l10n?.ats_no_jobs_found ?? "No job requisitions found",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -195,9 +198,9 @@ class _JobPageState extends State<JobPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
-                                  "Try tweaking your search or filters",
-                                  style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                                 Text(
+                                  l10n?.ats_tweak_filters ?? "Try tweaking your search or filters",
+                                  style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
                                 ),
                               ],
                             ),
@@ -435,6 +438,7 @@ class _JobPageState extends State<JobPage> {
   }
 
   Widget _buildHeader(BuildContext context, JobCubit cubit, JobState state) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 16, 20, 24),
@@ -487,8 +491,8 @@ class _JobPageState extends State<JobPage> {
                       // ),
                       const SizedBox(height: 4),
                        Text(
-                        "Job Positions",
-                        style: TextStyle(
+                        l10n?.ats_job_positions ?? "Job Positions",
+                        style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -519,12 +523,12 @@ class _JobPageState extends State<JobPage> {
                 child: TextField(
                   onChanged: (v) => cubit.search(v),
                   style:  TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF0F172A), fontSize: 15),
-                  decoration: const InputDecoration(
-                    hintText: "Search ...",
-                    hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                    prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 20),
+                  decoration: InputDecoration(
+                    hintText: l10n?.ats_search_hint ?? "Search ...",
+                    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 20),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
@@ -535,11 +539,11 @@ class _JobPageState extends State<JobPage> {
     );
   }
 
-  Widget _tab(String label, String selected, JobCubit cubit) {
-    final isActive = label == selected;
+  Widget _tab(String key, String label, String selected, JobCubit cubit) {
+    final isActive = key == selected;
 
     return GestureDetector(
-      onTap: () => cubit.changeTab(label),
+      onTap: () => cubit.changeTab(key),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         alignment: Alignment.center,
