@@ -233,7 +233,7 @@ class _ApplicationDetailPageState extends State<ApplicationDetailPage> with Sing
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSummaryIndicator("Status", app.applicationStatus, statusColor),
+              // _buildSummaryIndicator("Status", app.applicationStatus, statusColor),
               _buildSummaryIndicator("Stage", app.stageName, AppColors.primary),
               _buildSummaryIndicator(
                 "Availability",

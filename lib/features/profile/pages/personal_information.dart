@@ -8,6 +8,8 @@ import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter_app/features/profile/cubit/profile_state.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
+import 'package:flutter_app/core/widget/loading_overlay.dart';
+
 class ProfileFullDetailsPage extends StatelessWidget {
   const ProfileFullDetailsPage({super.key});
 
@@ -46,7 +48,7 @@ class ProfileFullDetailsPage extends StatelessWidget {
         body: BlocBuilder<ProfileCubit, ProfileState>(
           builder: (context, state) {
             if (state.status == ProfileStatus.loading) {
-              return const Center(child: CircularProgressIndicator());
+              return const AppLoader();
             } else if (state.status == ProfileStatus.failure) {
               return Center(child: Text("Error: ${state.errorMessage}"));
             } else if (state.status == ProfileStatus.success && state.employee != null) {

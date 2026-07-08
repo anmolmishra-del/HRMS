@@ -120,8 +120,8 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         // Dynamically append any stage names present on loaded applications
         final List<String> currentStages = List<String>.from(state.stages);
         for (final app in parsed) {
-          final sName = app.stageName;
-          if (sName.isNotEmpty && !currentStages.contains(sName)) {
+          final sName = app.stageName.trim();
+          if (sName.isNotEmpty && sName.toLowerCase() != 'false' && !currentStages.contains(sName)) {
             currentStages.add(sName);
           }
         }
@@ -142,12 +142,47 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
 
   Future<void> loadDropdownData() async {
     try {
-      final jobsRes = await _svc.executeModelMethod('hr.job', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
-      final usersRes = await _svc.executeModelMethod('res.users', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
-      final deptsRes = await _svc.executeModelMethod('hr.department', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
-      final companiesRes = await _svc.executeModelMethod('res.company', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
-      final degreesRes = await _svc.executeModelMethod('hr.recruitment.degree', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
-      final candidatesRes = await _svc.executeModelMethod('hr.candidate', 'search_read', [[]], kwargs: {'fields': ['id', 'display_name']});
+      dynamic jobsRes;
+      try {
+        jobsRes = await _svc.executeModelMethod('hr.job', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
+      } catch (e) {
+        print("[ApplicationsCubit] fetch hr.job failed: $e");
+      }
+
+      dynamic usersRes;
+      try {
+        usersRes = await _svc.executeModelMethod('res.users', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
+      } catch (e) {
+        print("[ApplicationsCubit] fetch res.users failed: $e");
+      }
+
+      dynamic deptsRes;
+      try {
+        deptsRes = await _svc.executeModelMethod('hr.department', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
+      } catch (e) {
+        print("[ApplicationsCubit] fetch hr.department failed: $e");
+      }
+
+      dynamic companiesRes;
+      try {
+        companiesRes = await _svc.executeModelMethod('res.company', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
+      } catch (e) {
+        print("[ApplicationsCubit] fetch res.company failed: $e");
+      }
+
+      dynamic degreesRes;
+      try {
+        degreesRes = await _svc.executeModelMethod('hr.recruitment.degree', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
+      } catch (e) {
+        print("[ApplicationsCubit] fetch hr.recruitment.degree failed: $e");
+      }
+
+      dynamic candidatesRes;
+      try {
+        candidatesRes = await _svc.executeModelMethod('hr.candidate', 'search_read', [[]], kwargs: {'fields': ['id', 'display_name']});
+      } catch (e) {
+        print("[ApplicationsCubit] fetch hr.candidate failed: $e");
+      }
       
       List<Map<String, dynamic>> locations = [];
       try {
@@ -186,7 +221,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         );
         if (stagesRes is List && stagesRes.isNotEmpty) {
           final loadedStages = stagesRes
-              .map((e) => e['name']?.toString() ?? '')
+              .map((e) => e['name']?.toString()?.trim() ?? '')
               .where((name) => name.isNotEmpty && name.toLowerCase() != 'false')
               .toList();
           stages.addAll(loadedStages);

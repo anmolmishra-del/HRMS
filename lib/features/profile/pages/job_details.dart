@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
+import 'package:flutter_app/core/widget/loading_overlay.dart';
+
 class JobDetailsPage extends StatelessWidget {
   const JobDetailsPage({super.key});
 
@@ -18,7 +20,7 @@ class JobDetailsPage extends StatelessWidget {
         if (state.status == ProfileStatus.loading) {
           return Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor)),
+            body: const AppLoader(),
           );
         }
 

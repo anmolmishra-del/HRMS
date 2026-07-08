@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/job_cubit.dart';
 import '../repository/hr_job_service file.dart';
@@ -162,7 +163,7 @@ class _HrJobCreatePageState extends State<HrJobCreatePage> {
       backgroundColor: Colors.white,
       appBar: AppBar(title: const Text('Create HR Job')),
       body: _loadingDropdowns
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppLoader()
           : Padding(
               padding: const EdgeInsets.all(16),
               child: SingleChildScrollView(

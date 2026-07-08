@@ -8,6 +8,7 @@ import 'package:flutter_app/ats/features/auth/cubit/login_cubit.dart';
 import 'package:flutter_app/core/theme/theme_cubit.dart';
 import 'package:flutter_app/routes.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 
 class RecruiterProfilePage extends StatelessWidget {
   final bool showBackButton;
@@ -93,7 +94,7 @@ class RecruiterProfilePage extends StatelessWidget {
                   child: state.isLoading
                       ? const Padding(
                           padding: EdgeInsets.only(top: 100),
-                          child: Center(child: CircularProgressIndicator()),
+                          child: AppLoader(),
                         )
                       : Column(
                           children: [

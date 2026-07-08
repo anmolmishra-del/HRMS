@@ -170,14 +170,29 @@ class CandidateCubit extends Cubit<CandidateState> {
 
       print("[CandidateCubit] loadCandidates() Odoo active fields: $activeFields");
 
-      final candidatesRes = await _svc.executeModelMethod(
-        'hr.candidate',
-        'search_read',
-        [[['active', '=', true]]],
-        kwargs: {
-          'fields': activeFields,
-        },
-      );
+      dynamic candidatesRes;
+      try {
+        candidatesRes = await _svc.executeModelMethod(
+          'hr.candidate',
+          'search_read',
+          [[['active', '=', true]]],
+          kwargs: {
+            'fields': activeFields,
+          },
+        );
+      } catch (e) {
+        print("[CandidateCubit] search_read failed, retrying without skill fields. Error: $e");
+        activeFields.remove('candidate_skill_ids');
+        activeFields.remove('skill_ids');
+        candidatesRes = await _svc.executeModelMethod(
+          'hr.candidate',
+          'search_read',
+          [[['active', '=', true]]],
+          kwargs: {
+            'fields': activeFields,
+          },
+        );
+      }
 
       print("[CandidateCubit] loadCandidates() Odoo raw response type: ${candidatesRes.runtimeType}");
       if (candidatesRes is List) {

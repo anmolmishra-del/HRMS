@@ -237,6 +237,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validated_overtime => 'Validated OT';
 
   @override
+  String get session_label => 'Session';
+
+  @override
+  String get session_timeline => 'Session Timeline';
+
+  @override
+  String get no_gps_location => 'No GPS Location';
+
+  @override
+  String get session_active => 'Session Active';
+
+  @override
+  String get sessions_label => 'Sessions';
+
+  @override
   String get location => 'Location';
 
   @override
@@ -1179,6 +1194,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String sessions_count(Object count) {
+    return '$count sessions';
+  }
+
+  @override
+  String get file_too_large => 'File size exceeds the limit of 10 MB.';
+
+  @override
   String get search_projects => 'Search projects...';
 
   @override
@@ -1413,6 +1436,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get total => 'Total';
+
+  @override
+  String get total_worked => 'Total Worked';
 
   @override
   String get good_morning => 'Good morning';

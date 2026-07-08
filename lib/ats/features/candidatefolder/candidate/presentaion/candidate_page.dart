@@ -11,9 +11,17 @@ import '../cubit/candidate_cubit.dart';
 import '../state/candidate_state.dart';
 import '../state/hr_candidate_model.dart';
 
-class CandidatePage extends StatelessWidget {
-  const CandidatePage({super.key});
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 
+class CandidatePage extends StatefulWidget {
+  final bool showBackButton;
+  const CandidatePage({super.key, this.showBackButton = true});
+
+  @override
+  State<CandidatePage> createState() => _CandidatePageState();
+}
+
+class _CandidatePageState extends State<CandidatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,28 +88,44 @@ class CandidatePage extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n?.ats_recruitment ?? "Recruitment",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: 1.2,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                if (widget.showBackButton && Navigator.of(context).canPop())
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                                      onPressed: () => Navigator.of(context).pop(),
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        l10n?.ats_recruitment ?? "Recruitment",
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        l10n?.ats_candidates_folder ?? "Candidates Folder",
+                                        style: const TextStyle(
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                               Text(
-                                l10n?.ats_candidates_folder ?? "Candidates Folder",
-                                style: const TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -218,11 +242,7 @@ class CandidatePage extends StatelessWidget {
             // 👥 CANDIDATES LIST
             Expanded(
               child: state.isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
+                  ? const AppLoader()
                   : filtered.isEmpty
                       ? Center(
                           child: Text(
@@ -329,13 +349,8 @@ class CandidatePage extends StatelessWidget {
                                         );
                                       },
                                     )
-                                  : Image.network(
-                                      "https://i.pravatar.cc/150?u=${candidate.emailFrom}",
-                                      width: 48,
-                                      height: 48,
-                                      fit: BoxFit.cover,
-                                    ),
-                            ),
+                                  :Icon(Icons.person,color: Theme.of(context).iconTheme.color,),
+                            )
                           ),
                         ),
                       ),

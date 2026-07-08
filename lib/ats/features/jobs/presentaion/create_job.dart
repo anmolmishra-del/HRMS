@@ -124,32 +124,53 @@ List<int>
  
 Future<void> loadDropdowns() async {
 
-  jobs =
-      await service.fetchJobs();
+  try {
+    jobs = await service.fetchJobs();
+  } catch (e) {
+    print("[create_job] fetchJobs failed: $e");
+  }
 
-  companies =
-      await service.fetchCompanies();
+  try {
+    companies = await service.fetchCompanies();
+  } catch (e) {
+    print("[create_job] fetchCompanies failed: $e");
+  }
 
-  // skills =
-  //     await service.fetchSkills();
+  try {
+    addresses = await service.fetchAddresses();
+  } catch (e) {
+    print("[create_job] fetchAddresses failed: $e");
+  }
 
-  addresses =
-      await service.fetchAddresses();
+  try {
+    contractTypes = await service.fetchContractTypes();
+  } catch (e) {
+    print("[create_job] fetchContractTypes failed: $e");
+  }
 
-  contractTypes =
-      await service.fetchContractTypes();
+  try {
+    experiences = await service.fetchExperiences();
+  } catch (e) {
+    print("[create_job] fetchExperiences failed: $e");
+  }
 
-  experiences =
-      await service.fetchExperiences();
+  try {
+    categories = await service.fetchCategories();
+  } catch (e) {
+    print("[create_job] fetchCategories failed: $e");
+  }
 
-  categories =
-      await service.fetchCategories();
+  try {
+    recruiters = await service.fetchRecruiters();
+  } catch (e) {
+    print("[create_job] fetchRecruiters failed: $e");
+  }
 
-  recruiters =
-      await service.fetchRecruiters();
-
-  websites =
-      await service.fetchWebsites();
+  try {
+    websites = await service.fetchWebsites();
+  } catch (e) {
+    print("[create_job] fetchWebsites failed: $e");
+  }
 
   // locations =
   //     await service.fetchLocations();

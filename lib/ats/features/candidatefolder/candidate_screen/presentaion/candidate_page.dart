@@ -91,12 +91,7 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
                                         );
                                       },
                                     )
-                                  : Image.network(
-                                      "https://i.pravatar.cc/150?u=${candidate.emailFrom}",
-                                      width: 84,
-                                      height: 84,
-                                      fit: BoxFit.cover,
-                                    ),
+                                  : Icon(Icons.person,color: Theme.of(context).iconTheme.color,),
                             ),
                           ),
                           const SizedBox(width: 20),

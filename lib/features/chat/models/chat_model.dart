@@ -55,6 +55,7 @@ class ChatChannel extends Equatable {
   });
 
   factory ChatChannel.fromJson(Map<String, dynamic> json, String currentUserName, int currentPartnerId) {
+    print('ChatChannel.fromJson raw payload: id=${json['id']}, name=${json['name']}, display_name=${json['display_name']}, type=${json['channel_type']}');
     final typeStr = json['channel_type']?.toString() ?? 'channel';
     ChannelType type;
     if (typeStr == 'chat') {

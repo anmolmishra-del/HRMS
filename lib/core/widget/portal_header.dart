@@ -105,60 +105,72 @@ class _PortalHeaderState extends State<PortalHeader> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Image.asset(
+                            'assets/images/opsen.png',
+                            height: 32,
+                            width: 32,
+                            fit: BoxFit.contain,
+                          ),
                         ),
-                        child: Image.asset(
-                          'assets/images/opsen.png',
-                          height: 32,
-                          width: 32,
-                          fit: BoxFit.contain,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FutureBuilder<dynamic>(
+                            future: _employeeDataFuture,
+                            builder: (context, snapshot) {
+                              String name = "User";
+                              if (snapshot.hasData && snapshot.data is Map) {
+                                name = snapshot.data['name']?.toString().split(' ').first ?? "User";
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _getGreeting(l10n),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white.withOpacity(0.8),
+                                      letterSpacing: 0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      FutureBuilder<dynamic>(
-                        future: _employeeDataFuture,
-                        builder: (context, snapshot) {
-                          String name = "User";
-                          if (snapshot.hasData && snapshot.data is Map) {
-                            name = snapshot.data['name']?.toString().split(' ').first ?? "User";
-                          }
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _getGreeting(l10n),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white.withOpacity(0.8),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              Text(
-                                name,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   Row(
                     children: [
+
                       BlocBuilder<ProfileCubit, ProfileState>(
                         builder: (context, state) {
-                          if (!state.isAtsEnabled) return const SizedBox.shrink();
+                          final showDropdown = state.isAtsEnabled || widget.activePortal == 'ats';
+                          if (!showDropdown) return const SizedBox.shrink();
+                          debugPrint('PortalHeader: showing portal dropdown. ATS enabled: ${state.isAtsEnabled}, Active Portal: ${widget.activePortal}');
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
                             child: _buildPortalDropdown(context),

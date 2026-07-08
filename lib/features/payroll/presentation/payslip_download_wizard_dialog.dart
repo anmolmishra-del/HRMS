@@ -78,7 +78,17 @@ class _PayslipDownloadWizardDialogState extends State<PayslipDownloadWizardDialo
       setState(() {
         _periods = periods;
         if (_periods.isNotEmpty) {
-          _selectedPeriodId = _periods.first['id'];
+          final now = DateTime.now();
+          final currentYearStr = now.year.toString();
+          int? matchPeriodId;
+          for (final p in _periods) {
+            final name = p['name']?.toString() ?? '';
+            if (name.contains(currentYearStr)) {
+              matchPeriodId = p['id'] as int?;
+              break;
+            }
+          }
+          _selectedPeriodId = matchPeriodId ?? _periods.first['id'];
           _loadPeriodLines(_selectedPeriodId!);
         }
       });

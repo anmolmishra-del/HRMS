@@ -1,4 +1,3 @@
-import 'package:shimmer/shimmer.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +7,7 @@ import '../cubit/projects_state.dart';
 import '../models/project_model.dart';
 import 'project_tasks_page.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 
 class ProjectsPage extends StatefulWidget {
   const ProjectsPage({super.key});
@@ -131,6 +131,26 @@ class _ProjectsPageState extends State<ProjectsPage> {
                             ),
                           ],
                         ),
+                        if (project.members.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Icons.people_outline_rounded, size: 14, color: Colors.grey),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  project.members.map((m) => m['name'].toString()).join(', '),
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), 
+                                    fontSize: 13
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -313,23 +333,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 ),
               ),
               if (state.status == ProjectsStatus.loading && state.projects.isEmpty)
-                SliverFillRemaining(
-                  child: Shimmer.fromColors(
-                    baseColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[300]!,
-                    highlightColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[700]! : Colors.grey[100]!,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      itemCount: 4,
-                      itemBuilder: (context, index) => Container(
-                        height: 120,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    ),
-                  ),
+                const SliverFillRemaining(
+                  child: AppLoader(),
                 )
               else if (state.status == ProjectsStatus.error && state.projects.isEmpty)
                 SliverFillRemaining(

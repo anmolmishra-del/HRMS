@@ -1,15 +1,24 @@
-import 'package:shimmer/shimmer.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/core/constants/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';  
 import 'package:flutter_app/l10n/app_localizations.dart';  
-import '../../../core/theme/app_theme.dart';
 import '../cubit/chat_cubit.dart';
 import '../cubit/chat_state.dart';
 import '../models/chat_model.dart';
 import 'chat_detail_screen.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
+
+import 'dart:typed_data';
+
+/// Detect if raw bytes represent an SVG file by checking for XML/SVG signatures.
+/// SVGs cannot be decoded by Flutter's Image.memory and crash with 'unimplemented'.
+bool _isSvgBytes(Uint8List bytes) {
+  if (bytes.length < 5) return false;
+  // Check for UTF-8 BOM or leading whitespace then '<'
+  final str = String.fromCharCodes(bytes.take(100));
+  return str.contains('<svg') || str.contains('<?xml');
+}
 
 class ChatListPage extends StatefulWidget {
   const ChatListPage({super.key});
@@ -20,11 +29,18 @@ class ChatListPage extends StatefulWidget {
 
 class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // Listen for tab changes to show/hide FAB
+    _tabController.addListener(() {
+      setState(() {
+        _currentTabIndex = _tabController.index;
+      });
+    });
     context.read<ChatCubit>().initChat();
   }
 
@@ -253,7 +269,8 @@ class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderSt
         final cleanedDatas = imageBase64.trim().replaceAll(RegExp(r'\s+'), '');
         final actualBase64 = cleanedDatas.contains(',') ? cleanedDatas.split(',').last : cleanedDatas;
         final bytes = base64Decode(actualBase64);
-        if (bytes.isEmpty) throw 'Empty image data';
+        // Guard: SVG bytes cannot be decoded by Flutter's Image.memory
+        if (bytes.isEmpty || _isSvgBytes(bytes)) throw 'Unsupported image format';
         return CircleAvatar(
           radius: 20,
           child: ClipOval(
@@ -342,13 +359,21 @@ class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderSt
           _buildChannelList(ChannelType.chat),
         ],
       ),
+      // Only show the FAB on the Direct Messages tab (index 1), not on the Channels tab
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 140.0), // Added padding to prevent overlap with bottom navigation bar
-        child: FloatingActionButton(
-          onPressed: _showContactPicker,
-          backgroundColor: AppColors.indigo,
-          child: const Icon(Icons.add_comment_rounded, color: Colors.white),
-        ),  
+        padding: const EdgeInsets.only(bottom: 140.0),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+          child: _currentTabIndex == 1
+              ? FloatingActionButton(
+                  key: const ValueKey('fab_visible'),
+                  onPressed: _showContactPicker,
+                  backgroundColor: AppColors.indigo,
+                  child: const Icon(Icons.add_comment_rounded, color: Colors.white),
+                )
+              : const SizedBox.shrink(key: ValueKey('fab_hidden')),
+        ),
       ),
     );
   }
@@ -367,55 +392,7 @@ class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderSt
       },
       builder: (context, state) {
         if (state.status == ChatStatus.loading && state.channels.isEmpty && state.directMessages.isEmpty) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          return Shimmer.fromColors(
-            baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-            highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: 6,
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 16,
-                            width: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 12,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
+          return const AppLoader();
         }
 
         final items = type == ChannelType.channel ? state.channels : state.directMessages;
@@ -543,7 +520,11 @@ class _ChannelTile extends StatelessWidget {
                         Expanded(
                           child: Text(
                             channel.displayName,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, 
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -595,12 +576,16 @@ class _ChannelTile extends StatelessWidget {
   }
 
   Widget _buildAvatar(BuildContext context) {
+    if (channel.type == ChannelType.channel || channel.type == ChannelType.group) {
+      return _buildDefaultAvatar();
+    }
     if (channel.image != null && channel.image != "false" && channel.image!.isNotEmpty) {
       try {
         final cleanedDatas = channel.image!.trim().replaceAll(RegExp(r'\s+'), '');
         final actualBase64 = cleanedDatas.contains(',') ? cleanedDatas.split(',').last : cleanedDatas;
         final bytes = base64Decode(actualBase64);
-        if (bytes.isEmpty) throw 'Empty image data';
+        // Guard: SVG bytes cannot be decoded by Flutter's Image.memory
+        if (bytes.isEmpty || _isSvgBytes(bytes)) throw 'Unsupported image format';
         return CircleAvatar(
           radius: 28,
           child: ClipOval(
@@ -621,9 +606,10 @@ class _ChannelTile extends StatelessWidget {
   }
 
   Widget _buildDefaultAvatarContent() {
+    final defaultChar = (channel.type == ChannelType.channel || channel.type == ChannelType.group) ? '#' : '?';
     return Center(
       child: Text(
-        channel.displayName.isNotEmpty ? channel.displayName[0].toUpperCase() : '?',
+        channel.displayName.isNotEmpty ? channel.displayName[0].toUpperCase() : defaultChar,
         style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );

@@ -257,7 +257,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Future<void> _handleRefresh() async {
     debugPrint('HomePage: Manual refresh triggered');
-    await _attendanceCubit.loadInitialStatus();
+    await Future.wait([
+      _attendanceCubit.loadInitialStatus(),
+      context.read<ProfileCubit>().fetchProfile(),
+    ]);
   }
 
   @override
@@ -266,6 +269,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final List<Map<String, dynamic>> features = [
       
       {'title': l10n.my_pay, 'route': Routes.myPay, 'icon': Icons.payment},
+      {'title': l10n.leaves, 'route': Routes.leaveList, 'icon': Icons.event_note},
       {'title': l10n.personal_information, 'route': Routes.personalinf, 'icon': Icons.person},
       {'title': l10n.attendance_report, 'route': Routes.inOutReport, 'icon': Icons.access_time},
       {'title': l10n.company_calendar, 'route': Routes.holidayCalendar, 'icon': Icons.event},

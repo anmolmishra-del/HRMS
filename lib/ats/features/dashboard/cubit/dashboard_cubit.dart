@@ -175,16 +175,11 @@
 //         ),
 //       );
 //     }
-//   }
-
-//   void refreshDashboard() {
-//     loadDashboard();
-//   }
-// }
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/ats/utils/shared_ref.dart';
 import 'package:flutter_app/ats/core/services/odoo_service.dart';
 import 'package:flutter_app/ats/core/constants/api_config.dart';
+import '../../jobs/repository/hr_job_service file.dart';
 import '../state/dashboard_state.dart';
 
 class DashboardCubit extends Cubit<DashboardState> {
@@ -234,19 +229,19 @@ class DashboardCubit extends Cubit<DashboardState> {
 
       await service.ensureSession();
 
+      bool accessDisabled = false;
+
       /// OPEN POSITIONS
       dynamic jobsRes;
       try {
-        jobsRes = await service.executeModelMethod(
-          'hr.job',
-          'search_read',
-          [[]],
-          kwargs: {
-            'fields': ['id'],
-          },
-        );
+        final jobService = HrJobService(odooService: service);
+        //Fetch Jobs uisng HrJobservice
+        jobsRes = await jobService.fetchJobs();
       } catch (e) {
-        print("[DashboardCubit] hr.job fetch failed: $e");
+        print("[DashboardCubit] HrJobService fetch failed: $e");
+        if (e.toString().contains('odoo.exceptions.AccessError') || e.toString().contains('AccessError')) {
+          accessDisabled = true;
+        }
       }
 
       /// APPLICATIONS
@@ -265,6 +260,9 @@ class DashboardCubit extends Cubit<DashboardState> {
           }
         } catch (fe) {
           print("[DashboardCubit] fields_get for hr.applicant failed: $fe");
+          if (fe.toString().contains('odoo.exceptions.AccessError') || fe.toString().contains('AccessError')) {
+            accessDisabled = true;
+          }
         }
 
         final List<String> requestedAppFields = ['id', 'name', 'partner_name', 'job_id', 'stage_id', 'recruitment_stage_id', 'create_date'];
@@ -291,6 +289,9 @@ class DashboardCubit extends Cubit<DashboardState> {
         );
       } catch (e) {
         print("[DashboardCubit] hr.applicant fetch failed: $e");
+        if (e.toString().contains('odoo.exceptions.AccessError') || e.toString().contains('AccessError')) {
+          accessDisabled = true;
+        }
       }
 
       // Extract raw applications and sort/slice for recent
@@ -319,6 +320,9 @@ class DashboardCubit extends Cubit<DashboardState> {
         );
       } catch (e) {
         print("[DashboardCubit] hr.candidate fetch failed: $e");
+        if (e.toString().contains('odoo.exceptions.AccessError') || e.toString().contains('AccessError')) {
+          accessDisabled = true;
+        }
       }
 
       int openPositions = 0;
@@ -374,6 +378,7 @@ class DashboardCubit extends Cubit<DashboardState> {
           newApplicationsThisWeek: newApplicationsThisWeek,
           recentApplications: recentAppsList,
           recentCandidates: [],
+          atsAccessDisabled: accessDisabled,
           error: null,
         ),
       );
@@ -381,6 +386,7 @@ class DashboardCubit extends Cubit<DashboardState> {
       emit(
         state.copyWith(
           isLoading: false,
+          atsAccessDisabled: e.toString().contains('odoo.exceptions.AccessError') || e.toString().contains('AccessError'),
           error: e.toString(),
         ),
       );

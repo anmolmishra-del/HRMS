@@ -108,33 +108,39 @@ class _ProjectTasksPageState extends State<ProjectTasksPage> {
 
   Widget _buildAssignedUsers(List<int> userIds, List<Map<String, dynamic>> allUsers, AppLocalizations l10n) {
     if (userIds.isEmpty) {
-      return Text(l10n.no_users_assigned, style: const TextStyle(color: Colors.grey, fontSize: 13));
+      return Expanded(
+        child: Text(
+          l10n.no_users_assigned, 
+          style: const TextStyle(color: Colors.grey, fontSize: 13),
+          textAlign: TextAlign.end,
+        ),
+      );
     }
 
     final assignedUsers = allUsers.where((user) => userIds.contains(user['id'])).toList();
 
     if (assignedUsers.isEmpty) {
-      return Text(l10n.no_users_assigned, style: const TextStyle(color: Colors.grey, fontSize: 13));
+      return Expanded(
+        child: Text(
+          l10n.no_users_assigned, 
+          style: const TextStyle(color: Colors.grey, fontSize: 13),
+          textAlign: TextAlign.end,
+        ),
+      );
     }
 
-    return Wrap(
-      spacing: -8.0,
-      children: assignedUsers.map((user) {
-        return Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
-          ),
-          child: CircleAvatar(
-            radius: 12,
-            backgroundColor: AppColors.primaryPurple,
-            child: Text(
-              user['name'].toString().isNotEmpty ? user['name'][0].toUpperCase() : '?',
-              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-            ),
-          ),
-        );
-      }).toList(),
+    return Expanded(
+      child: Text(
+        assignedUsers.map((u) => u['name'].toString()).join(', '),
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).primaryColor,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.end,
+      ),
     );
   }
 
@@ -319,7 +325,6 @@ class _ProjectTasksPageState extends State<ProjectTasksPage> {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(16),
                             border: Border(
                               left: BorderSide(
@@ -335,78 +340,84 @@ class _ProjectTasksPageState extends State<ProjectTasksPage> {
                               ),
                             ],
                           ),
-                          child: Theme(
-                            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                            child: ExpansionTile(
-                              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              title: Text(
-                                task.name,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
-                              ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: _getPriorityColor(task.priority).withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        _getPriorityText(task.priority, l10n),
-                                        style: TextStyle(color: _getPriorityColor(task.priority), fontSize: 12, fontWeight: FontWeight.w600),
-                                      ),
-                                    ),
-                                    _buildAssignedUsers(task.userIds, state.users, l10n),
-                                  ],
+                          child: Material(
+                            color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+                            clipBehavior: Clip.antiAlias,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Theme(
+                              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                              child: ExpansionTile(
+                                tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                title: Text(
+                                  task.name,
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
                                 ),
-                              ),
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey.shade50,
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(16),
-                                      bottomRight: Radius.circular(16),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _buildInfoChip(Icons.linear_scale_rounded, l10n.status_label, task.stageName ?? 'New'),
-                                          _buildInfoChip(Icons.timer_outlined, l10n.hours_label, '${task.effectiveHours} / ${task.allocatedHours}'),
-                                        ],
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _getPriorityColor(task.priority).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          _getPriorityText(task.priority, l10n),
+                                          style: TextStyle(color: _getPriorityColor(task.priority), fontSize: 12, fontWeight: FontWeight.w600),
+                                        ),
                                       ),
-                                      const SizedBox(height: 12),
-                                      if (task.dateDeadline != null)
-                                        _buildInfoChip(Icons.event_outlined, l10n.deadline_label, _formatDate(DateTime.tryParse(task.dateDeadline!), l10n)),
-                                      
-                                      if (task.description.isNotEmpty && task.description != 'false') ...[
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          l10n.description_label,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.indigo),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          task.description.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '').trim(),
-                                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8), fontSize: 14, height: 1.5),
-                                        ),
-                                      ],
-                                      
-                                      /* Temporarily removed timesheet feature
-                                      ...
-                                      */
+                                      const SizedBox(width: 12),
+                                      _buildAssignedUsers(task.userIds, state.users, l10n),
                                     ],
                                   ),
                                 ),
-                              ],
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey.shade50,
+                                      borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(16),
+                                        bottomRight: Radius.circular(16),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            _buildInfoChip(Icons.linear_scale_rounded, l10n.status_label, task.stageName ?? 'New'),
+                                            _buildInfoChip(Icons.timer_outlined, l10n.hours_label, '${task.effectiveHours} / ${task.allocatedHours}'),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        if (task.dateDeadline != null)
+                                          _buildInfoChip(Icons.event_outlined, l10n.deadline_label, _formatDate(DateTime.tryParse(task.dateDeadline!), l10n)),
+                                        
+                                        if (task.description.isNotEmpty && task.description != 'false') ...[
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            l10n.description_label,
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.indigo),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            task.description.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '').trim(),
+                                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8), fontSize: 14, height: 1.5),
+                                          ),
+                                        ],
+                                        
+                                        /* Temporarily removed timesheet feature
+                                        ...
+                                        */
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );

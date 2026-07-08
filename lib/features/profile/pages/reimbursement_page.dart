@@ -8,6 +8,8 @@ import 'package:flutter_app/features/profile/models/expense_model.dart';
 import 'package:flutter_app/features/profile/pages/new_expense_page.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
+import 'package:flutter_app/core/widget/loading_overlay.dart';
+
 class ReimbursementPage extends StatelessWidget {
   const ReimbursementPage({super.key});
 
@@ -42,7 +44,7 @@ class _ReimbursementView extends StatelessWidget {
             child: BlocBuilder<ExpenseCubit, ExpenseState>(
               builder: (context, state) {
                 if (state is ExpenseLoading || state is ExpenseInitial) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple));
+                  return const AppLoader();
                 } else if (state is ExpenseError) {
                   return Center(child: Text("Error: ${state.message}"));
                 } else if (state is ExpenseLoaded) {

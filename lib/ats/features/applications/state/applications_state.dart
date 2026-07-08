@@ -50,7 +50,7 @@ class ApplicationsState {
       error: null,
       searchQuery: '',
       selectedTab: 'All',
-      stages: [''],
+      stages: ['All'],
       jobs: [],
       recruiters: [],
       departments: [],

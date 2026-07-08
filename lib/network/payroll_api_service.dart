@@ -532,20 +532,7 @@ class PayrollApiService {
 
   Future<Directory> _getBestDownloadDirectory() async {
     if (Platform.isAndroid) {
-      // 1. Try public Download directory
-      final downloadDir = Directory('/storage/emulated/0/Download');
-      if (await downloadDir.exists()) {
-        try {
-          final testFile = File('${downloadDir.path}/.test_write');
-          await testFile.writeAsString('test');
-          await testFile.delete();
-          return downloadDir;
-        } catch (e) {
-          debugPrint('Cannot write to public Download directory: $e');
-        }
-      }
-
-      // 2. Try user-accessible external files directory
+      // Use the app's external files directory to avoid Scoped Storage / Permission issues on Android 10+
       try {
         final extDir = await getExternalStorageDirectory();
         if (extDir != null) {

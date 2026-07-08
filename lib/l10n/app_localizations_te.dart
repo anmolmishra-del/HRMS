@@ -237,6 +237,21 @@ class AppLocalizationsTe extends AppLocalizations {
   String get validated_overtime => 'ధృవీకరించబడిన ఓటీ';
 
   @override
+  String get session_label => 'సెషన్';
+
+  @override
+  String get session_timeline => 'సెషన్ టైమ్‌లైన్';
+
+  @override
+  String get no_gps_location => 'GPS లొకేషన్ లేదు';
+
+  @override
+  String get session_active => 'సెషన్ యాక్టివ్‌గా ఉంది';
+
+  @override
+  String get sessions_label => 'సెషన్స్';
+
+  @override
   String get location => 'స్థానం';
 
   @override
@@ -1182,6 +1197,14 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
+  String sessions_count(Object count) {
+    return '$count సెషన్స్';
+  }
+
+  @override
+  String get file_too_large => 'ఫైల్ పరిమాణం 10 MB పరిమితిని మించిపోయింది.';
+
+  @override
   String get search_projects => 'ప్రాజెక్ట్‌లను శోధించండి...';
 
   @override
@@ -1417,6 +1440,9 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get total => 'మొత్తం';
+
+  @override
+  String get total_worked => 'మొత్తం పని';
 
   @override
   String get good_morning => 'శుభోదయం';

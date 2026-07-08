@@ -84,15 +84,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     });
   }
 
+  void _onMessageTextChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
     _chatCubit = context.read<ChatCubit>();
     _chatCubit.fetchMessages(widget.channel.id);
+    _messageController.addListener(_onMessageTextChanged);
   }
 
   @override
   void dispose() {
+    _messageController.removeListener(_onMessageTextChanged);
     // Safely clear the active chat using the stored cubit reference
     _chatCubit.clearActiveChat(widget.channel.id);
     _messageController.dispose();
@@ -238,100 +244,162 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Scaffold(
       backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       appBar: _buildAppBar(context),
-      body: Column(
-        children: [
-          Expanded(
-            child: BlocConsumer<ChatCubit, ChatState>(
-              listener: (context, state) {
-                // Only scroll if we actually received new messages
-                if (state.status == ChatStatus.loaded && state.activeMessages.length != _lastMessageCount) {
-                  _lastMessageCount = state.activeMessages.length;
-                  _scrollToBottom();
-                }
-              },
-              builder: (context, state) {
-                final isCurrentChat = state.currentChatId == widget.channel.id.toString();
-
-                if (!isCurrentChat || (state.status == ChatStatus.loading && state.activeMessages.isEmpty)) {
-                  final isDark = Theme.of(context).brightness == Brightness.dark;
-                  return Shimmer.fromColors(
-                    baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                    highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
-                    child: ListView.builder(
-                      reverse: true,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      itemCount: 8,
-                      itemBuilder: (context, index) {
-                        final isMe = index % 2 == 0;
-                        return Align(
-                          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            height: 60,
-                            width: MediaQuery.of(context).size.width * 0.55,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(20),
-                                topRight: const Radius.circular(20),
-                                bottomLeft: Radius.circular(isMe ? 20 : 0),
-                                bottomRight: Radius.circular(isMe ? 0 : 20),
-                              ),
+      body: BlocConsumer<ChatCubit, ChatState>(
+        listener: (context, state) {
+          if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: Colors.redAccent,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+            context.read<ChatCubit>().clearErrorMessage();
+          }
+          if (state.status == ChatStatus.loaded && state.activeMessages.length != _lastMessageCount) {
+            _lastMessageCount = state.activeMessages.length;
+            _scrollToBottom();
+          }
+        },
+        builder: (context, state) {
+          final isCurrentChat = state.currentChatId == widget.channel.id.toString();
+          return Stack(
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        if (!isCurrentChat || (state.status == ChatStatus.loading && state.activeMessages.isEmpty)) {
+                          final isDark = Theme.of(context).brightness == Brightness.dark;
+                          return Shimmer.fromColors(
+                            baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                            highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
+                            child: ListView.builder(
+                              reverse: true,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                              itemCount: 8,
+                              itemBuilder: (context, index) {
+                                final isMe = index % 2 == 0;
+                                return Align(
+                                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                                  child: Container(
+                                    height: 60,
+                                    width: MediaQuery.of(context).size.width * 0.55,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: const Radius.circular(20),
+                                        topRight: const Radius.circular(20),
+                                        bottomLeft: Radius.circular(isMe ? 20 : 0),
+                                        bottomRight: Radius.circular(isMe ? 0 : 20),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
+                          );
+                        }
+
+                        if (state.activeMessages.isEmpty && state.status == ChatStatus.loaded) {
+                          return _buildEmptyChat(context);
+                        } 
+
+                        return ListView.builder(
+                          controller: _scrollController,
+                          reverse: true,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                          itemCount: state.activeMessages.length,
+                          itemBuilder: (context, index) {
+                            final message = state.activeMessages[index];
+                            ChatMessage? parentMessage;
+                            if (message.parentId != null) {
+                              try {
+                                parentMessage = state.activeMessages.firstWhere((m) => m.id == message.parentId);
+                              } catch (_) {}
+                            }
+                            return SwipeToReply(
+                              onRightSwipe: () {
+                                setState(() {
+                                  _replyingToMessage = message;
+                                });
+                              },
+                              child: _MessageBubble(
+                                key: ValueKey(message.id), 
+                                message: message,
+                                parentMessage: parentMessage,
+                                isHighlighted: _highlightedMessageId == message.id,
+                                onQuoteTap: (parentId) => _scrollToMessage(parentId),
+                                onReplySelected: (msg) {
+                                  setState(() {
+                                    _replyingToMessage = msg;
+                                  });
+                                },
+                              ),
+                            );
+                          },
                         );
                       },
                     ),
-                  );
-                }
-
-                if (state.activeMessages.isEmpty && state.status == ChatStatus.loaded) {
-                  return _buildEmptyChat(context);
-                } 
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  reverse: true, // This makes it render from bottom-to-top like a real chat!
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  itemCount: state.activeMessages.length,
-                  itemBuilder: (context, index) {
-                    final message = state.activeMessages[index];
-                    ChatMessage? parentMessage;
-                    if (message.parentId != null) {
-                      try {
-                        parentMessage = state.activeMessages.firstWhere((m) => m.id == message.parentId);
-                      } catch (_) {
-                        // Not found in current loaded list
-                      }
-                    }
-                    return SwipeToReply(
-                      onRightSwipe: () {
-                        setState(() {
-                          _replyingToMessage = message;
-                        });
-                      },
-                      child: _MessageBubble(
-                        key: ValueKey(message.id), 
-                        message: message,
-                        parentMessage: parentMessage,
-                        isHighlighted: _highlightedMessageId == message.id,
-                        onQuoteTap: (parentId) => _scrollToMessage(parentId),
-                        onReplySelected: (msg) {
-                          setState(() {
-                            _replyingToMessage = msg;
-                          });
-                        },
+                  ),
+                  if (_pendingAttachments.isNotEmpty) _buildAttachmentPreview(),
+                  if (_replyingToMessage != null) _buildReplyPreviewArea(),
+                  _buildInputArea(context),
+                ],
+              ),
+              if (state.isUploading)
+                Container(
+                  color: Colors.black.withOpacity(0.4),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                      margin: const EdgeInsets.symmetric(horizontal: 40),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          if (_pendingAttachments.isNotEmpty) _buildAttachmentPreview(),
-          if (_replyingToMessage != null) _buildReplyPreviewArea(),
-          _buildInputArea(context),
-        ],
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(
+                            color: AppColors.indigo,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Uploading file... ${state.uploadProgress}%',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: state.uploadProgress / 100,
+                              backgroundColor: Colors.grey[200],
+                              color: AppColors.indigo,
+                              minHeight: 6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -537,13 +605,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            Container(
-              decoration: const BoxDecoration(color: AppColors.indigo, shape: BoxShape.circle),
-              child: IconButton(
-                onPressed: _sendMessage,
-                icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-              ),
-            ),
+            (() {
+              final isSendEnabled = _messageController.text.trim().isNotEmpty || _pendingAttachments.isNotEmpty;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: isSendEnabled ? AppColors.indigo : Colors.grey[300],
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: isSendEnabled ? _sendMessage : null,
+                  icon: Icon(
+                    Icons.send_rounded,
+                    color: isSendEnabled ? Colors.white : Colors.grey[600],
+                    size: 20,
+                  ),
+                ),
+              );
+            })(),
           ],
         ),
       ),
@@ -821,10 +900,21 @@ class _MessageBubble extends StatelessWidget {
                                 color: Colors.white.withOpacity(0.6),
                               )
                             else if (message.status == MessageStatus.failed)
-                              const Icon(
-                                Icons.error_outline_rounded,
-                                size: 14,
-                                color: Colors.redAccent,
+                              GestureDetector(
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Failed to send message/file. Please verify the file size, internet connection, and try again.'),
+                                      backgroundColor: Colors.redAccent,
+                                      duration: Duration(seconds: 4),
+                                    ),
+                                  );
+                                },
+                                child: const Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 14,
+                                  color: Colors.redAccent,
+                                ),
                               )
                             else
                               BlocBuilder<ChatCubit, ChatState>(

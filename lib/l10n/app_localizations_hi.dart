@@ -237,6 +237,21 @@ class AppLocalizationsHi extends AppLocalizations {
   String get validated_overtime => 'सत्यापित ओटी';
 
   @override
+  String get session_label => 'सत्र';
+
+  @override
+  String get session_timeline => 'सत्र समयरेखा';
+
+  @override
+  String get no_gps_location => 'कोई जीपीएस स्थान नहीं';
+
+  @override
+  String get session_active => 'सत्र सक्रिय है';
+
+  @override
+  String get sessions_label => 'सत्र';
+
+  @override
   String get location => 'स्थान';
 
   @override
@@ -1179,6 +1194,14 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String sessions_count(Object count) {
+    return '$count सत्र';
+  }
+
+  @override
+  String get file_too_large => 'फ़ाइल का आकार 10 एमबी की सीमा से अधिक है।';
+
+  @override
   String get search_projects => 'परियोजनाएं खोजें...';
 
   @override
@@ -1413,6 +1436,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get total => 'कुल';
+
+  @override
+  String get total_worked => 'कुल काम';
 
   @override
   String get good_morning => 'सुप्रभात';

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/ats/features/applications/presentation/applications_list_page.dart';
+import 'package:flutter_app/ats/features/candidatefolder/candidate/presentaion/candidate_page.dart';
+import 'package:flutter_app/ats/features/jobs/presentaion/job_page.dart';
 import 'package:flutter_app/core/widget/portal_header.dart';
 import 'package:flutter_app/core/utils/shared_pref.dart';
 import 'package:flutter_app/routes.dart';
@@ -9,6 +12,8 @@ import 'package:flutter_app/ats/core/constants/app_colors.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../state/dashboard_state.dart';
 
+import 'package:flutter_app/core/widget/loading_overlay.dart';
+
 class DashboardPage extends StatelessWidget {
   final ValueChanged<int>? onTabChanged;
   const DashboardPage({super.key, this.onTabChanged});
@@ -18,32 +23,35 @@ class DashboardPage extends StatelessWidget {
       create: (_) => DashboardCubit(),
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: BlocBuilder<DashboardCubit, DashboardState>(
-          builder: (context, state) {
-            final cubit = context.read<DashboardCubit>();
-            final l10n = AppLocalizations.of(context);
-            return Column(
-              children: [
-                PortalHeader(
-                  activePortal: 'ats',
-                  showSearchBar: false,
-                  onPortalChanged: (val) async {
-                    if (val == 'hrms') {
-                      await SharedPref().saveString('selected_portal', 'hrms');
-                      if (context.mounted) {
-                        context.read<ProfileCubit>().fetchProfile();
+        body: BlocListener<DashboardCubit, DashboardState>(
+          listenWhen: (previous, current) => current.atsAccessDisabled && !previous.atsAccessDisabled,
+          listener: (context, state) {
+            _showAccessDisabledDialog(context);
+          },
+          child: BlocBuilder<DashboardCubit, DashboardState>(
+            builder: (context, state) {
+              final l10n = AppLocalizations.of(context);
+              return Column(
+                children: [
+                  PortalHeader(
+                    activePortal: 'ats',
+                    showSearchBar: false,
+                    onPortalChanged: (val) async {
+                      if (val == 'hrms') {
+                        _switchToHrms(context);
                       }
-                      if (Navigator.of(context).canPop()) {
-                        Navigator.of(context).pop();
-                      } else {
-                        Navigator.of(context).pushReplacementNamed(Routes.main);
-                      }
-                    }
-                  },
-                ),
+                    },
+                  ),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(left: 18, right: 18,),
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<DashboardCubit>().refreshDashboard();
+                      await context.read<ProfileCubit>().fetchProfile();
+                    },
+                    color: const Color(0xFF3B82F6),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(left: 18, right: 18,),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -246,13 +254,9 @@ class DashboardPage extends StatelessWidget {
                         // const SizedBox(height: 12),
 
                         if (state.isLoading)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
-                              child: CircularProgressIndicator(
-                                color: const Color(0xFF3B82F6),
-                              ),
-                            ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: AppLoader(size: 45),
                           )
                         else if (state.recentApplications.isEmpty)
                           Container(
@@ -398,8 +402,9 @@ class DashboardPage extends StatelessWidget {
                               );
                             },
                           ),
-                        const SizedBox(height: 24),
-                      ],
+                          const SizedBox(height: 24),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -408,8 +413,41 @@ class DashboardPage extends StatelessWidget {
           },
         ),
       ),
-    );
+    ));
   }
+}
+
+void _switchToHrms(BuildContext context) async {
+  await SharedPref().saveString('selected_portal', 'hrms');
+  if (context.mounted) {
+    context.read<ProfileCubit>().fetchProfile();
+  }
+  if (Navigator.of(context).canPop()) {
+    Navigator.of(context).pop();
+  } else {
+    Navigator.of(context).pushReplacementNamed(Routes.main);
+  }
+}
+
+void _showAccessDisabledDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogCtx) => AlertDialog(
+      title: const Text('Access Denied'),
+      content: const Text('ATS access has been disabled. Switching you back to HRMS portal.'),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(dialogCtx).pop();
+            _switchToHrms(context);
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildQuickActionCard({
     required BuildContext context,
@@ -461,7 +499,7 @@ class DashboardPage extends StatelessWidget {
     final idx = weekdayIndex < 0 ? weekdayIndex + 7 : weekdayIndex;
     return days[idx];
   }
-}
+
 
 class _ChartBar extends StatelessWidget {
   // final double height;
@@ -529,60 +567,77 @@ class _HorizontalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 125,
-      height: 125,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+    final l10n = AppLocalizations.of(context);
+    final isJobPositions = title == "Job Positions" || title == (l10n?.ats_job_positions ?? "Job Positions");
+    final isApplications = title == "Applications" || title == (l10n?.ats_applications ?? "Applications");
+    final isCandidates = title == "Candidates" || title == (l10n?.ats_candidates ?? "Candidates");
+
+    return GestureDetector(
+      onTap:(){
+        //Dashboard card navigation 
+        if (isJobPositions) {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => const JobPage(isRecruiter: true, showBackButton: true)));
+        } else if (isApplications) {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_)=>ApplicationsListPage()));
+        } else if (isCandidates) {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_)=>CandidatePage()));
+        }
+      },
+      child: Container(
+        width: 125,
+        height: 125,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).dividerColor,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "$count",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                  height: 1.0,
-                ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6) ?? const Color(0xFF64748B),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "$count",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    height: 1.0,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6) ?? const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

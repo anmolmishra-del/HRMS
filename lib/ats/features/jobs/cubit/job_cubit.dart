@@ -1,19 +1,21 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/ats/features/jobs/model/model_class.dart';
 import 'package:flutter_app/ats/features/jobs/repository/create_job_servic.dart';
 import 'package:flutter_app/ats/features/jobs/repository/hr_job_service file.dart';
-
 import 'package:flutter_app/ats/core/services/odoo_service.dart';
 import 'package:flutter_app/ats/core/constants/api_config.dart';
 import '../state/job_state.dart';
 
 class JobCubit extends Cubit<JobState> {
   final HrJobService _service;
+  Timer? _pollingTimer;
 
   JobCubit({HrJobService? service})
       : _service = service ?? HrJobService(),
         super(JobState.initial());
 
+  /// Initial full load — shows loading spinner, then starts background polling.
   Future<void> fetchJobs() async {
     emit(state.copyWith(isLoading: true, error: null));
     try {
@@ -22,6 +24,35 @@ class JobCubit extends Cubit<JobState> {
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
+    // Start polling every 30s after the first load so status stays fresh
+    _startPolling();
+  }
+
+  /// Silent background refresh — no loading spinner, Cubit-owned timer calls this.
+  Future<void> silentRefresh() async {
+    if (state.isLoading || state.isRefreshing) return;
+    emit(state.copyWith(isRefreshing: true));
+    try {
+      final jobs = await _service.fetchJobs();
+      emit(state.copyWith(jobs: jobs, isRefreshing: false, error: null));
+    } catch (_) {
+      // Silently ignore — don't disrupt the user on background errors
+      emit(state.copyWith(isRefreshing: false));
+    }
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel(); // Avoid duplicate timers
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      silentRefresh();
+    });
+  }
+
+  /// Stop polling — called automatically when the BLoC is closed.
+  @override
+  Future<void> close() {
+    _pollingTimer?.cancel();
+    return super.close();
   }
 
   void changeTab(String tab) {

@@ -11,6 +11,8 @@ class ProjectModel {
   final bool allowTimesheets;
   final int? partnerId;
   final String? partnerName;
+  final List<int> memberIds;
+  final List<Map<String, dynamic>> members;
 
   ProjectModel({
     required this.id,
@@ -25,6 +27,8 @@ class ProjectModel {
     required this.allowTimesheets,
     this.partnerId,
     this.partnerName,
+    this.memberIds = const [],
+    this.members = const [],
   });
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +46,11 @@ class ProjectModel {
       parsePartnerName = json['partner_id'][1].toString();
     }
 
+    final List<int> parsedMemberIds = [];
+    if (json['members_ids'] is List) {
+      parsedMemberIds.addAll((json['members_ids'] as List).cast<int>());
+    }
+
     return ProjectModel(
       id: json['id'] as int? ?? 0,
       name: json['name']?.toString() ?? 'Unnamed Project',
@@ -55,6 +64,30 @@ class ProjectModel {
       allowTimesheets: json['allow_timesheets'] == true,
       partnerId: parsePartnerId,
       partnerName: parsePartnerName,
+      memberIds: parsedMemberIds,
+      members: const [],
+    );
+  }
+
+  ProjectModel copyWith({
+    List<Map<String, dynamic>>? members,
+    String? userImage128,
+  }) {
+    return ProjectModel(
+      id: id,
+      name: name,
+      description: description,
+      dateStart: dateStart,
+      date: date,
+      userId: userId,
+      userName: userName,
+      userImage128: userImage128 ?? this.userImage128,
+      taskCount: taskCount,
+      allowTimesheets: allowTimesheets,
+      partnerId: partnerId,
+      partnerName: partnerName,
+      memberIds: memberIds,
+      members: members ?? this.members,
     );
   }
 }

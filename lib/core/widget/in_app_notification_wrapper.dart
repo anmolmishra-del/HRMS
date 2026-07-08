@@ -110,6 +110,22 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
       textDirection: TextDirection.ltr,
       child: MultiBlocListener(
         listeners: [
+          BlocListener<LoginCubit, LoginState>(
+            listenWhen: (previous, current) => previous.status != current.status,
+            listener: (context, state) {
+              if (state.status == LoginStatus.success || state.status == LoginStatus.initial) {
+                debugPrint('InAppNotificationWrapper: Resetting tracking state because LoginStatus changed to ${state.status}');
+                setState(() {
+                  _previousChannels = [];
+                  _previousNotificationCount = 0;
+                  _isFirstLoad = true;
+                  _isFirstNotifLoad = true;
+                  _controller.reset();
+                  _hideTimer?.cancel();
+                });
+              }
+            },
+          ),
           BlocListener<ChatCubit, ChatState>(
             listenWhen: (previous, current) {
               final allChannels = [...current.channels, ...current.directMessages];

@@ -11,10 +11,17 @@ import 'package:flutter_app/ats/features/jobs/presentaion/job_detils_page.dart';
 import 'package:flutter_app/ats/features/jobs/repository/hr_job_service file.dart';
 import '../cubit/job_cubit.dart';
 import '../state/job_state.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 
 class JobPage extends StatefulWidget {
   final bool isRecruiter;
-  const JobPage({super.key, required this.isRecruiter});
+  final bool showBackButton;
+
+  const JobPage({
+    super.key,
+    required this.isRecruiter,
+    this.showBackButton = true,
+  });
 
   @override
   State<JobPage> createState() => _JobPageState();
@@ -25,6 +32,7 @@ class _JobPageState extends State<JobPage> {
   @override
   void initState() {
     super.initState();
+    // Initial load — Cubit auto-starts 30s polling after this completes
     context.read<JobCubit>().fetchJobs();
   }
 
@@ -54,6 +62,17 @@ class _JobPageState extends State<JobPage> {
       return 'Development'; // Default clean category
     }
     return trimmed;
+  }
+
+  /// Converts raw Odoo priority values (false, empty, '0', '1', '2') to human-readable labels.
+  String _cleanPriority(String priority) {
+    final lower = priority.toLowerCase().trim();
+    if (lower.isEmpty || lower == 'false' || lower == 'null') return 'N/A';
+    if (lower == '0') return 'Normal';
+    if (lower == '1') return 'Good';
+    if (lower == '2') return 'Very Good';
+    if (lower == '3') return 'Excellent';
+    return priority.trim();
   }
 
   Color _getPriorityBgColor(BuildContext context, String priority) {
@@ -141,9 +160,11 @@ class _JobPageState extends State<JobPage> {
                 return matchTab && matchSearch;
               }).toList();
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              return LoadingOverlay(
+                isLoading: state.isLoading,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   _buildHeader(context, cubit, state),
                   const SizedBox(height: 20),
                   Expanded(
@@ -171,14 +192,6 @@ class _JobPageState extends State<JobPage> {
                   ),
 
                   const SizedBox(height: 18),
-                  if (state.isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: LinearProgressIndicator(
-                        backgroundColor: Color(0xFFE2E8F0),
-                        color: const Color(0xFF3B82F6),
-                      ),
-                    ),
 
                   // 💼 JOB LIST
                   Expanded(
@@ -298,6 +311,17 @@ class _JobPageState extends State<JobPage> {
                                                             crossAxisAlignment: CrossAxisAlignment.start,
                                                             mainAxisAlignment: MainAxisAlignment.center,
                                                             children: [
+                                                              if (job.recruitmentSequence.isNotEmpty) ...[
+                                                                Text(
+                                                                  job.recruitmentSequence,
+                                                                  style: const TextStyle(
+                                                                    fontSize: 11,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    color: Color(0xFF3B82F6),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(height: 2),
+                                                              ],
                                                               Text(
                                                                 job.title,
                                                                 style: TextStyle(
@@ -339,7 +363,7 @@ class _JobPageState extends State<JobPage> {
                                                                   // Priority Badge
                                                                   _buildSmallBadge(
                                                                     icon: Icons.star_rounded,
-                                                                    label: job.priority.isEmpty ? 'Medium' : job.priority,
+                                                                    label: _cleanPriority(job.priority),
                                                                     bgColor: _getPriorityBgColor(context, job.priority),
                                                                     textColor: _getPriorityTextColor(context, job.priority),
                                                                   ),
@@ -431,9 +455,10 @@ class _JobPageState extends State<JobPage> {
                     ),
                   ),
                 ],
-              );
-            },
-          ),
+              ),
+            );
+          },
+        ),
     );
   }
 
@@ -477,32 +502,40 @@ class _JobPageState extends State<JobPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Text(
-                      //   "Odoo Recruitment",
-                      //   style: TextStyle(
-                      //     fontSize: 13,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: Colors.white.withOpacity(0.85),
-                      //     letterSpacing: 1.1,
-                      //   ),
-                      // ),
-                      const SizedBox(height: 4),
-                       Text(
-                        l10n?.ats_job_positions ?? "Job Positions",
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (widget.showBackButton)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n?.ats_job_positions ?? "Job Positions",
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   IconButton(
                     onPressed: () => cubit.fetchJobs(),
                     icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                    tooltip: 'Refresh jobs',
                   ),
                 ],
               ),

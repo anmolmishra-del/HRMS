@@ -11,6 +11,9 @@ class JobState {
 
   final bool isLoading;
 
+  // True during silent background re-fetch — does NOT show the full loading spinner
+  final bool isRefreshing;
+
   final String? error;
 
   const JobState({
@@ -22,6 +25,8 @@ class JobState {
     required this.jobs,
 
     required this.isLoading,
+
+    this.isRefreshing = false,
 
     this.error,
   });
@@ -52,6 +57,8 @@ class JobState {
 
     bool? isLoading,
 
+    bool? isRefreshing,
+
     String? error,
 
   }) {
@@ -70,8 +77,11 @@ class JobState {
       isLoading:
           isLoading ?? this.isLoading,
 
+      isRefreshing:
+          isRefreshing ?? this.isRefreshing,
+
       error:
-          error, // Allow resetting to null, or keep last if needed. Here we can pass error explicitly
+          error,
     );
   }
 }

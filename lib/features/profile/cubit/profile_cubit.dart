@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/core/utils/shared_pref.dart';
 import 'package:flutter_app/network/odoo_service.dart';
@@ -8,7 +9,84 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_app/features/profile/models/employee_model.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
-  ProfileCubit() : super(const ProfileState());
+  Timer? _pollingTimer;
+
+  ProfileCubit() : super(const ProfileState()) {
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!isClosed) {
+        checkAtsAccessSilently();
+      }
+    });
+  }
+
+  Future<void> checkAtsAccessSilently() async {
+    if (isClosed) return;
+    try {
+      final prefs = SharedPref();
+      final sessionData = await prefs.getObject('session');
+      final baseUrl = await prefs.getString('baseUrl');
+      if (sessionData == null || baseUrl == null) return;
+
+      final session = OdooSession(
+        id: sessionData['id']?.toString() ?? '',
+        userId: sessionData['userId'] is int
+            ? sessionData['userId']
+            : int.parse(sessionData['userId']?.toString() ?? '0'),
+        partnerId: sessionData['partnerId'] is int
+            ? sessionData['partnerId']
+            : int.parse(sessionData['partnerId']?.toString() ?? '0'),
+        companyId: sessionData['companyId'] is int
+            ? sessionData['companyId']
+            : int.parse(sessionData['companyId']?.toString() ?? '0'),
+        allowedCompanies: const <Company>[],
+        userLogin: sessionData['userLogin']?.toString() ?? '',
+        userName: sessionData['userName']?.toString() ?? '',
+        userLang: sessionData['userLang']?.toString() ?? "en_US",
+        userTz: sessionData['userTz']?.toString() ?? "UTC",
+        isSystem: sessionData['isSystem'] is bool
+            ? sessionData['isSystem']
+            : false,
+        dbName: sessionData['dbName']?.toString() ?? '',
+        serverVersion: sessionData['serverVersion']?.toString() ?? "",
+      );
+
+      final odooService = OdooService(baseUrl, session: session);
+
+      try {
+        final List<dynamic> accessResponse = await odooService.executeModelMethod(
+          'master.control',
+          'search_read',
+          [],
+          kwargs: {
+            'domain': [
+              ['user_ids', 'in', [session.userId]],
+              ['code', '=', 'ats'],
+            ],
+            'fields': ['id', 'code'],
+          },
+          silent: true,
+        );
+        final bool isAtsEnabled = accessResponse.isNotEmpty;
+        
+        if (state.isAtsEnabled != isAtsEnabled) {
+          debugPrint('ProfileCubit: fetched ATS access via master.control silently = $isAtsEnabled');
+          await prefs.saveBool('is_ats_enabled', isAtsEnabled);
+          if (!isClosed) {
+            emit(state.copyWith(isAtsEnabled: isAtsEnabled));
+          }
+        }
+      } finally {
+        odooService.close();
+      }
+    } catch (e) {
+      debugPrint('ProfileCubit: checkAtsAccessSilently failed: $e');
+    }
+  }
 
   /// Clears all in-memory profile data back to initial.
   /// Call this on logout so stale data never leaks into a new session.
@@ -249,5 +327,11 @@ class ProfileCubit extends Cubit<ProfileState> {
       return e.message;
     }
     return e.toString();
+  }
+
+  @override
+  Future<void> close() {
+    _pollingTimer?.cancel();
+    return super.close();
   }
 }

@@ -11,6 +11,8 @@ class ChatState extends Equatable {
   final String? errorMessage;
   final String? currentChatId;
   final int? partnerLastSeenMessageId;
+  final bool isUploading;
+  final int uploadProgress;
 
   const ChatState({
     this.status = ChatStatus.initial,
@@ -20,11 +22,10 @@ class ChatState extends Equatable {
     this.errorMessage,
     this.currentChatId,
     this.partnerLastSeenMessageId,
+    this.isUploading = false,
+    this.uploadProgress = 0,
   });
 
-  // FIX: Use sentinel objects to allow explicitly setting nullable fields to null.
-  // Previously, copyWith(currentChatId: null) was silently ignored because of
-  // "null ?? this.currentChatId" — the old value was always kept.
   static const _clearString = Object();
   static const _clearInt = Object();
 
@@ -34,8 +35,10 @@ class ChatState extends Equatable {
     List<ChatChannel>? directMessages,
     List<ChatMessage>? activeMessages,
     String? errorMessage,
-    Object? currentChatId = _clearString, // sentinel trick
+    Object? currentChatId = _clearString,
     Object? partnerLastSeenMessageId = _clearInt,
+    bool? isUploading,
+    int? uploadProgress,
   }) {
     return ChatState(
       status: status ?? this.status,
@@ -49,10 +52,11 @@ class ChatState extends Equatable {
       partnerLastSeenMessageId: identical(partnerLastSeenMessageId, _clearInt)
           ? this.partnerLastSeenMessageId
           : partnerLastSeenMessageId as int?,
+      isUploading: isUploading ?? this.isUploading,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
     );
   }
 
-  // Convenience method to explicitly clear nullable fields
   ChatState clearCurrentChat() {
     return ChatState(
       status: status,
@@ -62,12 +66,35 @@ class ChatState extends Equatable {
       errorMessage: errorMessage,
       currentChatId: null,
       partnerLastSeenMessageId: null,
+      isUploading: false,
+      uploadProgress: 0,
+    );
+  }
+
+  ChatState clearErrorMessage() {
+    return ChatState(
+      status: status,
+      channels: channels,
+      directMessages: directMessages,
+      activeMessages: activeMessages,
+      errorMessage: null,
+      currentChatId: currentChatId,
+      partnerLastSeenMessageId: partnerLastSeenMessageId,
+      isUploading: isUploading,
+      uploadProgress: uploadProgress,
     );
   }
 
   @override
   List<Object?> get props => [
-    status, channels, directMessages, activeMessages,
-    errorMessage, currentChatId, partnerLastSeenMessageId
+    status,
+    channels,
+    directMessages,
+    activeMessages,
+    errorMessage,
+    currentChatId,
+    partnerLastSeenMessageId,
+    isUploading,
+    uploadProgress,
   ];
 }

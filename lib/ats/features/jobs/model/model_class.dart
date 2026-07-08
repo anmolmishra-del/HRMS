@@ -42,6 +42,8 @@ class JobData {
 
   final int noOfEligibleSubmissions;
 
+  final String recruitmentSequence;
+
   JobData({
     this.id,
     this.jobId,
@@ -52,7 +54,7 @@ class JobData {
     this.salary = '',
     this.type = 'Full-time',
     this.category = '',
-    this.status = 'Open',
+    this.status = '',
     this.newCount = 0,
     this.primarySkills = const [],
     this.secondarySkills = const [],
@@ -64,6 +66,7 @@ class JobData {
     this.company = '',
     this.noOfRecruitment = 0,
     this.noOfEligibleSubmissions = 0,
+    this.recruitmentSequence = '',
   });
 
   factory JobData.fromJson(
@@ -114,7 +117,7 @@ class JobData {
           "",
 
       status:
-          json['status'] ??
+          json['recruitment_status'] ??
           "",
 
       newCount:
@@ -169,6 +172,11 @@ class JobData {
           json['no_of_eligible_submissions'] ??
           json['noOfEligibleSubmissions'] ??
           0,
+
+      recruitmentSequence:
+          json['recruitment_sequence'] ??
+          json['recruitmentSequence'] ??
+          "",
     );
   }
 
@@ -194,7 +202,7 @@ class JobData {
 
       'category': category,
 
-      'status': status,
+      'recruitment_status': status,
 
       'newCount': newCount,
 
@@ -217,6 +225,8 @@ class JobData {
       'no_of_recruitment': noOfRecruitment,
 
       'no_of_eligible_submissions': noOfEligibleSubmissions,
+
+      'recruitment_sequence': recruitmentSequence,
     };
   }
 }

@@ -324,6 +324,33 @@ class LoginCubit extends Cubit<LoginState> {
   Future<void> logout() async {
     debugPrint('--- Logout Process Started ---');
     final prefs = SharedPref();
+
+    // Clear FCM token from Odoo server for the logging out user
+    // try {
+    //   final sessionData = await prefs.getObject('session');
+    //   final baseUrl = await prefs.getString('baseUrl') ?? ApiConfig.baseUrl;
+    //   if (sessionData != null) {
+    //     final session = OdooSession.fromJson(sessionData);
+    //     final odooService = OdooService(baseUrl);
+    //     odooService.setSession(session);
+        
+    //     debugPrint('Clearing FCM token from Odoo res.users for userId ${session.userId}...');
+    //     await odooService.executeModelMethod(
+    //       'res.users',
+    //       'write',
+    //       [
+    //         [session.userId],
+    //         {'token': false}
+    //       ],
+    //       silent: true,
+    //     );
+    //     odooService.close();
+    //     debugPrint('FCM token cleared successfully on Odoo.');
+    //   }
+    // } catch (e) {
+    //   debugPrint('Error clearing FCM token during logout: $e');
+    // }
+
     await _clearSessionData(prefs);
 
     final rememberMe = await prefs.getBool('rememberMe') ?? false;

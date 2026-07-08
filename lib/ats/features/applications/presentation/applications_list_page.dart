@@ -11,7 +11,8 @@ import 'application_detail_page.dart';
 
 class ApplicationsListPage extends StatelessWidget {
   final int? filterJobId;
-  const ApplicationsListPage({super.key, this.filterJobId});
+  final bool showBackButton;
+  const ApplicationsListPage({super.key, this.filterJobId, this.showBackButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -121,28 +122,38 @@ class ApplicationsListPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Text(
-                      //   "Odoo Recruitment",
-                      //   style: TextStyle(
-                      //     fontSize: 13,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: Colors.white.withOpacity(0.85),
-                      //     letterSpacing: 1.1,
-                      //   ),
-                      // ),
-                      const SizedBox(height: 4),
-                       Text(
-                        l10n?.ats_applications ?? "Applications",
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (showBackButton) ...[
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n?.ats_applications ?? "Applications",
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   IconButton(
                     onPressed: cubit.refresh,
@@ -302,17 +313,17 @@ class ApplicationsListPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          AtsLocalizations.getStage(context, app.applicationStatus),
-                          style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      // Container(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      //   decoration: BoxDecoration(
+                      //     color: statusColor.withOpacity(0.1),
+                      //     borderRadius: BorderRadius.circular(12),
+                      //   ),
+                      //   child: Text(
+                      //     AtsLocalizations.getStage(context, app.applicationStatus),
+                      //     style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
+                      //   ),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 14),

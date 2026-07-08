@@ -37,7 +37,7 @@ class AttendanceActions extends StatelessWidget {
         'routeName': Routes.docbox,
       },
       {
-        'title': l10n.company_calendar,
+        'title': l10n.holidays_calendar,
         'icon': Icons.calendar_today_rounded,
         'color': const Color(0xFF00ACC1),
         'routeName': Routes.holidayCalendar,

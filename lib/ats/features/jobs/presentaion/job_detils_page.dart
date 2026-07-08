@@ -217,6 +217,17 @@ class _CreateJobdetailsPageState extends State<CreateJobdetailsPage> {
     );
   }
 
+  /// Converts raw Odoo priority values (false, empty, '0', '1', '2') to human-readable labels.
+  String _cleanPriority(String priority) {
+    final lower = priority.toLowerCase().trim();
+    if (lower.isEmpty || lower == 'false' || lower == 'null') return 'N/A';
+    if (lower == '0') return 'Normal';
+    if (lower == '1') return 'Good';
+    if (lower == '2') return 'Very Good';
+    if (lower == '3') return 'Excellent';
+    return priority.trim();
+  }
+
   Color _getPriorityColor(String priority) {
     final lower = priority.toLowerCase().trim();
     if (lower.contains('very high') || lower == '0' || lower == 'high') return const Color(0xFFEF4444);
@@ -399,6 +410,17 @@ class _CreateJobdetailsPageState extends State<CreateJobdetailsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            if (widget.job.recruitmentSequence.isNotEmpty) ...[
+                              Text(
+                                widget.job.recruitmentSequence,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3B82F6),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                            ],
                             Text(
                               widget.job.title,
                               style:  TextStyle(
@@ -451,7 +473,7 @@ class _CreateJobdetailsPageState extends State<CreateJobdetailsPage> {
                       ),
                       _pillBadge(
                         icon: Icons.star_rounded,
-                        text: "${widget.job.priority} Priority",
+                        text: "${_cleanPriority(widget.job.priority)} Priority",
                         bgColor: pBadgeBgColor,
                         textColor: pBadgeTextColor,
                       ),
@@ -483,18 +505,19 @@ class _CreateJobdetailsPageState extends State<CreateJobdetailsPage> {
             ],
 
             // 🌟 SECONDARY SKILLS PANEL
-            if (widget.job.secondarySkills.isNotEmpty) ...[
-              _sectionTitle("Secondary Skills Required"),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.job.secondarySkills.map((s) {
-                  return _tagChip(s, const Color(0xFFD97706), const Color(0xFFFFFBEB));
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-            ],
+            _sectionTitle("Secondary Skills Required"),
+            const SizedBox(height: 12),
+            widget.job.secondarySkills.isNotEmpty
+                ? Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: widget.job.secondarySkills.map((s) {
+                      return _tagChip(s, const Color(0xFFD97706), const Color(0xFFFFFBEB));
+                    }).toList(),
+                  )
+                : _tagChip("N/A", Colors.grey.shade500, Colors.grey.shade100),
+            const SizedBox(height: 24),
+
 
             // 🌟 JOB DESCRIPTION CARD
             if (widget.job.description.trim().isNotEmpty) ...[

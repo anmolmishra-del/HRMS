@@ -550,6 +550,36 @@ abstract class AppLocalizations {
   /// **'Validated OT'**
   String get validated_overtime;
 
+  /// No description provided for @session_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Session'**
+  String get session_label;
+
+  /// No description provided for @session_timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Timeline'**
+  String get session_timeline;
+
+  /// No description provided for @no_gps_location.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS Location'**
+  String get no_gps_location;
+
+  /// No description provided for @session_active.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Active'**
+  String get session_active;
+
+  /// No description provided for @sessions_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get sessions_label;
+
   /// No description provided for @location.
   ///
   /// In en, this message translates to:
@@ -2350,6 +2380,18 @@ abstract class AppLocalizations {
   /// **'{count} tasks'**
   String tasks_count(Object count);
 
+  /// No description provided for @sessions_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sessions'**
+  String sessions_count(Object count);
+
+  /// No description provided for @file_too_large.
+  ///
+  /// In en, this message translates to:
+  /// **'File size exceeds the limit of 10 MB.'**
+  String get file_too_large;
+
   /// No description provided for @search_projects.
   ///
   /// In en, this message translates to:
@@ -2805,6 +2847,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total'**
   String get total;
+
+  /// No description provided for @total_worked.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Worked'**
+  String get total_worked;
 
   /// No description provided for @good_morning.
   ///

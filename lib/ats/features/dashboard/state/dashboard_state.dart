@@ -6,6 +6,7 @@ class DashboardState {
   final List<int> counts;
   final List<double> chartValues;
   final String name;  
+  final bool atsAccessDisabled;
   
   final List<int> weeklyCounts;
   final int newApplicationsThisWeek;
@@ -22,6 +23,7 @@ class DashboardState {
     required this.counts,
     required this.chartValues,
     required this.name,
+    this.atsAccessDisabled = false,
     required this.weeklyCounts,
     required this.newApplicationsThisWeek,
     required this.recentApplications,
@@ -34,6 +36,7 @@ factory DashboardState.initial() {
     isLoading: false,
     error: null,
     selectedFilter: "This Month",
+    atsAccessDisabled: false,
 
     titles: [
       "Open Positions",
@@ -58,6 +61,7 @@ factory DashboardState.initial() {
     List<int>? counts,
     List<double>? chartValues,
     String? name,
+    bool? atsAccessDisabled,
     List<int>? weeklyCounts,
     int? newApplicationsThisWeek,
     List<Map<String, dynamic>>? recentApplications,
@@ -71,6 +75,7 @@ factory DashboardState.initial() {
       titles: titles ?? this.titles,
       counts: counts ?? this.counts,
       chartValues: chartValues ?? this.chartValues,
+      atsAccessDisabled: atsAccessDisabled ?? this.atsAccessDisabled,
       weeklyCounts: weeklyCounts ?? this.weeklyCounts,
       newApplicationsThisWeek: newApplicationsThisWeek ?? this.newApplicationsThisWeek,
       recentApplications: recentApplications ?? this.recentApplications,

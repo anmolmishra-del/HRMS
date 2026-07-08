@@ -264,15 +264,16 @@ class HrJobService {
   }
 
   static String _extractName(Object? value) {
+    // Odoo returns boolean false for empty relation/char fields — treat as N/A
+    if (value == null || value == false) return 'N/A';
+    if (value is bool) return 'N/A';
+    if (value is String && (value.isEmpty || value.toLowerCase() == 'false')) return 'N/A';
     if (value is List && value.isNotEmpty) {
-      final name = value.length > 1
-          ? value[1]
-          : value.first;
-
-      return name?.toString() ?? 'N/A';
+      final name = value.length > 1 ? value[1] : value.first;
+      if (name == null || name == false) return 'N/A';
+      return name.toString();
     }
-
-    return value?.toString() ?? 'N/A';
+    return value.toString();
   }
 
   String _stripHtml(String htmlString) {
@@ -347,6 +348,7 @@ class HrJobService {
         'is_published',
         'website_published',
         'locations',
+        'recruitment_sequence',
       ];
 
       // Only select fields that actually exist on the Odoo server
@@ -460,9 +462,19 @@ class HrJobService {
                   ? locationsList.join(', ') 
                   : (requestedBy.isNotEmpty && requestedBy != 'N/A' ? requestedBy : company);
 
-              final budgetStr = data['budget']?.toString() ?? 'Not specified';
-              final statusStr = data['status']?.toString() ?? 'Open';
-              final contractType = data['contract_type_id'] != null ? _extractName(data['contract_type_id']) : 'Full-time';
+              // Clean Odoo false (boolean) values — Odoo returns false for empty fields
+              final budgetRaw = data['budget'];
+              final budgetStr = (budgetRaw == null || budgetRaw == false)
+                  ? ''
+                  : budgetRaw.toString();
+              final statusRaw = data['status'];
+              final statusStr = (statusRaw == null || statusRaw == false)
+                  ? 'Open'
+                  : statusRaw.toString();
+              final contractRaw = data['contract_type_id'];
+              final contractType = (contractRaw != null && contractRaw != false)
+                  ? _extractName(contractRaw)
+                  : 'Full-time';
               
               // Clean HTML from Job Description cleanly!
               final rawDesc = data['description']?.toString() ?? 'No details provided';
@@ -487,13 +499,8 @@ class HrJobService {
                   .map((id) => skillMap[id is int ? id : int.tryParse(id.toString())] ?? 'Skill #$id')
                   .toList();
 
-              // If dynamic lists are empty, supply rich default skills matching Flutter developer requisitions
-              if (primarySkillsList.isEmpty) {
-                primarySkillsList.addAll(['Flutter', 'Dart', 'Odoo Integration']);
-              }
-              if (secondarySkillsList.isEmpty) {
-                secondarySkillsList.addAll(['REST APIs', 'State Management', 'Git']);
-              }
+              // Do NOT add fallback/hardcoded skills — if Odoo returns none, keep the list empty
+              // The UI will show "N/A" when the list is empty
 
               print("------------------------------------------------------------------");
               print("📦 Parsed Requisition Reqd [ID: ${data['id']}]:");
@@ -562,6 +569,7 @@ class HrJobService {
                 company: company,
                 noOfRecruitment: noOfRecruitmentVal,
                 noOfEligibleSubmissions: noOfEligibleSubmissionsVal,
+                recruitmentSequence: data['recruitment_sequence']?.toString() ?? '',
               );
             },
           ),

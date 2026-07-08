@@ -1051,7 +1051,7 @@ class OdooService {
       'search_read',
       [],
       kwargs: {
-        'domain': [['id', '=', documentId]],
+        'domain': [['id', '=', documentId], '|', ['active', '=', true], ['active', '=', false]],
         'fields': ['id', 'name', 'datas', 'type', 'url'],
       },
     );

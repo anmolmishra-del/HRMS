@@ -218,7 +218,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   Widget _buildDatePickerSection(AppLocalizations l10n) {
     return Row(
       children: [
-        Expanded(child: _buildDateTile(l10n.start_date, _startDate, (date) => setState(() => _startDate = date))),
+        Expanded(child: _buildDateTile(l10n.start_date, _startDate, (date) => setState(() { _startDate = date; _endDate = date; }))),
         const SizedBox(width: 16),
         Expanded(child: _buildDateTile(l10n.end_date, _endDate, (date) => setState(() => _endDate = date))),
       ],

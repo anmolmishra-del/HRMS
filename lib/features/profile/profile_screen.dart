@@ -17,6 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/core/constants/app_colors.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/core/utils/responsive_util.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -50,45 +51,7 @@ class ProfileScreen extends StatelessWidget {
           }
 
           if (state.status == ProfileStatus.loading) {
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            return Shimmer.fromColors(
-              baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-              highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 60,
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 180,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: 4,
-                        padding: EdgeInsets.zero,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) => Container(
-                          height: 70,
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return const AppLoader();
           }
 
           final employee = state.employee;
