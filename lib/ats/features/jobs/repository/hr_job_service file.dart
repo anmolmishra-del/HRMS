@@ -342,7 +342,7 @@ class HrJobService {
         'website_id',
         'user_id',
         'description',
-        'status',
+        'recruitment_status',
         'skill_ids',
         'secondary_skill_ids',
         'is_published',
@@ -467,7 +467,7 @@ class HrJobService {
               final budgetStr = (budgetRaw == null || budgetRaw == false)
                   ? ''
                   : budgetRaw.toString();
-              final statusRaw = data['status'];
+              final statusRaw = data['recruitment_status'];
               final statusStr = (statusRaw == null || statusRaw == false)
                   ? 'Open'
                   : statusRaw.toString();
@@ -515,11 +515,11 @@ class HrJobService {
               print("  🔹 Eligible Submissions (no_of_eligible_submissions): $eligibleSubmissions");
               print("  🔹 Primary Recruiter (user_id): $primaryRecruiter");
               print("  🔹 Priority (job_priority): $priorityStr");
-              print("  🔹 Recruitment Status (status): $statusStr");
+              print("  🔹 Recruitment Status (recruitment_status): $statusStr");
               print("  🔹 Resolved Primary Skills: $primarySkillsList");
               print("  🔹 Resolved Secondary Skills: $secondarySkillsList");
               print("------------------------------------------------------------------");
-
+print("Raw recruitment_status => ${data['recruitment_status']}");
               final List<String> requirements = [
                 "Budget: $budgetStr",
                 "Mission Date: $targetFrom",

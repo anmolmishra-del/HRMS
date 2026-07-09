@@ -216,12 +216,12 @@ class ProfileCubit extends Cubit<ProfileState> {
 
       if (Platform.isAndroid) {
         // safer approach
-        dir = await getExternalStorageDirectory();
+        dir =  Directory('/storage/emulated/0/Download');
       } else {
         dir = await getApplicationDocumentsDirectory();
       }
 
-      final filePath = "${dir!.path}/resume.pdf";
+      final filePath = "${dir.path}/resume.pdf";
 
       final OdooService svc = OdooService(ApiConfig.baseUrl);
       await svc.ensureSession();

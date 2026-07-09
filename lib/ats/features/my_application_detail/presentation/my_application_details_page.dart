@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/ats/features/my_application_detail/cubit/my_application_detail_cubit.dart';
 import 'package:flutter_app/ats/features/my_application_detail/state/detail_state.dart';
+import 'package:flutter_app/ats/utils/ats_localization.dart';
 
 import '../../my_applications/state/my_application_state.dart';
 
@@ -32,10 +33,10 @@ class ApplicationDetailsPage
           backgroundColor: Colors.white,
           elevation: 0,
 
-          title: const Text(
-            "Application Details",
+          title: Text(
+            AtsLocalizations.translate(context, "Application Details"),
 
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
             ),
@@ -283,8 +284,8 @@ class ApplicationDetailsPage
 
                               children: [
 
-                                const Text(
-                                  "Applied On",
+                                Text(
+                                  AtsLocalizations.translate(context, "Applied On"),
                                 ),
 
                                 const SizedBox(

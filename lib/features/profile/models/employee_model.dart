@@ -227,4 +227,53 @@ class Employee {
                   : null)),
     );
   }
+
+  @override
+  String toString() {
+    return 'Employee(id: $id, name: $name, employeeCode: $employeeCode, jobTitle: $jobTitle, workEmail: $workEmail, mobilePhone: $mobilePhone, active: $active, department: ${departmentId?.name}, job: ${jobId?.name}, company: ${companyId?.name})';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'image1920': image1920 != null ? '[Base64 Image]' : null,
+      'name': name,
+      'employeeId': employeeId?.toJson(),
+      'employeeCode': employeeCode,
+      'jobTitle': jobTitle,
+      'userId': userId?.toJson(),
+      'departmentId': departmentId?.toJson(),
+      'jobId': jobId?.toJson(),
+      'empType': empType?.toJson(),
+      'workEmail': workEmail,
+      'mobilePhone': mobilePhone,
+      'workPhone': workPhone,
+      'doj': doj?.toIso8601String(),
+      'companyId': companyId?.toJson(),
+      'parentId': parentId?.toJson(),
+      'coachId': coachId?.toJson(),
+      'active': active,
+      'attendanceIds': attendanceIds,
+      'categoryIds': categoryIds,
+      'addressId': addressId?.toJson(),
+      'workLocationId': workLocationId?.toJson(),
+      'leaveManagerId': leaveManagerId?.toJson(),
+      'gender': gender,
+      'birthday': birthday?.toIso8601String(),
+      'marital': marital,
+      'bloodGroup': bloodGroup,
+      'identificationId': identificationId,
+      'passportId': passportId,
+      'aadharNo': aadharNo,
+      'panNo': panNo,
+      'emergencyContact': emergencyContact,
+      'emergencyPhone': emergencyPhone,
+      'bankName': bankName,
+      'bankIfsc': bankIfsc,
+      'bankAccountId': bankAccountId,
+      'address': address,
+      'permanentAddress': permanentAddress,
+    };
+  }
 }
+

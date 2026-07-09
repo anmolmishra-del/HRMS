@@ -127,8 +127,14 @@ class _CandidatePageState extends State<CandidatePage> {
                               ],
                             ),
                           ),
+                           IconButton(
+                    onPressed: cubit.loadCandidates,
+                    icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                  ),
                         ],
+                        
                       ),
+                      
                       const SizedBox(height: 20),
                       TextField(
                         onChanged: cubit.search,

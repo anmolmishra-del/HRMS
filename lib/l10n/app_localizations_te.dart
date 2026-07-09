@@ -1633,4 +1633,249 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get settings => 'సెట్టింగ్‌లు';
+
+  @override
+  String get applicationProfile => 'దరఖాస్తు ప్రొఫైల్';
+
+  @override
+  String get ats_no_linked_position => 'లింక్ చేయబడిన స్థానం లేదు';
+
+  @override
+  String get ats_stage => 'దశ';
+
+  @override
+  String get ats_availability => 'అందుబాటు';
+
+  @override
+  String get ats_not_specified => 'పేర్కొనబడలేదు';
+
+  @override
+  String get ats_info => 'సమాచారం';
+
+  @override
+  String get ats_details => 'వివరాలు';
+
+  @override
+  String get ats_additional_info => 'అదనపు సమాచారం';
+
+  @override
+  String get ats_notes_comments => 'గమనికలు & వ్యాఖ్యలు';
+
+  @override
+  String get ats_candidate_identity => 'అభ్యర్థి గుర్తింపు';
+
+  @override
+  String get ats_candidate_name => 'అభ్యర్థి పేరు';
+
+  @override
+  String get ats_email_address => 'ఈమెయిల్ చిరునామా';
+
+  @override
+  String get ats_phone_number => 'ఫోన్ నంబర్';
+
+  @override
+  String get ats_linkedin_profile => 'లింక్డ్ఇన్ ప్రొఫైల్';
+
+  @override
+  String get ats_not_linked => 'లింక్ చేయబడలేదు';
+
+  @override
+  String get ats_salary_details => 'జీతం వివరాలు';
+
+  @override
+  String get ats_current_ctc => 'ప్రస్తుత CTC';
+
+  @override
+  String get ats_expected_salary => 'ఆశించిన జీతం';
+
+  @override
+  String get ats_proposed_salary => 'ప్రతిపాదిత జీతం';
+
+  @override
+  String get ats_salary_negotiable => 'జీతం చర్చించదగినది';
+
+  @override
+  String get ats_yes => 'అవును';
+
+  @override
+  String get ats_no => 'కాదు';
+
+  @override
+  String get ats_experience_details => 'అనుభవం వివరాలు';
+
+  @override
+  String get ats_total_experience => 'మొత్తం అనుభవం';
+
+  @override
+  String get ats_relevant_experience => 'సంబంధిత అనుభవం';
+
+  @override
+  String get ats_notice_period => 'నోటీసు వ్యవధి';
+
+  @override
+  String get ats_np_negotiable => 'NP చర్చించదగినది';
+
+  @override
+  String get ats_holding_offer => 'హోల్డింగ్ ఆఫర్';
+
+  @override
+  String get ats_recruitment_assignments => 'నియామక కేటాయింపులు';
+
+  @override
+  String get ats_recruiter_handler => 'రిక్రూటర్ / హ్యాండ్లర్';
+
+  @override
+  String get ats_job_position => 'ఉద్యోగ హోదా';
+
+  @override
+  String get ats_experience_type => 'అనుభవం రకం';
+
+  @override
+  String get ats_company => 'కంపెనీ';
+
+  @override
+  String get ats_bio_details => 'బయో వివరాలు';
+
+  @override
+  String get ats_gender => 'లింగం';
+
+  @override
+  String get ats_birthday => 'పుట్టినరోజు';
+
+  @override
+  String get ats_blood_group => 'రక్త గ్రూపు';
+
+  @override
+  String get ats_marital_status => 'వైవాహిక స్థితి';
+
+  @override
+  String get ats_contact_addresses => 'సంప్రదింపు చిరునామాలు';
+
+  @override
+  String get ats_current_address => 'ప్రస్తుత చిరునామా';
+
+  @override
+  String get ats_permanent_address => 'శాశ్వత చిరునామా';
+
+  @override
+  String get ats_applicant_comments => 'దరఖాస్తుదారు వ్యాఖ్యలు';
+
+  @override
+  String get ats_recruiter_comments => 'రిక్రూటర్ వ్యాఖ్యలు';
+
+  @override
+  String get ats_general_notes => 'సాధారణ గమనికలు';
+
+  @override
+  String get ats_no_records_provided => 'ఎటువంటి రికార్డులు అందించబడలేదు.';
+
+  @override
+  String get ats_applied_on => 'దరఖాస్తు చేసిన తేదీ';
+
+  @override
+  String get ats_job_documents => 'ఉద్యోగ పత్రాలు';
+
+  @override
+  String get ats_no_documents_found =>
+      'ఈ ఉద్యోగ హోదా కోసం ఎటువంటి పత్రాలు కనుగొనబడలేదు.';
+
+  @override
+  String get ats_primary_skills_required => 'అవసరమైన ప్రాథమిక నైపుణ్యాలు';
+
+  @override
+  String get ats_secondary_skills_required => 'అవసరమైన ద్వితీయ నైపుణ్యాలు';
+
+  @override
+  String get ats_job_description => 'ఉద్యోగ వివరణ';
+
+  @override
+  String get ats_key_responsibilities => 'కీలక బాధ్యతలు';
+
+  @override
+  String get ats_minimum_requirements => 'కనిష్ట అవసరాలు';
+
+  @override
+  String get ats_job_directory_summary => 'ఉద్యోగ డైరెక్టరీ సారాంశం';
+
+  @override
+  String get ats_experience_required => 'అవసరమైన అనుభవం';
+
+  @override
+  String get ats_budget_salary => 'బడ్జెట్ / జీతం';
+
+  @override
+  String get ats_employment_type => 'ఉద్యోగ రకం';
+
+  @override
+  String get ats_full_time => 'పూర్తి సమయం';
+
+  @override
+  String get ats_status => 'స్థితి';
+
+  @override
+  String get ats_published => 'ప్రచురించబడింది';
+
+  @override
+  String get ats_draft => 'డ్రాఫ్ట్';
+
+  @override
+  String get ats_priority => 'ప్రాధాన్యత';
+
+  @override
+  String get ats_not_spec => 'పేర్కొనబడలేదు';
+
+  @override
+  String get ats_candidate_profile => 'అభ్యర్థి ప్రొఫైల్';
+
+  @override
+  String get ats_contact_bio => 'సంప్రదింపు & బయో';
+
+  @override
+  String get ats_skills_meta => 'నైపుణ్యాలు & మెటా';
+
+  @override
+  String get ats_primary_contact => 'ప్రాథమిక సంప్రదింపు';
+
+  @override
+  String get ats_mobile_phone => 'మొబైల్ ఫోన్';
+
+  @override
+  String get ats_alternate_phone => 'ప్రత్యామ్నాయ ఫోన్';
+
+  @override
+  String get ats_not_provided => 'అందించబడలేదు';
+
+  @override
+  String get ats_recruitment_information => 'నియామక సమాచారం';
+
+  @override
+  String get ats_contact_partner_name => 'సంప్రదింపు భాగస్వామి పేరు';
+
+  @override
+  String get ats_candidate_manager => 'అభ్యర్థి మేనేజర్';
+
+  @override
+  String get ats_odoo_company => 'Odoo కంపెనీ';
+
+  @override
+  String get ats_candidate_status_info => 'అభ్యర్థి స్థితి సమాచారం';
+
+  @override
+  String get ats_availability_date => 'అందుబాటులో ఉండే తేదీ';
+
+  @override
+  String get ats_recruitment_stage => 'నియామక దశ';
+
+  @override
+  String get ats_odoo_skills_list => 'Odoo నైపుణ్యాల జాబితా';
+
+  @override
+  String get ats_no_skills_mapped =>
+      'ఈ అభ్యర్థికి ఇంకా నైపుణ్యాలు మ్యాప్ చేయబడలేదు.';
+
+  @override
+  String get ats_download_resume => 'రెజ్యూమ్ డౌన్‌లోడ్ చేయండి';
+
+  @override
+  String get ats_type => 'రకం';
 }

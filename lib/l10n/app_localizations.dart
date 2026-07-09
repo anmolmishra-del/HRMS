@@ -3207,6 +3207,492 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// No description provided for @applicationProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Profile'**
+  String get applicationProfile;
+
+  /// No description provided for @ats_no_linked_position.
+  ///
+  /// In en, this message translates to:
+  /// **'No Linked Position'**
+  String get ats_no_linked_position;
+
+  /// No description provided for @ats_stage.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage'**
+  String get ats_stage;
+
+  /// No description provided for @ats_availability.
+  ///
+  /// In en, this message translates to:
+  /// **'Availability'**
+  String get ats_availability;
+
+  /// No description provided for @ats_not_specified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get ats_not_specified;
+
+  /// No description provided for @ats_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get ats_info;
+
+  /// No description provided for @ats_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get ats_details;
+
+  /// No description provided for @ats_additional_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Info'**
+  String get ats_additional_info;
+
+  /// No description provided for @ats_notes_comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes & Comments'**
+  String get ats_notes_comments;
+
+  /// No description provided for @ats_candidate_identity.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidate Identity'**
+  String get ats_candidate_identity;
+
+  /// No description provided for @ats_candidate_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidate Name'**
+  String get ats_candidate_name;
+
+  /// No description provided for @ats_email_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get ats_email_address;
+
+  /// No description provided for @ats_phone_number.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get ats_phone_number;
+
+  /// No description provided for @ats_linkedin_profile.
+  ///
+  /// In en, this message translates to:
+  /// **'LinkedIn Profile'**
+  String get ats_linkedin_profile;
+
+  /// No description provided for @ats_not_linked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked'**
+  String get ats_not_linked;
+
+  /// No description provided for @ats_salary_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary details'**
+  String get ats_salary_details;
+
+  /// No description provided for @ats_current_ctc.
+  ///
+  /// In en, this message translates to:
+  /// **'Current CTC'**
+  String get ats_current_ctc;
+
+  /// No description provided for @ats_expected_salary.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Salary'**
+  String get ats_expected_salary;
+
+  /// No description provided for @ats_proposed_salary.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed Salary'**
+  String get ats_proposed_salary;
+
+  /// No description provided for @ats_salary_negotiable.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Negotiable'**
+  String get ats_salary_negotiable;
+
+  /// No description provided for @ats_yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get ats_yes;
+
+  /// No description provided for @ats_no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get ats_no;
+
+  /// No description provided for @ats_experience_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience details'**
+  String get ats_experience_details;
+
+  /// No description provided for @ats_total_experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Experience'**
+  String get ats_total_experience;
+
+  /// No description provided for @ats_relevant_experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Relevant Experience'**
+  String get ats_relevant_experience;
+
+  /// No description provided for @ats_notice_period.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice Period'**
+  String get ats_notice_period;
+
+  /// No description provided for @ats_np_negotiable.
+  ///
+  /// In en, this message translates to:
+  /// **'NP Negotiable'**
+  String get ats_np_negotiable;
+
+  /// No description provided for @ats_holding_offer.
+  ///
+  /// In en, this message translates to:
+  /// **'Holding Offer'**
+  String get ats_holding_offer;
+
+  /// No description provided for @ats_recruitment_assignments.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruitment Assignments'**
+  String get ats_recruitment_assignments;
+
+  /// No description provided for @ats_recruiter_handler.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruiter / Handler'**
+  String get ats_recruiter_handler;
+
+  /// No description provided for @ats_job_position.
+  ///
+  /// In en, this message translates to:
+  /// **'Job Position'**
+  String get ats_job_position;
+
+  /// No description provided for @ats_experience_type.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience Type'**
+  String get ats_experience_type;
+
+  /// No description provided for @ats_company.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get ats_company;
+
+  /// No description provided for @ats_bio_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio details'**
+  String get ats_bio_details;
+
+  /// No description provided for @ats_gender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get ats_gender;
+
+  /// No description provided for @ats_birthday.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday'**
+  String get ats_birthday;
+
+  /// No description provided for @ats_blood_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Blood Group'**
+  String get ats_blood_group;
+
+  /// No description provided for @ats_marital_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Marital Status'**
+  String get ats_marital_status;
+
+  /// No description provided for @ats_contact_addresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Addresses'**
+  String get ats_contact_addresses;
+
+  /// No description provided for @ats_current_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Address'**
+  String get ats_current_address;
+
+  /// No description provided for @ats_permanent_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanent Address'**
+  String get ats_permanent_address;
+
+  /// No description provided for @ats_applicant_comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Applicant Comments'**
+  String get ats_applicant_comments;
+
+  /// No description provided for @ats_recruiter_comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruiter Comments'**
+  String get ats_recruiter_comments;
+
+  /// No description provided for @ats_general_notes.
+  ///
+  /// In en, this message translates to:
+  /// **'General Notes'**
+  String get ats_general_notes;
+
+  /// No description provided for @ats_no_records_provided.
+  ///
+  /// In en, this message translates to:
+  /// **'No records provided.'**
+  String get ats_no_records_provided;
+
+  /// No description provided for @ats_applied_on.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied On'**
+  String get ats_applied_on;
+
+  /// No description provided for @ats_job_documents.
+  ///
+  /// In en, this message translates to:
+  /// **'Job Documents'**
+  String get ats_job_documents;
+
+  /// No description provided for @ats_no_documents_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents found for this job position.'**
+  String get ats_no_documents_found;
+
+  /// No description provided for @ats_primary_skills_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary Skills Required'**
+  String get ats_primary_skills_required;
+
+  /// No description provided for @ats_secondary_skills_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary Skills Required'**
+  String get ats_secondary_skills_required;
+
+  /// No description provided for @ats_job_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Job Description'**
+  String get ats_job_description;
+
+  /// No description provided for @ats_key_responsibilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Responsibilities'**
+  String get ats_key_responsibilities;
+
+  /// No description provided for @ats_minimum_requirements.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum Requirements'**
+  String get ats_minimum_requirements;
+
+  /// No description provided for @ats_job_directory_summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Job Directory Summary'**
+  String get ats_job_directory_summary;
+
+  /// No description provided for @ats_experience_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience Required'**
+  String get ats_experience_required;
+
+  /// No description provided for @ats_budget_salary.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget / Salary'**
+  String get ats_budget_salary;
+
+  /// No description provided for @ats_employment_type.
+  ///
+  /// In en, this message translates to:
+  /// **'Employment Type'**
+  String get ats_employment_type;
+
+  /// No description provided for @ats_full_time.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-time'**
+  String get ats_full_time;
+
+  /// No description provided for @ats_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get ats_status;
+
+  /// No description provided for @ats_published.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get ats_published;
+
+  /// No description provided for @ats_draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get ats_draft;
+
+  /// No description provided for @ats_priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get ats_priority;
+
+  /// No description provided for @ats_not_spec.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Spec'**
+  String get ats_not_spec;
+
+  /// No description provided for @ats_candidate_profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidate Profile'**
+  String get ats_candidate_profile;
+
+  /// No description provided for @ats_contact_bio.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact & Bio'**
+  String get ats_contact_bio;
+
+  /// No description provided for @ats_skills_meta.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills & Meta'**
+  String get ats_skills_meta;
+
+  /// No description provided for @ats_primary_contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary Contact'**
+  String get ats_primary_contact;
+
+  /// No description provided for @ats_mobile_phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Phone'**
+  String get ats_mobile_phone;
+
+  /// No description provided for @ats_alternate_phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternate Phone'**
+  String get ats_alternate_phone;
+
+  /// No description provided for @ats_not_provided.
+  ///
+  /// In en, this message translates to:
+  /// **'Not provided'**
+  String get ats_not_provided;
+
+  /// No description provided for @ats_recruitment_information.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruitment Information'**
+  String get ats_recruitment_information;
+
+  /// No description provided for @ats_contact_partner_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Partner Name'**
+  String get ats_contact_partner_name;
+
+  /// No description provided for @ats_candidate_manager.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidate Manager'**
+  String get ats_candidate_manager;
+
+  /// No description provided for @ats_odoo_company.
+  ///
+  /// In en, this message translates to:
+  /// **'Odoo Company'**
+  String get ats_odoo_company;
+
+  /// No description provided for @ats_candidate_status_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidate Status Info'**
+  String get ats_candidate_status_info;
+
+  /// No description provided for @ats_availability_date.
+  ///
+  /// In en, this message translates to:
+  /// **'Availability Date'**
+  String get ats_availability_date;
+
+  /// No description provided for @ats_recruitment_stage.
+  ///
+  /// In en, this message translates to:
+  /// **'Recruitment Stage'**
+  String get ats_recruitment_stage;
+
+  /// No description provided for @ats_odoo_skills_list.
+  ///
+  /// In en, this message translates to:
+  /// **'Odoo Skills List'**
+  String get ats_odoo_skills_list;
+
+  /// No description provided for @ats_no_skills_mapped.
+  ///
+  /// In en, this message translates to:
+  /// **'No skills mapped for this candidate yet.'**
+  String get ats_no_skills_mapped;
+
+  /// No description provided for @ats_download_resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Resume'**
+  String get ats_download_resume;
+
+  /// No description provided for @ats_type.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get ats_type;
 }
 
 class _AppLocalizationsDelegate

@@ -8,6 +8,7 @@ import 'package:flutter_app/ats/features/candidatefolder/candidate/state/candida
 import 'package:flutter_app/ats/features/candidatefolder/candidate/state/hr_candidate_model.dart';
 import 'package:flutter_app/ats/features/candidatefolder/candidate_screen/cubit/candidate_screen_cubit.dart';
 import 'package:flutter_app/ats/features/candidatefolder/candidate_screen/presentaion/resume_page.dart';
+import 'package:flutter_app/ats/utils/ats_localization.dart';
 
 class CandidateProfilePage extends StatefulWidget {
   const CandidateProfilePage({super.key});
@@ -62,7 +63,7 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Column(
               children: [
-                _buildDetailHeader(context, "Candidate Profile"),
+                _buildDetailHeader(context, AtsLocalizations.translate(context, "Candidate Profile")),
                 // 🌟 HEADER CARD (PREMIUM METADATA VIEW)
                 Container(
                   width: double.infinity,
@@ -154,10 +155,10 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
                     labelColor: AppColors.primary,
                     unselectedLabelColor: const Color(0xFF64748B),
                     labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                    tabs: const [
-                      Tab(text: "Contact & Bio"),
+                    tabs: [
+                      Tab(text: AtsLocalizations.translate(context, "Contact & Bio")),
                       // Combined Skills and Meta into one tab (slide)
-                      Tab(text: "Skills & Meta"),
+                      Tab(text: AtsLocalizations.translate(context, "Skills & Meta")),
                     ],
                   ),
                 ),
@@ -244,17 +245,17 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _buildInfoCard("Primary Contact", [
-          _buildDetailRow(Icons.email_outlined, "Email Address", candidate.emailFrom, isCopyable: true),
-          _buildDetailRow(Icons.phone_outlined, "Mobile Phone", candidate.partnerPhone),
-          _buildDetailRow(Icons.phone_iphone_outlined, "Alternate Phone", candidate.alternatePhone ?? "Not provided"),
-          _buildDetailRow(Icons.link_rounded, "LinkedIn Profile", candidate.linkedinProfile ?? "Not linked"),
+        _buildInfoCard(AtsLocalizations.translate(context, "Primary Contact"), [
+          _buildDetailRow(Icons.email_outlined, AtsLocalizations.translate(context, "Email Address"), candidate.emailFrom, isCopyable: true),
+          _buildDetailRow(Icons.phone_outlined, AtsLocalizations.translate(context, "Mobile Phone"), candidate.partnerPhone),
+          _buildDetailRow(Icons.phone_iphone_outlined, AtsLocalizations.translate(context, "Alternate Phone"), candidate.alternatePhone ?? AtsLocalizations.translate(context, "Not provided")),
+          _buildDetailRow(Icons.link_rounded, AtsLocalizations.translate(context, "LinkedIn Profile"), candidate.linkedinProfile ?? AtsLocalizations.translate(context, "Not linked")),
         ]),
         const SizedBox(height: 16),
-        _buildInfoCard("Recruitment Information", [
-          _buildDetailRow(Icons.person_pin_outlined, "Contact Partner Name", candidate.partnerId),
-          _buildDetailRow(Icons.badge_outlined, "Candidate Manager", candidate.userId),
-          _buildDetailRow(Icons.corporate_fare_outlined, "Odoo Company", candidate.companyId),
+        _buildInfoCard(AtsLocalizations.translate(context, "Recruitment Information"), [
+          _buildDetailRow(Icons.person_pin_outlined, AtsLocalizations.translate(context, "Contact Partner Name"), candidate.partnerId),
+          _buildDetailRow(Icons.badge_outlined, AtsLocalizations.translate(context, "Candidate Manager"), candidate.userId),
+          _buildDetailRow(Icons.corporate_fare_outlined, AtsLocalizations.translate(context, "Odoo Company"), candidate.companyId),
         ]),
       ],
     );
@@ -268,9 +269,9 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
       padding: const EdgeInsets.all(20),
       children: [
         // 1. CANDIDATE STATUS INFO (Formerly Meta & Actions Tab)
-        _buildInfoCard("Candidate Status Info", [
-          _buildDetailRow(Icons.calendar_month_outlined, "Availability Date", DateFormat('dd MMMM yyyy').format(candidate.availability)),
-          _buildDetailRow(Icons.bookmark_outline, "Recruitment Stage", candidate.stageName),
+        _buildInfoCard(AtsLocalizations.translate(context, "Candidate Status Info"), [
+          _buildDetailRow(Icons.calendar_month_outlined, AtsLocalizations.translate(context, "Availability Date"), DateFormat('dd MMMM yyyy').format(candidate.availability)),
+          _buildDetailRow(Icons.bookmark_outline, AtsLocalizations.translate(context, "Recruitment Stage"), candidate.stageName),
           // _buildDetailRow(Icons.app_registration_outlined, "Job Application Link", candidate.linkedApplicationId ?? "None (Draft)"),
         ]),
         if (candidate.categIds.isNotEmpty) ...[
@@ -282,19 +283,19 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
         // 2. ODOO SKILLS LIST SECTION (Formerly Skills Mapping Tab, now VIEW-ONLY)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
+          children: [
             Text(
-              "Odoo Skills List",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+              AtsLocalizations.translate(context, "Odoo Skills List"),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
             ),
           ],
         ),
         const SizedBox(height: 12),
         if (candidate.skills.isEmpty)
-          const Card(
+           Card(
             child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: Text("No skills mapped for this candidate yet.")),
+              padding: const EdgeInsets.all(24),
+              child: Center(child: Text(AtsLocalizations.translate(context, "No skills mapped for this candidate yet."))),
             ),
           )
         else
@@ -345,7 +346,7 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          "Type: ${skill.skillTypeId}",
+                          "${AtsLocalizations.translate(context, 'Type')}: ${skill.skillTypeId}",
                           style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                         ),
                       ],
@@ -404,7 +405,7 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Download Resume', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue)),
+                    Text(AtsLocalizations.translate(context, 'Download Resume'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue)),
                     // const Spacer(),
                     SizedBox(width: 8),
                      Icon(Icons.article_outlined, color: Colors.blue, size: 20),

@@ -184,14 +184,14 @@ class _PortalHeaderState extends State<PortalHeader> {
                   ),
                 ],
               ),
-              // if (widget.showSearchBar) ...[
+              if (widget.showSearchBar) ...[
                 SizedBox(height: MediaQuery.of(context).size.height < 780 ? 12 : 24),
                 CustomSearchBar(
                   controller: widget.searchController,
                   onChanged: widget.onSearchChanged,
                   hintText: 'Search..',
                 ),
-              // ],
+              ],
             ],
           ),
         ],

@@ -1628,4 +1628,248 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settings => 'Settings';
+
+  @override
+  String get applicationProfile => 'Application Profile';
+
+  @override
+  String get ats_no_linked_position => 'No Linked Position';
+
+  @override
+  String get ats_stage => 'Stage';
+
+  @override
+  String get ats_availability => 'Availability';
+
+  @override
+  String get ats_not_specified => 'Not specified';
+
+  @override
+  String get ats_info => 'Info';
+
+  @override
+  String get ats_details => 'Details';
+
+  @override
+  String get ats_additional_info => 'Additional Info';
+
+  @override
+  String get ats_notes_comments => 'Notes & Comments';
+
+  @override
+  String get ats_candidate_identity => 'Candidate Identity';
+
+  @override
+  String get ats_candidate_name => 'Candidate Name';
+
+  @override
+  String get ats_email_address => 'Email Address';
+
+  @override
+  String get ats_phone_number => 'Phone Number';
+
+  @override
+  String get ats_linkedin_profile => 'LinkedIn Profile';
+
+  @override
+  String get ats_not_linked => 'Not linked';
+
+  @override
+  String get ats_salary_details => 'Salary details';
+
+  @override
+  String get ats_current_ctc => 'Current CTC';
+
+  @override
+  String get ats_expected_salary => 'Expected Salary';
+
+  @override
+  String get ats_proposed_salary => 'Proposed Salary';
+
+  @override
+  String get ats_salary_negotiable => 'Salary Negotiable';
+
+  @override
+  String get ats_yes => 'Yes';
+
+  @override
+  String get ats_no => 'No';
+
+  @override
+  String get ats_experience_details => 'Experience details';
+
+  @override
+  String get ats_total_experience => 'Total Experience';
+
+  @override
+  String get ats_relevant_experience => 'Relevant Experience';
+
+  @override
+  String get ats_notice_period => 'Notice Period';
+
+  @override
+  String get ats_np_negotiable => 'NP Negotiable';
+
+  @override
+  String get ats_holding_offer => 'Holding Offer';
+
+  @override
+  String get ats_recruitment_assignments => 'Recruitment Assignments';
+
+  @override
+  String get ats_recruiter_handler => 'Recruiter / Handler';
+
+  @override
+  String get ats_job_position => 'Job Position';
+
+  @override
+  String get ats_experience_type => 'Experience Type';
+
+  @override
+  String get ats_company => 'Company';
+
+  @override
+  String get ats_bio_details => 'Bio details';
+
+  @override
+  String get ats_gender => 'Gender';
+
+  @override
+  String get ats_birthday => 'Birthday';
+
+  @override
+  String get ats_blood_group => 'Blood Group';
+
+  @override
+  String get ats_marital_status => 'Marital Status';
+
+  @override
+  String get ats_contact_addresses => 'Contact Addresses';
+
+  @override
+  String get ats_current_address => 'Current Address';
+
+  @override
+  String get ats_permanent_address => 'Permanent Address';
+
+  @override
+  String get ats_applicant_comments => 'Applicant Comments';
+
+  @override
+  String get ats_recruiter_comments => 'Recruiter Comments';
+
+  @override
+  String get ats_general_notes => 'General Notes';
+
+  @override
+  String get ats_no_records_provided => 'No records provided.';
+
+  @override
+  String get ats_applied_on => 'Applied On';
+
+  @override
+  String get ats_job_documents => 'Job Documents';
+
+  @override
+  String get ats_no_documents_found =>
+      'No documents found for this job position.';
+
+  @override
+  String get ats_primary_skills_required => 'Primary Skills Required';
+
+  @override
+  String get ats_secondary_skills_required => 'Secondary Skills Required';
+
+  @override
+  String get ats_job_description => 'Job Description';
+
+  @override
+  String get ats_key_responsibilities => 'Key Responsibilities';
+
+  @override
+  String get ats_minimum_requirements => 'Minimum Requirements';
+
+  @override
+  String get ats_job_directory_summary => 'Job Directory Summary';
+
+  @override
+  String get ats_experience_required => 'Experience Required';
+
+  @override
+  String get ats_budget_salary => 'Budget / Salary';
+
+  @override
+  String get ats_employment_type => 'Employment Type';
+
+  @override
+  String get ats_full_time => 'Full-time';
+
+  @override
+  String get ats_status => 'Status';
+
+  @override
+  String get ats_published => 'Published';
+
+  @override
+  String get ats_draft => 'Draft';
+
+  @override
+  String get ats_priority => 'Priority';
+
+  @override
+  String get ats_not_spec => 'Not Spec';
+
+  @override
+  String get ats_candidate_profile => 'Candidate Profile';
+
+  @override
+  String get ats_contact_bio => 'Contact & Bio';
+
+  @override
+  String get ats_skills_meta => 'Skills & Meta';
+
+  @override
+  String get ats_primary_contact => 'Primary Contact';
+
+  @override
+  String get ats_mobile_phone => 'Mobile Phone';
+
+  @override
+  String get ats_alternate_phone => 'Alternate Phone';
+
+  @override
+  String get ats_not_provided => 'Not provided';
+
+  @override
+  String get ats_recruitment_information => 'Recruitment Information';
+
+  @override
+  String get ats_contact_partner_name => 'Contact Partner Name';
+
+  @override
+  String get ats_candidate_manager => 'Candidate Manager';
+
+  @override
+  String get ats_odoo_company => 'Odoo Company';
+
+  @override
+  String get ats_candidate_status_info => 'Candidate Status Info';
+
+  @override
+  String get ats_availability_date => 'Availability Date';
+
+  @override
+  String get ats_recruitment_stage => 'Recruitment Stage';
+
+  @override
+  String get ats_odoo_skills_list => 'Odoo Skills List';
+
+  @override
+  String get ats_no_skills_mapped => 'No skills mapped for this candidate yet.';
+
+  @override
+  String get ats_download_resume => 'Download Resume';
+
+  @override
+  String get ats_type => 'Type';
 }

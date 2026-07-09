@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/ats/features/jobs/cubit/job_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_app/ats/utils/ats_localization.dart';
 import 'package:flutter_app/ats/core/constants/api_config.dart';
 import 'package:flutter_app/ats/core/services/odoo_service.dart';
 import 'package:flutter_app/ats/features/applications/presentation/applications_list_page.dart';
@@ -93,7 +95,7 @@ class _CreateJobdetailsPageState extends State<CreateJobdetailsPage> {
   void _showDocumentsSheet() {
     if (_documents.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No documents found for this job position.')),
+        SnackBar(content: Text(AtsLocalizations.translate(context, 'No documents found for this job position.'))),
       );
       return;
     }
@@ -117,7 +119,7 @@ class _CreateJobdetailsPageState extends State<CreateJobdetailsPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                      Text(
-                      "Job Documents",
+                      AtsLocalizations.translate(context, "Job Documents"),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
@@ -334,277 +336,280 @@ class _CreateJobdetailsPageState extends State<CreateJobdetailsPage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          _buildDetailHeader(context, "Job Details"),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: RefreshIndicator(
+        onRefresh: () => context.read<JobCubit>().fetchJobs(),
+        child: Column(
+          children: [
+            _buildDetailHeader(context, "Job Details"),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+              // 🌟 ODOO SMART BUTTONS SECTION
+              Row(
                 children: [
-            // 🌟 ODOO SMART BUTTONS SECTION
-            Row(
-              children: [
-                _buildSmartButton(
-                  icon: Icons.border_color_rounded,
-                  label: "Job Applications form",
-                  count: _applicantsCount,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ApplicationsListPage(
-                          filterJobId: widget.job.jobId ?? widget.job.id,
+                  _buildSmartButton(
+                    icon: Icons.border_color_rounded,
+                    label: "Job Applications form",
+                    count: _applicantsCount,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ApplicationsListPage(
+                            filterJobId: widget.job.jobId ?? widget.job.id,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 12),
-                _buildSmartButton(
-                  icon: Icons.description_outlined,
-                  label: "Documents",
-                  count: _documentsCount,
-                  onTap: _showDocumentsSheet,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // 🌟 TOP JOB IDENTITY CARD
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).cardColor : const Color(0xFFEBF3FF),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Theme.of(context).dividerColor, width: 1),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildSmartButton(
+                    icon: Icons.description_outlined,
+                    label: "Documents",
+                    count: _documentsCount,
+                    onTap: _showDocumentsSheet,
+                  ),
+                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const  Color(0xFF3B82F6).withOpacity(0.06),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+              const SizedBox(height: 20),
+        
+              // 🌟 TOP JOB IDENTITY CARD
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).cardColor : const Color(0xFFEBF3FF),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Theme.of(context).dividerColor, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const  Color(0xFF3B82F6).withOpacity(0.06),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.business_center_rounded,
+                            color: const Color(0xFF3B82F6),
+                            size: 28,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.business_center_rounded,
-                          color: const Color(0xFF3B82F6),
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 18),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (widget.job.recruitmentSequence.isNotEmpty) ...[
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (widget.job.recruitmentSequence.isNotEmpty) ...[
+                                Text(
+                                  widget.job.recruitmentSequence,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF3B82F6),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                              ],
                               Text(
-                                widget.job.recruitmentSequence,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF3B82F6),
+                                widget.job.title,
+                                style:  TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF0F172A),
+                                  letterSpacing: -0.5,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
+                              Text(
+                                widget.job.department,
+                                style: const TextStyle(
+                                  color: const Color(0xFF3B82F6),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ],
-                            Text(
-                              widget.job.title,
-                              style:  TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF0F172A),
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              widget.job.department,
-                              style: const TextStyle(
-                                color: const Color(0xFF3B82F6),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(color: Color(0xFFE2E8F0), height: 1),
+                    const SizedBox(height: 20),
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 10,
+                      children: [
+                        _rowInfo(Icons.history_rounded, widget.job.experience.isEmpty ? AtsLocalizations.translate(context, 'Not Spec') : widget.job.experience),
+                        _rowInfo(Icons.monetization_on_outlined, widget.job.salary.isEmpty ? 'N/A' : widget.job.salary),
+                        _rowInfo(Icons.location_on_rounded, widget.job.location.isEmpty ? 'N/A' : widget.job.location),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      children: [
+                        _pillBadge(
+                          icon: widget.job.isPublished ? Icons.cloud_done_rounded : Icons.cloud_off_rounded,
+                          text: widget.job.isPublished ? AtsLocalizations.translate(context, 'Published') : AtsLocalizations.translate(context, 'Draft'),
+                          bgColor: widget.job.isPublished 
+                              ? (isDark ? const Color(0xFF047857).withOpacity(0.15) : const Color(0xFFECFDF5))
+                              : (isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFF1F5F9)),
+                          textColor: widget.job.isPublished 
+                              ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
+                              : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                        ),
+                        _pillBadge(
+                          icon: Icons.star_rounded,
+                          text: "${AtsLocalizations.translate(context, _cleanPriority(widget.job.priority))} ${AtsLocalizations.translate(context, 'Priority')}",
+                          bgColor: pBadgeBgColor,
+                          textColor: pBadgeTextColor,
+                        ),
+                        _pillBadge(
+                          icon: Icons.info_outline_rounded,
+                          text: widget.job.status,
+                          bgColor: isDark ? const Color(0xFF1D4ED8).withOpacity(0.15) : const Color(0xFFEFF6FF),
+                          textColor: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+        
+              // 🌟 PRIMARY SKILLS PANEL
+              if (widget.job.primarySkills.isNotEmpty) ...[
+                _sectionTitle(AtsLocalizations.translate(context, "Primary Skills Required")),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: widget.job.primarySkills.map((s) {
+                    return _tagChip(s, const  Color(0xFF3B82F6), const  Color(0xFFEBF3FF));
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+              ],
+        
+              // 🌟 SECONDARY SKILLS PANEL
+              _sectionTitle(AtsLocalizations.translate(context, "Secondary Skills Required")),
+              const SizedBox(height: 12),
+              widget.job.secondarySkills.isNotEmpty
+                  ? Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: widget.job.secondarySkills.map((s) {
+                        return _tagChip(s, const Color(0xFFD97706), const Color(0xFFFFFBEB));
+                      }).toList(),
+                    )
+                  : _tagChip("N/A", Colors.grey.shade500, Colors.grey.shade100),
+              const SizedBox(height: 24),
+        
+        
+              // 🌟 JOB DESCRIPTION CARD
+              if (widget.job.description.trim().isNotEmpty) ...[
+                _sectionTitle(AtsLocalizations.translate(context, "Job Description")),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
-                  const SizedBox(height: 20),
-                  const Divider(color: Color(0xFFE2E8F0), height: 1),
-                  const SizedBox(height: 20),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 10,
-                    children: [
-                      _rowInfo(Icons.history_rounded, widget.job.experience.isEmpty ? 'Not Spec' : widget.job.experience),
-                      _rowInfo(Icons.monetization_on_outlined, widget.job.salary.isEmpty ? 'N/A' : widget.job.salary),
-                      _rowInfo(Icons.location_on_rounded, widget.job.location.isEmpty ? 'N/A' : widget.job.location),
-                    ],
+                  child: _buildRichDescriptionText(widget.job.description),
+                ),
+                const SizedBox(height: 24),
+              ],
+        
+              // 🌟 RESPONSIBILITIES PANEL
+              if (widget.job.responsibilities.isNotEmpty) ...[
+                _sectionTitle(AtsLocalizations.translate(context, "Key Responsibilities")),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: [
-                      _pillBadge(
-                        icon: widget.job.isPublished ? Icons.cloud_done_rounded : Icons.cloud_off_rounded,
-                        text: widget.job.isPublished ? 'Published' : 'Draft',
-                        bgColor: widget.job.isPublished 
-                            ? (isDark ? const Color(0xFF047857).withOpacity(0.15) : const Color(0xFFECFDF5))
-                            : (isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFF1F5F9)),
-                        textColor: widget.job.isPublished 
-                            ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
-                            : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
-                      ),
-                      _pillBadge(
-                        icon: Icons.star_rounded,
-                        text: "${_cleanPriority(widget.job.priority)} Priority",
-                        bgColor: pBadgeBgColor,
-                        textColor: pBadgeTextColor,
-                      ),
-                      _pillBadge(
-                        icon: Icons.info_outline_rounded,
-                        text: widget.job.status,
-                        bgColor: isDark ? const Color(0xFF1D4ED8).withOpacity(0.15) : const Color(0xFFEFF6FF),
-                        textColor: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
-                      ),
-                    ],
+                  child: Column(
+                    children: widget.job.responsibilities.map((r) => _bulletPoint(r)).toList(),
                   ),
-                ],
+                ),
+                const SizedBox(height: 24),
+              ],
+        
+              // 🌟 REQUIREMENTS PANEL
+              if (widget.job.requirements.isNotEmpty) ...[
+                _sectionTitle(AtsLocalizations.translate(context, "Minimum Requirements")),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                  ),
+                  child: Column(
+                    children: widget.job.requirements.map((req) => _bulletPoint(req)).toList(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+        
+              // 🌟 JOB METADATA SUMMARY DETAILS CARDS
+              _sectionTitle(AtsLocalizations.translate(context, "Job Directory Summary")),
+              const SizedBox(height: 12),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: _metadataCard(Icons.apartment_rounded, AtsLocalizations.translate(context, "Department"), widget.job.department)),
+                    const SizedBox(width: 14),
+                    Expanded(child: _metadataCard(Icons.work_history_rounded, AtsLocalizations.translate(context, "Experience Required"), widget.job.experience.isEmpty ? AtsLocalizations.translate(context, 'Not specified') : widget.job.experience)),
+                  ],
+                ),
               ),
+              const SizedBox(height: 14),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: _metadataCard(Icons.payments_rounded, AtsLocalizations.translate(context, "Budget / Salary"), widget.job.salary.isEmpty ? AtsLocalizations.translate(context, 'Not specified') : widget.job.salary)),
+                    const SizedBox(width: 14),
+                    Expanded(child: _metadataCard(Icons.access_time_filled_rounded, AtsLocalizations.translate(context, "Employment Type"), widget.job.type.isEmpty ? AtsLocalizations.translate(context, 'Full-time') : widget.job.type)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
             ),
-            const SizedBox(height: 24),
-
-            // 🌟 PRIMARY SKILLS PANEL
-            if (widget.job.primarySkills.isNotEmpty) ...[
-              _sectionTitle("Primary Skills Required"),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.job.primarySkills.map((s) {
-                  return _tagChip(s, const  Color(0xFF3B82F6), const  Color(0xFFEBF3FF));
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // 🌟 SECONDARY SKILLS PANEL
-            _sectionTitle("Secondary Skills Required"),
-            const SizedBox(height: 12),
-            widget.job.secondarySkills.isNotEmpty
-                ? Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: widget.job.secondarySkills.map((s) {
-                      return _tagChip(s, const Color(0xFFD97706), const Color(0xFFFFFBEB));
-                    }).toList(),
-                  )
-                : _tagChip("N/A", Colors.grey.shade500, Colors.grey.shade100),
-            const SizedBox(height: 24),
-
-
-            // 🌟 JOB DESCRIPTION CARD
-            if (widget.job.description.trim().isNotEmpty) ...[
-              _sectionTitle("Job Description"),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Theme.of(context).dividerColor),
-                ),
-                child: _buildRichDescriptionText(widget.job.description),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // 🌟 RESPONSIBILITIES PANEL
-            if (widget.job.responsibilities.isNotEmpty) ...[
-              _sectionTitle("Key Responsibilities"),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Theme.of(context).dividerColor),
-                ),
-                child: Column(
-                  children: widget.job.responsibilities.map((r) => _bulletPoint(r)).toList(),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // 🌟 REQUIREMENTS PANEL
-            if (widget.job.requirements.isNotEmpty) ...[
-              _sectionTitle("Minimum Requirements"),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Theme.of(context).dividerColor),
-                ),
-                child: Column(
-                  children: widget.job.requirements.map((req) => _bulletPoint(req)).toList(),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // 🌟 JOB METADATA SUMMARY DETAILS CARDS
-            _sectionTitle("Job Directory Summary"),
-            const SizedBox(height: 12),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: _metadataCard(Icons.apartment_rounded, "Department", widget.job.department)),
-                  const SizedBox(width: 14),
-                  Expanded(child: _metadataCard(Icons.work_history_rounded, "Experience Required", widget.job.experience.isEmpty ? 'Not specified' : widget.job.experience)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: _metadataCard(Icons.payments_rounded, "Budget / Salary", widget.job.salary.isEmpty ? 'Not specified' : widget.job.salary)),
-                  const SizedBox(width: 14),
-                  Expanded(child: _metadataCard(Icons.access_time_filled_rounded, "Employment Type", widget.job.type.isEmpty ? 'Full-time' : widget.job.type)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
           ],
         ),
       ),
-    ),
-  ],
-),
 );
 }
 
