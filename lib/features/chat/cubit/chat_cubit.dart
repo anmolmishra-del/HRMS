@@ -43,7 +43,6 @@ class ChatCubit extends Cubit<ChatState> {
       final prefs = SharedPref();
       final baseUrl = await prefs.getString('baseUrl');
       final sessionJson = await prefs.getObject('session');
-        final port=await prefs.getObject('port');
 
       if (baseUrl == null || sessionJson == null) {
         debugPrint('ChatCubit: Missing baseUrl or session data. Cannot init WebSockets.');
@@ -52,9 +51,19 @@ class ChatCubit extends Cubit<ChatState> {
 
       final session = OdooSession.fromJson(sessionJson);
       final uri = Uri.parse(baseUrl.trim());
+      
+      // Use wss for secure SSL servers, ws for local/development servers.
       final wsScheme = uri.scheme == 'https' ? 'wss' : 'ws';
       final host = uri.host;
-      final wsUrl = '$wsScheme://$host:${port ?? 7075}/websocket';
+      
+      // NOTE: Previously, the app read a hardcoded 'port' value from local storage (e.g. 7075 or 18072).
+      // However, production servers host WebSockets behind an SSL reverse proxy (Nginx) which handles 
+      // the websocket routing dynamically at the root domain level.
+      // We now extract the port directly from the baseUrl if one exists (e.g. localhost:8069), 
+      // otherwise we keep it empty so it routes securely through standard HTTP/HTTPS ports.
+      final portString = uri.hasPort ? ':${uri.port}' : '';
+      
+      final wsUrl = '$wsScheme://$host$portString/websocket';
       final sessionId = session.id;
 
       debugPrint('ChatCubit: ==========================================');

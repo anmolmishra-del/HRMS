@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/ats/features/candidatefolder/candidate_screen/state/candidate_state.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:open_file/open_file.dart';
 
 import 'package:flutter_app/ats/core/services/odoo_service.dart';
 import 'package:flutter_app/ats/core/constants/api_config.dart';
@@ -202,26 +203,30 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  /// 📥 DOWNLOAD RESUME (FIXED)
+  /// 📥 DOWNLOAD RESUME (FIXED FOR SCOPED STORAGE)
   Future<void> downloadResume(BuildContext context, String url) async {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Downloading Resume...")),
       );
 
-      // 1️⃣ Permission FIRST
-      await Permission.manageExternalStorage.request();
+      // 1️⃣ Request standard storage permission safely (if Android)
+      if (Platform.isAndroid) {
+        await Permission.storage.request();
+      }
 
       Directory? dir;
 
       if (Platform.isAndroid) {
-        // safer approach
-        dir =  Directory('/storage/emulated/0/Download');
-      } else {
-        dir = await getApplicationDocumentsDirectory();
+        // Using external storage directory (Android/data/.../files) is safe and bypasses Scoped Storage OS permission errors
+        dir = await getExternalStorageDirectory();
       }
+      
+      // Fallback to application documents directory
+      dir ??= await getApplicationDocumentsDirectory();
 
-      final filePath = "${dir.path}/resume.pdf";
+      final fileName = "resume_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      final filePath = "${dir.path}/$fileName";
 
       final OdooService svc = OdooService(ApiConfig.baseUrl);
       await svc.ensureSession();
@@ -236,14 +241,27 @@ class ProfileCubit extends Cubit<ProfileState> {
         ),
       );
 
+      // 3️⃣ Open file immediately using default system viewer
+      await OpenFile.open(filePath);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Saved at: $filePath")),
+        SnackBar(
+          content: Text("Saved successfully. Opening: $fileName"),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: "Open Again",
+            textColor: Colors.white,
+            onPressed: () {
+              OpenFile.open(filePath);
+            },
+          ),
+        ),
       );
     } catch (e) {
       print("Download error: $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Download Failed")),
+        SnackBar(content: Text("Download Failed: ${e.toString()}")),
       );
     }
   }

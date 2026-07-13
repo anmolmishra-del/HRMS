@@ -93,7 +93,7 @@ class RecruiterProfilePage extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 200),
                   child: state.isLoading
                       ? const Padding(
-                          padding: EdgeInsets.only(top: 100),
+                          padding: EdgeInsets.only(top: 120),
                           child: AppLoader(),
                         )
                       : Column(
@@ -107,7 +107,7 @@ class RecruiterProfilePage extends StatelessWidget {
                             _buildSettingsSection(context),
                             const SizedBox(height: 20),
                             _buildLogoutButton(context),
-                            const SizedBox(height: 100),
+                            const SizedBox(height: 120),
                           ],
                         ),
                 ),

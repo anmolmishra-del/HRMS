@@ -112,7 +112,7 @@ class MaintenanceEquipment {
       'partner_ref': partnerRef,
       'model': model,
       'serial_no': serialNo,
-      'comp_serial_no': compSerialNo,
+      // 'comp_serial_no': compSerialNo,
       'effective_date': effectiveDate?.toIso8601String().split('T')[0],
       'cost': cost,
       'warranty_date': warrantyDate?.toIso8601String().split('T')[0],

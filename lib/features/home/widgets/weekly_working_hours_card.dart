@@ -23,6 +23,18 @@ class WeeklyWorkingHoursCard extends StatelessWidget {
     }
   }
 
+  String _formatCompactDuration(double hours) {
+    if (hours <= 0) return '';
+    final int totalMinutes = (hours * 60).round();
+    final int h = totalMinutes ~/ 60;
+    final int m = totalMinutes % 60;
+    if (h > 0) {
+      return m > 0 ? '${h}h ${m}m' : '${h}h';
+    } else {
+      return '${m}m';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Color> dayColors = [
@@ -95,7 +107,7 @@ class WeeklyWorkingHoursCard extends StatelessWidget {
                 children: [
                   // Left text column
                   Expanded(
-                    flex: 5,
+                    flex: 4,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -112,7 +124,7 @@ class WeeklyWorkingHoursCard extends StatelessWidget {
                         Text(
                           _formatDuration(totalHours, l10n),
                           style: TextStyle(
-                            fontSize: 26,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).textTheme.bodyLarge?.color,
                             height: 1.1,
@@ -122,7 +134,7 @@ class WeeklyWorkingHoursCard extends StatelessWidget {
                         Text(
                           l10n.working_hours_logged,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w500,
                             color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6) ?? const Color(0xFF64748B),
                           ),
@@ -132,7 +144,7 @@ class WeeklyWorkingHoursCard extends StatelessWidget {
                   ),
                   // Right bar chart
                   Expanded(
-                    flex: 5,
+                    flex: 6,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -147,6 +159,17 @@ class WeeklyWorkingHoursCard extends StatelessWidget {
                         return Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
+                            Text(
+                              hours > 0 ? _formatCompactDuration(hours) : '',
+                              style: TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                                color: hours > 0
+                                    ? color
+                                    : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.4) ?? const Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
                             Container(
                               width: 10,
                               height: height,

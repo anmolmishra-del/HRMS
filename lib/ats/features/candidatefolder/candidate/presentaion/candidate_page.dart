@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:flutter_app/ats/core/constants/app_colors.dart';
 import 'package:flutter_app/ats/features/candidatefolder/candidate_screen/presentaion/candidate_page.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
-import 'package:flutter_app/ats/utils/ats_localization.dart';
 
 import '../cubit/candidate_cubit.dart';
 import '../state/candidate_state.dart';

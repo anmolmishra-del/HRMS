@@ -598,7 +598,7 @@ class OdooService {
           'id', 'name', 'category_id', 'company_id', 'equipment_assign_to',
           'department_id', 'employee_id', 'maintenance_team_id', 'technician_user_id',
           'scrap_date', 'note', 'partner_id', 'partner_ref', 'model', 'serial_no',
-          'comp_serial_no', 'effective_date', 'cost', 'warranty_date',
+           'effective_date', 'cost', 'warranty_date',
           'expected_mtbf', 'mtbf', 'estimated_next_failure', 'latest_failure_date', 'mttr'
         ],
       },
