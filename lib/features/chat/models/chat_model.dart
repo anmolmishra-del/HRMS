@@ -31,6 +31,11 @@ class ChatChannel extends Equatable {
   final bool active;
   final int? partnerId;
 
+  // Last message status checkmarks
+  final bool isLastMessageFromMe;
+  final int? lastMessageId;
+  final bool isLastMessageRead;
+
   const ChatChannel({
     required this.id,
     required this.name,
@@ -52,6 +57,9 @@ class ChatChannel extends Equatable {
     this.sfuServerUrl,
     this.active = true,
     this.partnerId,
+    this.isLastMessageFromMe = false,
+    this.lastMessageId,
+    this.isLastMessageRead = false,
   });
 
   factory ChatChannel.fromJson(Map<String, dynamic> json, String currentUserName, int currentPartnerId) {
@@ -94,14 +102,20 @@ class ChatChannel extends Equatable {
     DateTime? lastInterestDt,
     String? image,
     int? partnerId,
+    bool? isLastMessageFromMe,
+    int? lastMessageId,
+    bool? isLastMessageRead,
+    String? lastMessage,
+    String? lastMessageTime,
+    DateTime? lastMessageRaw,
   }) {
     return ChatChannel(
       id: id,
       name: name,
       displayName: displayName ?? this.displayName,
-      lastMessage: lastMessage,
-      lastMessageTime: lastMessageTime,
-      lastMessageRaw: lastMessageRaw,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastMessageTime: lastMessageTime ?? this.lastMessageTime,
+      lastMessageRaw: lastMessageRaw ?? this.lastMessageRaw,
       unreadCount: unreadCount ?? this.unreadCount,
       isPinned: isPinned ?? this.isPinned,
       memberCount: memberCount,
@@ -116,6 +130,9 @@ class ChatChannel extends Equatable {
       sfuServerUrl: sfuServerUrl,
       active: active,
       partnerId: partnerId ?? this.partnerId,
+      isLastMessageFromMe: isLastMessageFromMe ?? this.isLastMessageFromMe,
+      lastMessageId: lastMessageId ?? this.lastMessageId,
+      isLastMessageRead: isLastMessageRead ?? this.isLastMessageRead,
     );
   }
 
@@ -123,7 +140,7 @@ class ChatChannel extends Equatable {
   List<Object?> get props => [
     id, name, displayName, lastMessage, lastMessageTime,
     unreadCount, isPinned, memberCount, image, type,
-    imStatus, active, partnerId
+    imStatus, active, partnerId, isLastMessageFromMe, lastMessageId, isLastMessageRead
   ];
 }
 

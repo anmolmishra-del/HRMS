@@ -186,7 +186,7 @@ class ChatCubit extends Cubit<ChatState> {
         'args': [],
         'kwargs': {
           'domain': [['channel_id', 'in', channelIds]],
-          'fields': ['channel_id', 'partner_id'],
+          'fields': ['channel_id', 'partner_id', 'seen_message_id'],
         },
       });
 
@@ -224,7 +224,7 @@ class ChatCubit extends Cubit<ChatState> {
           'method': 'search_read',
           'args': [[['res_id', 'in', channelIds], ['model', '=', 'discuss.channel']]],
           'kwargs': {
-            'fields': ['id', 'res_id', 'body', 'date', 'attachment_ids'],
+            'fields': ['id', 'res_id', 'body', 'date', 'attachment_ids', 'author_id'],
             'order': 'date desc',
             'limit': 1000,
           },
@@ -244,7 +244,8 @@ class ChatCubit extends Cubit<ChatState> {
               lastMessages[resId] = {
                 'id': msgId,
                 'body': previewText,
-                'date': m['date']
+                'date': m['date'],
+                'author_id': m['author_id']
               };
             }
             channelMessageIds.putIfAbsent(resId, () => []).add(msgId);
@@ -263,6 +264,7 @@ class ChatCubit extends Cubit<ChatState> {
         int? channelPartnerId;
         String? imStatus;
         String? partnerImage;
+        int partnerSeenId = 0;
         if (channel.type == ChannelType.chat) {
           final otherMember = (allMembers as List).firstWhere(
             (m) => (m['channel_id'] is List ? m['channel_id'][0] : m['channel_id']) == channel.id &&
@@ -276,6 +278,13 @@ class ChatCubit extends Cubit<ChatState> {
             }
             imStatus = partnerStatuses[pid];
             partnerImage = partnerImages[pid];
+
+            final seenRaw = otherMember['seen_message_id'];
+            if (seenRaw is List && seenRaw.isNotEmpty) {
+              partnerSeenId = seenRaw[0] as int? ?? 0;
+            } else if (seenRaw is int) {
+              partnerSeenId = seenRaw;
+            }
           }
         }
 
@@ -323,6 +332,17 @@ class ChatCubit extends Cubit<ChatState> {
           unreadCount = msgIds.where((id) => id > seenId).length;
         }
 
+        final authorIdJson = lastMsgInfo?['author_id'];
+        int authorId = 0;
+        if (authorIdJson is List && authorIdJson.isNotEmpty) {
+          authorId = authorIdJson[0] as int? ?? 0;
+        } else if (authorIdJson is int) {
+          authorId = authorIdJson;
+        }
+        final isLastFromMe = authorId > 0 && authorId == session.partnerId;
+
+        final isLastRead = isLastFromMe && lastMsgId > 0 && partnerSeenId >= lastMsgId;
+
         final updatedChannel = ChatChannel(
           id: channel.id,
           name: channel.name,
@@ -339,6 +359,9 @@ class ChatCubit extends Cubit<ChatState> {
           lastMessageTime: lastMsgTime,
           lastMessageRaw: lastMsgDate,
           partnerId: channelPartnerId,
+          isLastMessageFromMe: isLastFromMe,
+          lastMessageId: lastMsgId > 0 ? lastMsgId : null,
+          isLastMessageRead: isLastRead,
         );
 
         if (updatedChannel.type == ChannelType.chat || updatedChannel.type == ChannelType.group) {

@@ -599,5 +599,6 @@
     "ats_odoo_skills_list": "ओडू कौशल सूची",
     "ats_no_skills_mapped": "इस उम्मीदवार के लिए अभी तक कोई कौशल मैप नहीं किया गया है।",
     "ats_download_resume": "बायोडाटा डाउनलोड करें",
-    "ats_type": "प्रकार"
+    "ats_type": "प्रकार",
+    "help_desk": "हेल्प डेस्क"
 }

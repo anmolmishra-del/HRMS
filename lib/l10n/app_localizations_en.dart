@@ -1872,4 +1872,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ats_type => 'Type';
+
+  @override
+  String get help_desk => 'Help Desk';
 }

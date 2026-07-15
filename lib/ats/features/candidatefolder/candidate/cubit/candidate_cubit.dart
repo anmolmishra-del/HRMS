@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_cast
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -497,7 +499,7 @@ class CandidateCubit extends Cubit<CandidateState> {
 
       print("[CandidateCubit] loadBackendDropdowns() Dropdowns fetched successfully:");
       print("   -> Degrees: ${degreesRes is List ? (degreesRes as List).length : 0} items");
-      print("   -> Users/Managers: ${usersRes is List ? (usersRes as List).length : 0} items");
+      print("   -> Users/Managers: ${usersRes is List ? (usersRes).length : 0} items");
       print("   -> Companies: ${companiesRes is List ? (companiesRes as List).length : 0} items");
       print("   -> Skill Types: ${skillTypesRes is List ? (skillTypesRes as List).length : 0} items");
       print("   -> Skills Dictionary: ${skillsRes is List ? (skillsRes as List).length : 0} items");

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/ats/core/services/odoo_service.dart';
 import 'package:flutter_app/ats/core/constants/api_config.dart';
@@ -34,7 +35,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
           fieldsInfo = Map<String, dynamic>.from(rawFields);
         }
       } catch (fe) {
-        print("[ApplicationsCubit] fields_get failed: $fe");
+        debugPrint("[ApplicationsCubit] fields_get failed: $fe");
       }
 
       final List<String> requestedFields = [
@@ -138,7 +139,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
       }
     } catch (e) {
       if (isClosed) return;
-      print("[ApplicationsCubit] loadApplications error: $e");
+      debugPrint("[ApplicationsCubit] loadApplications error: $e");
       emit(state.copyWith(isLoading: false, error: () => e.toString()));
     }
   }
@@ -149,42 +150,42 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
       try {
         jobsRes = await _svc.executeModelMethod('hr.job', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
       } catch (e) {
-        print("[ApplicationsCubit] fetch hr.job failed: $e");
+        debugPrint("[ApplicationsCubit] fetch hr.job failed: $e");
       }
 
       dynamic usersRes;
       try {
         usersRes = await _svc.executeModelMethod('res.users', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
       } catch (e) {
-        print("[ApplicationsCubit] fetch res.users failed: $e");
+        debugPrint("[ApplicationsCubit] fetch res.users failed: $e");
       }
 
       dynamic deptsRes;
       try {
         deptsRes = await _svc.executeModelMethod('hr.department', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
       } catch (e) {
-        print("[ApplicationsCubit] fetch hr.department failed: $e");
+        debugPrint("[ApplicationsCubit] fetch hr.department failed: $e");
       }
 
       dynamic companiesRes;
       try {
         companiesRes = await _svc.executeModelMethod('res.company', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
       } catch (e) {
-        print("[ApplicationsCubit] fetch res.company failed: $e");
+        debugPrint("[ApplicationsCubit] fetch res.company failed: $e");
       }
 
       dynamic degreesRes;
       try {
         degreesRes = await _svc.executeModelMethod('hr.recruitment.degree', 'search_read', [[]], kwargs: {'fields': ['id', 'name']});
       } catch (e) {
-        print("[ApplicationsCubit] fetch hr.recruitment.degree failed: $e");
+        debugPrint("[ApplicationsCubit] fetch hr.recruitment.degree failed: $e");
       }
 
       dynamic candidatesRes;
       try {
         candidatesRes = await _svc.executeModelMethod('hr.candidate', 'search_read', [[]], kwargs: {'fields': ['id', 'display_name']});
       } catch (e) {
-        print("[ApplicationsCubit] fetch hr.candidate failed: $e");
+        debugPrint("[ApplicationsCubit] fetch hr.candidate failed: $e");
       }
       
       List<Map<String, dynamic>> locations = [];
@@ -230,7 +231,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
           stages.addAll(loadedStages);
         }
       } catch (se) {
-        print("[ApplicationsCubit] Fetch stages failed: $se");
+        debugPrint("[ApplicationsCubit] Fetch stages failed: $se");
       }
       // if (stages.length == 1) {
       //   stages = ['All', 'Ongoing', 'Hired', 'Refused', 'Archived'];
@@ -257,7 +258,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         stages: stages,
       ));
     } catch (e) {
-      print("[ApplicationsCubit] loadDropdowns error: $e");
+      debugPrint("[ApplicationsCubit] loadDropdowns error: $e");
     }
   }
 
@@ -285,11 +286,11 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         'create',
         [payload],
       );
-      print("[ApplicationsCubit] Create response: $createRes");
+      debugPrint("[ApplicationsCubit] Create response: $createRes");
       await loadApplications();
       return true;
     } catch (e) {
-      print("[ApplicationsCubit] Create failed: $e");
+      debugPrint("[ApplicationsCubit] Create failed: $e");
       emit(state.copyWith(isLoading: false, error: () => e.toString()));
       return false;
     }
@@ -304,7 +305,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         'write',
         [[id], vals],
       );
-      print("[ApplicationsCubit] Update response: $updateRes");
+      debugPrint("[ApplicationsCubit] Update response: $updateRes");
       await loadApplications();
       
       // Update selected application if active
@@ -314,7 +315,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
       }
       return true;
     } catch (e) {
-      print("[ApplicationsCubit] Update failed: $e");
+      debugPrint("[ApplicationsCubit] Update failed: $e");
       emit(state.copyWith(isLoading: false, error: () => e.toString()));
       return false;
     }

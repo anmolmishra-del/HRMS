@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_app/features/profile/pages/helpdeskpage.dart';
 import 'package:flutter_app/features/profile/pages/personal_information.dart';
 import 'package:flutter_app/features/auth/login_screen.dart';
 import 'package:flutter_app/ats/routes/app_routes.dart' as ats;
@@ -60,11 +61,12 @@ class Routes {
   static const String projects = "/projects";
   static String itDeclarations = '/it-declarations';
   static String taxComparison = '/tax-comparison';
+  static String helpDesk='/helpDesk';
   static Map<String, WidgetBuilder> getAll() {
     return {
       onboarding: (c) => const OnboardingScreen(),
       login: (c) => const LoginScreen(),
-     
+      helpDesk: (c) => const HelpDeskPage(),
       main: (c) => MainPage(),
       leaveList: (c) => const LeaveListScreen(),
       applyLeave: (c) => const ApplyLeaveScreen(),

@@ -480,6 +480,15 @@ class ProfileScreen extends StatelessWidget {
                                         Routes.assignedAssets,
                                       ),
                                     ),
+                                      _buildDivider(context),
+                                    _SettingTile(
+                                      icon: Icons.support_agent,
+                                      title: l10n.help_desk,
+                                      onTap: () => Navigator.pushNamed(
+                                        context,
+                                        Routes.helpDesk,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

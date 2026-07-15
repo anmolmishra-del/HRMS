@@ -1871,4 +1871,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get ats_type => 'प्रकार';
+
+  @override
+  String get help_desk => 'हेल्प डेस्क';
 }

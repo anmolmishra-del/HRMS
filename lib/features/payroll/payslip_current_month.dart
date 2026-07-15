@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/core/constants/app_colors.dart';
 import 'package:flutter_app/features/payroll/models/payslip_model.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 
 class CurrentMonthCard extends StatelessWidget {
   final Payslip? payslip;
@@ -188,14 +190,39 @@ class CurrentMonthCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    showSalary ? format(netSalary) : '₹ ••••••',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        showSalary ? format(netSalary) : '₹ ••••••',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      () {
+                        final profileState = context.read<ProfileCubit>().state;
+                        final employeeName = profileState.employee?.name;
+                        if (employeeName != null && employeeName.isNotEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              employeeName.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white70,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }(),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   

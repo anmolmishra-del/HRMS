@@ -1878,4 +1878,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get ats_type => 'రకం';
+
+  @override
+  String get help_desk => 'హెల్ప్ డెస్క్';
 }

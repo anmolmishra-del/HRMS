@@ -139,8 +139,6 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
             },
             listener: (context, state) {
               final allChannels = [...state.channels, ...state.directMessages];
-              
-              context.read<NotificationCubit>().fetchNotifications();
 
               for (var channel in allChannels) {
                 final prevChannel = _previousChannels.firstWhere(
@@ -148,7 +146,9 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
                   orElse: () => channel.copyWith(unreadCount: 0)
                 );
                 
-                if (channel.unreadCount > prevChannel.unreadCount && state.currentChatId != channel.id.toString()) {
+                if (channel.unreadCount > prevChannel.unreadCount && 
+                    state.currentChatId != channel.id.toString() &&
+                    !channel.isLastMessageFromMe) {
                   _showNotification(
                     channel.displayName,
                     channel.lastMessage.isNotEmpty ? channel.lastMessage : 'Sent a new message',

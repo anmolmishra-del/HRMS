@@ -637,5 +637,6 @@
   "ats_odoo_skills_list": "Odoo Skills List",
   "ats_no_skills_mapped": "No skills mapped for this candidate yet.",
   "ats_download_resume": "Download Resume",
-  "ats_type": "Type"
+  "ats_type": "Type",
+  "help_desk": "Help Desk"
 }

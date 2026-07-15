@@ -599,5 +599,6 @@
   "ats_odoo_skills_list": "Odoo నైపుణ్యాల జాబితా",
   "ats_no_skills_mapped": "ఈ అభ్యర్థికి ఇంకా నైపుణ్యాలు మ్యాప్ చేయబడలేదు.",
   "ats_download_resume": "రెజ్యూమ్ డౌన్‌లోడ్ చేయండి",
-  "ats_type": "రకం"
+  "ats_type": "రకం",
+   "help_desk": "హెల్ప్ డెస్క్"
 }

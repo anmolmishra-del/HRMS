@@ -24,7 +24,7 @@ class ApplicationsListPage extends StatelessWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: BlocBuilder<ApplicationsCubit, ApplicationsState>(
           builder: (context, state) {
-            final l10n = AppLocalizations.of(context);
+            // final l10n = AppLocalizations.of(context);
             final cubit = context.read<ApplicationsCubit>();
             final searchLower = state.searchQuery.toLowerCase();
 
@@ -107,7 +107,7 @@ class ApplicationsListPage extends StatelessWidget {
             top: -20,
             child: CircleAvatar(
               radius: 60,
-              backgroundColor: Colors.white.withOpacity(0.06),
+              backgroundColor: Colors.white.withValues(alpha: 0.06),
             ),
           ),
           Positioned(
@@ -115,7 +115,7 @@ class ApplicationsListPage extends StatelessWidget {
             bottom: -30,
             child: CircleAvatar(
               radius: 40,
-              backgroundColor: Colors.white.withOpacity(0.04),
+              backgroundColor: Colors.white.withValues(alpha: 0.04),
             ),
           ),
           Column(

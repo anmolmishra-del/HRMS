@@ -380,16 +380,6 @@ class _ChatListPageState extends State<ChatListPage> with SingleTickerProviderSt
 
   Widget _buildChannelList(ChannelType type) {
     return BlocBuilder<ChatCubit, ChatState>(
-      // FIX: Only rebuild when the actual list data changes, NOT on every loading state.
-      // This prevents the full-screen spinner from appearing during background polls.
-      buildWhen: (previous, current) {
-        final prevItems = type == ChannelType.channel ? previous.channels : previous.directMessages;
-        final currItems = type == ChannelType.channel ? current.channels : current.directMessages;
-        // Rebuild only if: initial load is done, or the list itself changes
-        return (previous.status == ChatStatus.loading && current.status == ChatStatus.loaded) ||
-               prevItems.length != currItems.length ||
-               prevItems != currItems;
-      },
       builder: (context, state) {
         if (state.status == ChatStatus.loading && state.channels.isEmpty && state.directMessages.isEmpty) {
           return const AppLoader();
@@ -493,20 +483,23 @@ class _ChannelTile extends StatelessWidget {
               Stack(
                 children: [
                   _buildAvatar(context),
-                  if (channel.type == ChannelType.chat && channel.imStatus != null)
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(channel.imStatus!),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                      ),
-                    ),
+                  // if (channel.type == ChannelType.chat && channel.imStatus != null && channel.imStatus != 'offline')
+                  //   Positioned(
+                  //     right: 1,
+                  //     bottom: 1,
+                  //     child: Container(
+                  //       width: 14,
+                  //       height: 14,
+                  //       decoration: BoxDecoration(
+                  //         color: _getStatusColor(channel.imStatus!),
+                  //         shape: BoxShape.circle,
+                  //         border: Border.all(
+                  //           color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+                  //           width: 2,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
                 ],
               ),
               const SizedBox(width: 16),
@@ -539,6 +532,16 @@ class _ChannelTile extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
+                        if (channel.isLastMessageFromMe && channel.lastMessage.isNotEmpty) ...[
+                          Icon(
+                            channel.isLastMessageRead ? Icons.done_all_rounded : Icons.done_rounded,
+                            size: 16,
+                            color: channel.isLastMessageRead
+                                ? Colors.cyan
+                                : (isDark ? Colors.white.withOpacity(0.5) : Colors.grey.shade400),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
                         Expanded(
                           child: Text(
                             channel.lastMessage.isEmpty ? AppLocalizations.of(context)!.no_messages_yet : channel.lastMessage,
@@ -619,13 +622,13 @@ class _ChannelTile extends StatelessWidget {
     return Container(
       width: 56,
       height: 56,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
           colors: [AppColors.indigo, AppColors.brightBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        shape: BoxShape.circle,
       ),
       child: _buildDefaultAvatarContent(),
     );
