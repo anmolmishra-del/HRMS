@@ -4,6 +4,7 @@ class HrApplicant {
   final int? id;
   final String name; // Application Subject/Title
   final int? candidateId;
+  final String? candidateImage;
   final String candidateName;
   final String emailFrom;
   final String partnerPhone;
@@ -70,6 +71,7 @@ class HrApplicant {
     this.id,
     required this.name,
     this.candidateId,
+    this.candidateImage,
     this.candidateName = '',
     this.emailFrom = '',
     this.partnerPhone = '',
@@ -132,6 +134,13 @@ class HrApplicant {
     this.stageId = '',
     this.stageName = '',
   });
+  static String? getImage(dynamic val) {
+    if (val == null || val == false) return null;
+    if (val is String && val.isNotEmpty) {
+      return val.replaceAll(RegExp(r'\s+'), '');
+    }
+    return null;
+  }
 
   factory HrApplicant.fromJson(Map<String, dynamic> json) {
     // Parse Many2one helper
@@ -184,6 +193,7 @@ class HrApplicant {
       id: json['id'] is int ? json['id'] as int : null,
       name: nameVal,
       candidateId: getM2oId(json['candidate_id']),
+      candidateImage: getImage(json['candidate_image']),
       candidateName: getM2oName(json['candidate_id']),
       emailFrom: getString(json['email_from']),
       partnerPhone: getString(json['partner_phone']),
@@ -302,6 +312,7 @@ class HrApplicant {
     int? id,
     String? name,
     int? candidateId,
+    String? candidateImage,
     String? candidateName,
     String? emailFrom,
     String? partnerPhone,
@@ -368,6 +379,7 @@ class HrApplicant {
       id: id ?? this.id,
       name: name ?? this.name,
       candidateId: candidateId ?? this.candidateId,
+      candidateImage: candidateImage ?? this.candidateImage,
       candidateName: candidateName ?? this.candidateName,
       emailFrom: emailFrom ?? this.emailFrom,
       partnerPhone: partnerPhone ?? this.partnerPhone,

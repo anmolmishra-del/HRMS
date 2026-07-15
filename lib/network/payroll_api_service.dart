@@ -15,6 +15,74 @@ class PayrollApiService {
 
   PayrollApiService(this._odooService);
 
+  String? _extractDownloadUrl(dynamic response) {
+    if (response is String && response.isNotEmpty) {
+      if (response.startsWith('/') || response.startsWith('http') || response.startsWith('JVBERi')) {
+        return response;
+      }
+      return null;
+    }
+
+    if (response is Map) {
+      if (response.containsKey('url')) {
+        final url = response['url'];
+        if (url is String && url.isNotEmpty) {
+          return url;
+        }
+      }
+
+      if (response.containsKey('result')) {
+        final result = response['result'];
+        if (result is String && result.isNotEmpty) {
+          if (result.startsWith('/') || result.startsWith('http') || result.startsWith('JVBERi')) {
+            return result;
+          }
+        }
+        if (result is Map) {
+          final resultUrl = result['url'];
+          if (resultUrl is String && resultUrl.isNotEmpty) {
+            return resultUrl;
+          }
+        }
+      }
+
+      for (final value in response.values) {
+        if (value is String && value.isNotEmpty) {
+          if (value.startsWith('/') || value.startsWith('http') || value.startsWith('JVBERi')) {
+            return value;
+          }
+        }
+        if (value is Map) {
+          final nestedUrl = value['url'];
+          if (nestedUrl is String && nestedUrl.isNotEmpty) {
+            return nestedUrl;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  bool _isSuccessfulDownloadResponse(dynamic response) {
+    if (response == null) {
+      return false;
+    }
+    if (response is bool) {
+      return response;
+    }
+    if (response is String) {
+      return response.isNotEmpty;
+    }
+    if (response is List) {
+      return response.isNotEmpty;
+    }
+    if (response is Map) {
+      return _extractDownloadUrl(response) != null || response.containsKey('result') || response.containsKey('url');
+    }
+    return true;
+  }
+
   Future<Map<String, dynamic>?> fetchLatestPayslipDetails(int employeeId) async {
     debugPrint('PayrollApiService: fetchLatestPayslipDetails employeeId=$employeeId');
     try {
@@ -158,6 +226,18 @@ class PayrollApiService {
     );
     return response is int ? response : (response is List && response.isNotEmpty ? response[0] as int : 0);
   }
+  
+  Future<bool> downloadItDeclaration(int declarationId, Map<String, dynamic> vals) async {
+    debugPrint('PayrollApiService: downloadItDeclaration id=$declarationId vals=$vals');
+    final response = await _odooService.executeModelMethod(
+      'emp.it.declaration',
+      'action_download_submission_pdf',
+      [[declarationId]],
+    );
+    final isSuccessful = _isSuccessfulDownloadResponse(response);
+    debugPrint('PayrollApiService: downloadItDeclaration responseType=${response.runtimeType} result=$isSuccessful');
+    return isSuccessful;
+  }
 
   Future<bool> writeItDeclaration(int declarationId, Map<String, dynamic> vals) async {
     debugPrint('PayrollApiService: writeItDeclaration id=$declarationId vals=$vals');
@@ -213,20 +293,48 @@ class PayrollApiService {
 
   Future<String> downloadSubmissionPdf(int declarationId) async {
     debugPrint('PayrollApiService: downloadSubmissionPdf id=$declarationId');
+    
+    // 1. Try to invoke action_download_submission_pdf directly
     try {
       final response = await _odooService.executeModelMethod(
         'emp.it.declaration',
         'action_download_submission_pdf',
         [[declarationId]],
       );
-      if (response is String && response.isNotEmpty) {
-        return response;
+      if (response is Map) {
+        if (response['type'] == 'ir.actions.report' && response.containsKey('report_name')) {
+          final reportName = response['report_name'];
+          final reportUrl = '/report/pdf/$reportName/$declarationId';
+          debugPrint('Generated Odoo report URL: $reportUrl');
+          return reportUrl;
+        }
+        if (response.containsKey('url')) {
+          return response['url'] as String;
+        }
+      }
+      final extracted = _extractDownloadUrl(response);
+      if (extracted != null && extracted.isNotEmpty) {
+        return extracted;
       }
     } catch (e) {
       debugPrint('action_download_submission_pdf failed: $e');
     }
 
-    // Fallback: Search in ir.attachment for this declaration record
+    // 2. Try _render_qweb_pdf as secondary option
+    try {
+      final response = await _odooService.executeModelMethod(
+        'ir.actions.report', '_render_qweb_pdf',
+        ['emp_it_declaration.action_report_it_tax_statement', [declarationId]],
+      );
+      final downloadUrl = _extractDownloadUrl(response);
+      if (downloadUrl != null && downloadUrl.isNotEmpty) {
+        return downloadUrl;
+      }
+    } catch (e) {
+      debugPrint('_render_qweb_pdf failed: $e');
+    }
+
+    // 3. Fallback: Search in ir.attachment for this declaration record
     try {
       debugPrint('Searching ir.attachment for res_model=emp.it.declaration, res_id=$declarationId');
       final attachments = await _odooService.executeModelMethod(
@@ -238,14 +346,18 @@ class PayrollApiService {
             ['res_model', '=', 'emp.it.declaration'],
             ['res_id', '=', declarationId],
           ],
-          'fields': ['id', 'name', 'url'],
+          'fields': ['id', 'name', 'url', 'datas'],
           'limit': 1,
         },
       );
       if (attachments is List && attachments.isNotEmpty) {
         final attachment = attachments.first;
+        final datas = attachment['datas'];
+        if (datas is String && datas.isNotEmpty && datas != 'false') {
+          return datas;
+        }
         final attachmentId = attachment['id'] as int;
-        return '/web/content/ir.attachment/$attachmentId/datas';
+        return '/web/content/$attachmentId?download=true';
       }
     } catch (e) {
       debugPrint('Fallback search in ir.attachment failed: $e');
@@ -430,8 +542,22 @@ class PayrollApiService {
   }
 
   Future<String> downloadAndOpenFile(String urlPath, {String? defaultFileName}) async {
-    debugPrint('PayrollApiService: downloadAndOpenFile urlPath=$urlPath');
+    debugPrint('PayrollApiService: downloadAndOpenFile urlPath=${urlPath.length > 200 ? urlPath.substring(0, 200) + '...' : urlPath}');
     if (urlPath.isEmpty) throw Exception('URL path is empty');
+
+    Uint8List? fileBytes;
+
+    // Check if urlPath is actually a raw base64 data stream (e.g. from Odoo attachment)
+    if (urlPath.startsWith('JVBERi') || (!urlPath.startsWith('/') && !urlPath.startsWith('http') && urlPath.length > 100)) {
+      try {
+        final cleaned = urlPath.trim().replaceAll(RegExp(r'\s+'), '');
+        final actualBase64 = cleaned.contains(',') ? cleaned.split(',').last : cleaned;
+        fileBytes = base64Decode(actualBase64);
+        debugPrint('Decoded raw base64 PDF bytes (${fileBytes.length} bytes)');
+      } catch (e) {
+        debugPrint('Failed to decode raw base64 data stream: $e');
+      }
+    }
 
     String? model;
     int? recordId;
@@ -454,7 +580,6 @@ class PayrollApiService {
       debugPrint('Failed to parse URL for RPC download: $e');
     }
 
-    Uint8List? fileBytes;
 
     if (model != null && recordId != null && fieldName != null) {
       debugPrint('Attempting RPC read for model: $model, id: $recordId, field: $fieldName');

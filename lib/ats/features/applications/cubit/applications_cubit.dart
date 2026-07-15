@@ -42,6 +42,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         'name',
         'partner_name',
         'candidate_id',
+         'partner_id', // <-- Add this
         'email_from',
         'partner_phone',
         'alternate_phone',
@@ -90,6 +91,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         'application_status',
         'stage_id',
         'recruitment_stage_id',
+        'candidate_image'
       ];
 
       final List<String> activeFields = fieldsInfo != null
@@ -135,6 +137,7 @@ class ApplicationsCubit extends Cubit<ApplicationsState> {
         emit(state.copyWith(isLoading: false));
       }
     } catch (e) {
+      if (isClosed) return;
       print("[ApplicationsCubit] loadApplications error: $e");
       emit(state.copyWith(isLoading: false, error: () => e.toString()));
     }

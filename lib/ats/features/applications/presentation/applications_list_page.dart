@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -258,7 +260,7 @@ class ApplicationsListPage extends StatelessWidget {
         boxShadow: const [
           BoxShadow(
             color: Color(0x050F172A),
-            blurRadius: 16,
+          blurRadius: 16,
             offset: Offset(0, 4),
           ),
         ],
@@ -287,11 +289,17 @@ class ApplicationsListPage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        child: const Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
-                      ),
+                     CircleAvatar(
+  radius: 22,
+  backgroundColor: AppColors.primary.withOpacity(0.1),
+  backgroundImage: app.candidateImage != null &&
+          app.candidateImage!.isNotEmpty
+      ? MemoryImage(base64Decode(app.candidateImage!))
+      : null,
+  child: app.candidateImage == null || app.candidateImage!.isEmpty
+      ? const Icon(Icons.person)
+      : null,
+),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(

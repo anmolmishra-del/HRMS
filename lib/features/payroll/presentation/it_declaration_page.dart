@@ -593,6 +593,7 @@ class _ItDeclarationPageState extends State<ItDeclarationPage> {
                               ),
                             ),
                             children: [
+
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                                 child: Column(
@@ -625,6 +626,30 @@ class _ItDeclarationPageState extends State<ItDeclarationPage> {
                                       ),
                                     ],
                           
+                                    if (!isDraft) ...[
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFF4e54c8),
+                                                foregroundColor: Colors.white,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                elevation: 0,
+                                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                              ),
+                                              onPressed: () {
+                                                _cubit!.downloadDeclaration(decId);
+                                              },
+                                              icon: const Icon(Icons.picture_as_pdf_outlined, size: 16, color: Colors.white),
+                                              label: Text(l10n.download_pdf, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                    ],
+
                                     if (isDraft) ...[
                                       Row(
                                         children: [

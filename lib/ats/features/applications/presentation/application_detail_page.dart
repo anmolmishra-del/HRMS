@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/ats/utils/ats_localization.dart';
@@ -170,26 +172,69 @@ class _ApplicationDetailPageState extends State<ApplicationDetailPage> with Sing
           Row(
             children: [
               // Avatar with beautiful gradient border
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [const Color(0xFF1E3A8A), const Color(0xFF3B82F6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child:  CircleAvatar(
-                  radius: 34,
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  child: CircleAvatar(
-                    radius: 32,
-                    backgroundColor: const Color(0xFFEBF3FF),
-                    child: Icon(Icons.description_rounded, color: AppColors.primary, size: 28),
+GestureDetector(
+  onTap: () {
+    if (app.candidateImage != null && app.candidateImage!.isNotEmpty) {
+      showDialog(
+        context: context,
+        barrierColor: Colors.black,
+        builder: (_) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: Stack(
+            children: [
+              InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 5,
+                child: Center(
+                  child: Image.memory(
+                    base64Decode(app.candidateImage!),
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
+              Positioned(
+                top: 40,
+                right: 20,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  },
+  child: Container(
+    padding: const EdgeInsets.all(3),
+    decoration: const BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: LinearGradient(
+        colors: [
+          Color(0xFF1E3A8A),
+          Color(0xFF3B82F6),
+        ],
+      ),
+    ),
+    child: CircleAvatar(
+      radius: 34,
+      backgroundColor: AppColors.primary.withOpacity(0.1),
+      backgroundImage: app.candidateImage != null &&
+              app.candidateImage!.isNotEmpty
+          ? MemoryImage(base64Decode(app.candidateImage!))
+          : null,
+      child: app.candidateImage == null || app.candidateImage!.isEmpty
+          ? const Icon(Icons.person)
+          : null,
+    ),
+  ),
+),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

@@ -157,6 +157,7 @@ class CandidateCubit extends Cubit<CandidateState> {
         'phone_private',
         'x_alternate_phone',
         // Potential image fields from Odoo
+        'candidate_image',
         'image_128',
         'image_medium',
         'image_1920',
@@ -368,7 +369,12 @@ class CandidateCubit extends Cubit<CandidateState> {
 
           // Detect which field was populated for profile image (base64)
           // Fall back to partner image_128 if direct candidate photo doesn't exist
-          dynamic rawImage = e['image_128'] ?? e['image_medium'] ?? e['image_1920'] ?? e['image'];
+         dynamic rawImage =
+    e['candidate_image'] ??
+    e['image_1920'] ??
+    e['image_128'] ??
+    e['image_medium'] ??
+    e['image'];
           if (rawImage == null || rawImage == false || rawImage.toString().isEmpty) {
             final partnerVal = e['partner_id'];
             if (partnerVal is List && partnerVal.isNotEmpty && partnerVal[0] is int) {

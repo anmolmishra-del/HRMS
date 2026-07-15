@@ -73,26 +73,66 @@ class _CandidateProfilePageState extends State<CandidateProfilePage> with Single
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 42,
-                            backgroundColor: AppColors.primary.withOpacity(0.1),
-                            child: ClipOval(
-                              child: candidate.image != null && candidate.image!.isNotEmpty
-                                  ? Image.memory(
-                                      base64Decode(candidate.image!),
-                                      width: 84,
-                                      height: 84,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Image.network(
-                                          "https://i.pravatar.cc/150?u=${candidate.emailFrom}",
-                                          width: 84,
-                                          height: 84,
-                                          fit: BoxFit.cover,
-                                        );
-                                      },
-                                    )
-                                  : Icon(Icons.person,color: Theme.of(context).iconTheme.color,),
+                          GestureDetector(
+                           onTap: () {
+  if (candidate.image != null && candidate.image!.isNotEmpty) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              minScale: 0.8,
+              maxScale: 5,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.memory(
+                  base64Decode(candidate.image!),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: CircleAvatar(
+                backgroundColor: Colors.black54,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+},
+                            child: CircleAvatar(
+                              radius: 42,
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              child: ClipOval(
+                                child: candidate.image != null && candidate.image!.isNotEmpty
+                                    ? Image.memory(
+                                        base64Decode(candidate.image!),
+                                        width: 84,
+                                        height: 84,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Image.network(
+                                            "https://i.pravatar.cc/150?u=${candidate.emailFrom}",
+                                            width: 84,
+                                            height: 84,
+                                            fit: BoxFit.cover,
+                                          );
+                                        },
+                                      )
+                                    : Icon(Icons.person,color: Theme.of(context).iconTheme.color,),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 20),

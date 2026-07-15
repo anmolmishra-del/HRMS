@@ -4,7 +4,6 @@ import 'package:flutter_app/features/profile/cubit/profile_state.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_app/core/constants/app_images.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/features/payroll/presentation/payslip_download_wizard_dialog.dart';
 import 'package:flutter_app/features/payroll/payslip_current_month.dart';
@@ -235,7 +234,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -276,7 +275,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                       Container(
                         margin: const EdgeInsets.only(bottom: 20),
                         child: DropdownButtonFormField<int>(
-                          value: _selectedPayslipId,
+                          initialValue: _selectedPayslipId,
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context)!.payslip_month,
                             labelStyle: TextStyle(

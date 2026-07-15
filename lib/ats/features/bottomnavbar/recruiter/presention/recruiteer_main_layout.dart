@@ -8,7 +8,7 @@ import 'package:flutter_app/ats/routes/app_routes.dart';
 import 'package:flutter_app/ats/features/candidatefolder/candidate/presentaion/candidate_page.dart';
 import 'package:flutter_app/ats/features/jobs/presentaion/job_page.dart';
 import 'package:flutter_app/ats/features/applications/presentation/applications_list_page.dart';
-import 'package:flutter_app/ats/features/profile/presentation/profile_page.dart';
+import 'package:flutter_app/features/profile/profile_screen.dart';
 import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter_app/features/profile/cubit/profile_state.dart';
 import 'package:flutter_app/routes.dart';
@@ -37,7 +37,7 @@ class _RecruiterMainLayoutState extends State<RecruiterMainLayout> {
       const JobPage(isRecruiter: true, showBackButton: false),
       const ApplicationsListPage(showBackButton: false),
       const CandidatePage(showBackButton: false),
-      const RecruiterProfilePage(showBackButton: false),
+      const ProfileScreen(),
     ];
   }
 
