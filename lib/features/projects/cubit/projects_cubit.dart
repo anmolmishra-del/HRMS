@@ -43,6 +43,7 @@ class ProjectsCubit extends Cubit<ProjectsState> {
             'task_count',
             'allow_timesheets',
             'partner_id',
+            'members_ids',
           ],
           'order': 'name asc',
         },
@@ -50,47 +51,47 @@ class ProjectsCubit extends Cubit<ProjectsState> {
 
       List<ProjectModel> projects = (response as List).map((p) => ProjectModel.fromJson(p)).toList();
 
-      final userIds = projects
-          .where((proj) => proj.userId != null)
-          .map((proj) => proj.userId!)
-          .toSet()
-          .toList();
+      final allUserIds = <int>{};
+      for (final p in projects) {
+        if (p.userId != null) allUserIds.add(p.userId!);
+        allUserIds.addAll(p.memberIds);
+      }
 
-      if (userIds.isNotEmpty) {
-        final userImages = await client.callKw({
+      if (allUserIds.isNotEmpty) {
+        final userDataList = await client.callKw({
           'model': 'res.users',
           'method': 'read',
-          'args': [userIds],
+          'args': [allUserIds.toList()],
           'kwargs': {
-            'fields': ['id', 'image_128'],
+            'fields': ['id', 'name', 'image_128'],
           },
         });
         
-        final userImageMap = {
-          for (var user in (userImages as List))
-            user['id']: user['image_128'],
+        final userMap = {
+          for (var user in (userDataList as List))
+            user['id'] as int: {
+              'id': user['id'] as int,
+              'name': user['name'].toString(),
+              'image': user['image_128'] != false && user['image_128'] != null ? user['image_128'].toString() : null,
+            }
         };
         
         for (var i = 0; i < projects.length; i++) {
-          if (projects[i].userId != null) {
-            final imageStr = userImageMap[projects[i].userId!];
-            if (imageStr != null && imageStr != 'false') {
-              projects[i] = ProjectModel(
-                id: projects[i].id,
-                name: projects[i].name,
-                description: projects[i].description,
-                dateStart: projects[i].dateStart,
-                date: projects[i].date,
-                userId: projects[i].userId,
-                userName: projects[i].userName,
-                userImage128: imageStr.toString(),
-                taskCount: projects[i].taskCount,
-                allowTimesheets: projects[i].allowTimesheets,
-                partnerId: projects[i].partnerId,
-                partnerName: projects[i].partnerName,
-              );
+          final proj = projects[i];
+          final List<Map<String, dynamic>> projMembers = [];
+          for (final mId in proj.memberIds) {
+            if (userMap.containsKey(mId)) {
+              projMembers.add(userMap[mId]!);
             }
           }
+          
+          final managerInfo = proj.userId != null ? userMap[proj.userId!] : null;
+          final managerImage = managerInfo != null ? managerInfo['image'] as String? : null;
+
+          projects[i] = proj.copyWith(
+            members: projMembers,
+            userImage128: managerImage,
+          );
         }
       }
 

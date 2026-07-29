@@ -160,7 +160,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primaryPurple),
+        Icon(icon, size: 20, color: AppColors.brightBlue),
         const SizedBox(width: 8),
         Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
       ],
@@ -187,7 +187,13 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(0.02), blurRadius: 10)],
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: DropdownButtonFormField<LeaveType>(
         value: _selectedType,
@@ -212,7 +218,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   Widget _buildDatePickerSection(AppLocalizations l10n) {
     return Row(
       children: [
-        Expanded(child: _buildDateTile(l10n.start_date, _startDate, (date) => setState(() => _startDate = date))),
+        Expanded(child: _buildDateTile(l10n.start_date, _startDate, (date) => setState(() { _startDate = date; _endDate = date; }))),
         const SizedBox(width: 16),
         Expanded(child: _buildDateTile(l10n.end_date, _endDate, (date) => setState(() => _endDate = date))),
       ],
@@ -229,7 +235,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
           lastDate: DateTime.now().add(const Duration(days: 365)),
           builder: (context, child) => Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: Theme.of(context).colorScheme.copyWith(primary: AppColors.primaryPurple),
+              colorScheme: Theme.of(context).colorScheme.copyWith(primary: AppColors.brightBlue),
             ),
             child: child!,
           ),
@@ -241,7 +247,13 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
         decoration: BoxDecoration(
           color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(0.02), blurRadius: 10)],
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,16 +277,25 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
           decoration: BoxDecoration(
             color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(0.02), blurRadius: 10)],
+            border: Border.all(color: Colors.grey.shade200, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+              ),
+            ],
           ),
-          child: SwitchListTile(
-            title: Text(l10n.half_day, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
-            value: _isHalfDay,
-            activeColor: AppColors.primaryPurple,
-            onChanged: (val) => setState(() {
-              _isHalfDay = val;
-              if (val) _endDate = _startDate;
-            }),
+          child: Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              title: Text(l10n.half_day, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+              value: _isHalfDay,
+              activeColor: AppColors.blue,
+              onChanged: (val) => setState(() {
+                _isHalfDay = val;
+                if (val) _endDate = _startDate;
+              }),
+            ),
           ),
         ),
         if (_isHalfDay) ...[
@@ -299,9 +320,9 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryPurple : Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+            color: isSelected ? AppColors.blue : Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isSelected ? AppColors.primaryPurple : Theme.of(context).dividerColor.withOpacity(0.2)),
+            border: Border.all(color: isSelected ? AppColors.brightBlue : Colors.grey.shade200),
           ),
           child: Text(label, 
             style: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold, fontSize: 13)
@@ -316,7 +337,13 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(0.02), blurRadius: 10)],
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: TextFormField(
         controller: _descriptionController,
@@ -341,7 +368,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       child: ElevatedButton(
         onPressed: isLoading ? null : () => _submit(context, l10n),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryPurple,
+          backgroundColor: AppColors.brightBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 0,
         ),

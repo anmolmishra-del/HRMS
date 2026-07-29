@@ -16,6 +16,7 @@ class LanguagePage extends StatelessWidget {
       {"native": "English", "english": "English", "code": "en"},
       {"native": "हिन्दी", "english": "Hindi", "code": "hi"},
       {"native": "తెలుగు", "english": "Telugu", "code": "te"},
+      {"native": "اردو", "english": "Urdu", "code": "ur"}
     ];
 
     return Scaffold(

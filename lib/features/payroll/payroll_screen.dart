@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter_app/features/profile/cubit/profile_state.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_app/core/constants/app_images.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/features/payroll/presentation/payslip_download_wizard_dialog.dart';
 import 'package:flutter_app/features/payroll/payslip_current_month.dart';
@@ -11,6 +11,7 @@ import 'package:flutter_app/features/payroll/Salary_breakdown.dart';
 import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter_app/routes.dart';
 import 'package:flutter_app/network/payroll_api_service.dart';
+import 'package:flutter_app/features/payroll/models/payslip_model.dart';
 
 class PayrollScreen extends StatefulWidget {
   const PayrollScreen({super.key});
@@ -21,7 +22,7 @@ class PayrollScreen extends StatefulWidget {
 
 class _PayrollScreenState extends State<PayrollScreen> {
   bool _isLoading = true;
-  Map<String, dynamic>? _payslipData;
+  Payslip? _payslip;
   List<dynamic> _allPayslips = [];
   int? _selectedPayslipId;
   PayrollApiService? _apiService;
@@ -72,7 +73,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
             if (payslips.isNotEmpty) {
               _selectedPayslipId = payslips.first['id'];
             }
-            _payslipData = data;
+            _payslip = data != null ? Payslip.fromJson(data) : null;
           });
           if (data != null && data['lines'] != null) {
             debugPrint('PAYSLIP_DEBUG_LINES: ${jsonEncode(data['lines'])}');
@@ -101,7 +102,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
       final detailed = await _apiService!.fetchPayslipLines(payslip);
       if (mounted) {
         setState(() {
-          _payslipData = detailed;
+          _payslip = detailed != null ? Payslip.fromJson(detailed) : null;
         });
         if (detailed != null && detailed['lines'] != null) {
           debugPrint('PAYSLIP_DEBUG_LINES: ${jsonEncode(detailed['lines'])}');
@@ -128,13 +129,13 @@ class _PayrollScreenState extends State<PayrollScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade100,
+          color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade200,
         ),
       ),
       child: Material(
@@ -199,222 +200,229 @@ class _PayrollScreenState extends State<PayrollScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final profileState = context.read<ProfileCubit>().state;
-    final employeeName = profileState.employee?.name ?? 'Employee';
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.my_pay,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: Navigator.canPop(context)
-            ? IconButton(
-                icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.onSurface),
-                onPressed: () => Navigator.pop(context),
-              )
-            : null,
-      ),
-      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Premium Custom Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    return BlocConsumer<ProfileCubit, ProfileState>(
+      listener: (context, profileState) {
+        if (profileState.employee != null && _allPayslips.isEmpty && _payslip == null && !_isLoading) {
+          _loadDynamicData();
+        }
+      },
+      builder: (context, profileState) {
+        final employeeName = profileState.employee?.name ?? 'Employee';
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              AppLocalizations.of(context)!.my_pay,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            leading: Navigator.canPop(context)
+                ? IconButton(
+                    icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.onSurface),
+                    onPressed: () => Navigator.pop(context),
+                  )
+                : null,
+          ),
+          backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await _loadDynamicData();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Premium Custom Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          AppLocalizations.of(context)!.hello(employeeName),
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: isDarkMode ? Colors.white : Colors.black87,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          AppLocalizations.of(context)!.manage_payslips_declarations,
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            color: Colors.grey.shade500,
-                            fontWeight: FontWeight.w500,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppLocalizations.of(context)!.hello(employeeName),
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDarkMode ? Colors.white : Colors.black87,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                AppLocalizations.of(context)!.manage_payslips_declarations,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: Colors.grey.shade500,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                 
-                ],
-              ),
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              if (!_isLoading && _allPayslips.isNotEmpty) ...[
-                Container(
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: DropdownButtonFormField<int>(
-                    value: _selectedPayslipId,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.payslip_month,
-                      labelStyle: TextStyle(
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      filled: true,
-                      fillColor: isDarkMode ? Colors.grey[800] : Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: isDarkMode ? Colors.white24 : Colors.grey.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: isDarkMode ? Colors.white12 : Colors.grey.shade200),
-                      ),
-                    ),
-                    dropdownColor: isDarkMode ? Colors.grey[900] : Colors.white,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black87,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    items: _allPayslips.map((p) {
-                      return DropdownMenuItem<int>(
-                        value: p['id'] as int,
-                        child: Text(p['name'].toString()),
-                      );
-                    }).toList(),
-                    onChanged: _onPayslipChanged,
-                  ),
-                ),
-              ],
-
-              if (_isLoading)
-                Shimmer.fromColors(
-                  baseColor: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
-                  highlightColor: isDarkMode ? Colors.grey[700]! : Colors.grey[100]!,
-                  child: Column(
-                    children: [
+                    if (!_isLoading && _allPayslips.isNotEmpty) ...[
                       Container(
-                        height: 160,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        height: 240,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
+                        margin: const EdgeInsets.only(bottom: 20),
+                        child: DropdownButtonFormField<int>(
+                          initialValue: _selectedPayslipId,
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.payslip_month,
+                            labelStyle: TextStyle(
+                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            filled: true,
+                            fillColor: isDarkMode ? Colors.grey[800] : Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: isDarkMode ? Colors.white24 : Colors.grey.shade200),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: isDarkMode ? Colors.white12 : Colors.grey.shade200),
+                            ),
+                          ),
+                          dropdownColor: isDarkMode ? Colors.grey[900] : Colors.white,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          items: _allPayslips.map((p) {
+                            return DropdownMenuItem<int>(
+                              value: p['id'] as int,
+                              child: Text(p['name'].toString()),
+                            );
+                          }).toList(),
+                          onChanged: _onPayslipChanged,
                         ),
                       ),
                     ],
-                  ),
-                )
-              else ...[
-                if (_payslipData == null)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.amber.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info_outline, color: Colors.amber),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(context)!.no_active_contract_or_payslip,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: isDarkMode ? Colors.amber[200] : Colors.amber[800],
-                              fontWeight: FontWeight.w500,
+
+                    if (_isLoading)
+                      Shimmer.fromColors(
+                        baseColor: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+                        highlightColor: isDarkMode ? Colors.grey[700]! : Colors.grey[100]!,
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 160,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 16),
+                            Container(
+                              height: 240,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      )
+                    else ...[
+                      if (_payslip == null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.info_outline, color: Colors.amber),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                AppLocalizations.of(context)!.no_active_contract_or_payslip,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDarkMode ? Colors.amber[200] : Colors.amber[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // 1. Current Month Salary Card
+                    CurrentMonthCard(
+                      payslip: _payslip,
+                      showSalary: _showSalary,
+                      onToggleShowSalary: () {
+                        setState(() {
+                          _showSalary = !_showSalary;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 2. Salary Breakdown Card
+                    SalaryBreakdownCard(
+                      payslip: _payslip,
+                      showSalary: _showSalary,
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+
+                  // 3. Odoo Payroll Services Actions
+                  Text(
+                    AppLocalizations.of(context)!.payroll_services,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade500,
+                      letterSpacing: 1.2,
                     ),
                   ),
-                // 1. Current Month Salary Card
-                CurrentMonthCard(
-                  payslipData: _payslipData,
-                  showSalary: _showSalary,
-                  onToggleShowSalary: () {
-                    setState(() {
-                      _showSalary = !_showSalary;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                // 2. Salary Breakdown Card
-                SalaryBreakdownCard(
-                  payslipData: _payslipData,
-                  showSalary: _showSalary,
-                ),
-              ],
-              const SizedBox(height: 24),
-
-              // 3. Odoo Payroll Services Actions
-              Text(
-                AppLocalizations.of(context)!.payroll_services,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 1.2,
-                ),
+                  _buildMenuCard(
+                    context,
+                    AppLocalizations.of(context)!.income_tax_declarations,
+                    AppLocalizations.of(context)!.income_tax_declarations_desc,
+                    Icons.description_outlined,
+                    () => Navigator.pushNamed(context, Routes.itDeclarations),
+                  ),
+                  _buildMenuCard(
+                    context,
+                    AppLocalizations.of(context)!.download_payslip,
+                    AppLocalizations.of(context)!.payslip_download_desc,
+                    Icons.file_download_outlined,
+                    () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => const PayslipDownloadWizardDialog(),
+                      );
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              
-              _buildMenuCard(
-                context,
-                AppLocalizations.of(context)!.income_tax_declarations,
-                AppLocalizations.of(context)!.income_tax_declarations_desc,
-                Icons.description_outlined,
-                () => Navigator.pushNamed(context, Routes.itDeclarations),
-              ),
-              // _buildMenuCard(
-              //   context,
-              //   'Tax Regime Comparison',
-              //   'Compare savings under Old vs New tax slabs',
-              //   Icons.compare_arrows_rounded,
-              //   () => Navigator.pushNamed(context, Routes.taxComparison),
-              // ),
-              _buildMenuCard(
-                context,
-                AppLocalizations.of(context)!.download_payslip,
-                AppLocalizations.of(context)!.payslip_download_desc,
-                Icons.file_download_outlined,
-                () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const PayslipDownloadWizardDialog(),
-                  );
-                },
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+        );
+      },
     );
   }
 }

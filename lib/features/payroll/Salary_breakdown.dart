@@ -1,87 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
+import 'package:flutter_app/features/payroll/models/payslip_model.dart';
+
 class SalaryBreakdownCard extends StatelessWidget {
-  final Map<String, dynamic>? payslipData;
+  final Payslip? payslip;
   final bool showSalary;
 
-  const SalaryBreakdownCard({super.key, this.payslipData, this.showSalary = false});
+  const SalaryBreakdownCard({super.key, this.payslip, this.showSalary = false});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    double basicPay = 0;
-    double hra = 0;
-    double conveyance = 0;
-    double professionalTax = 0;
-    double incomeTax = 0;
+    final List<PayslipLine> earningsList = [];
+    final List<PayslipLine> deductionsList = [];
 
     double totalEarnings = 0;
     double totalDeductions = 0;
     double netSalary = 0;
 
-    if (payslipData != null && payslipData!.containsKey('lines')) {
-      final lines = payslipData!['lines'] as List<dynamic>;
-      for (final line in lines) {
-        final code = line['code']?.toString().toUpperCase() ?? '';
-        final name = line['name']?.toString().toLowerCase() ?? '';
-        final total = (line['total'] is num) ? (line['total'] as num).toDouble() : 0.0;
+    if (payslip != null) {
+      for (final line in payslip!.lines) {
+        final code = line.code.toUpperCase();
+        final name = line.name;
+        final total = line.total.abs();
 
-        if (code == 'BASIC' || code == 'BASIC_SALARY' || name.contains('basic')) {
-          basicPay = total;
-        } else if (code == 'HRA') {
-          hra = total;
-        } else if (name.contains('conveyance') || code == 'CONV') {
-          conveyance = total;
-        } else if (name.contains('professional tax') || code == 'PT') {
-          professionalTax = total;
-        } else if (name.contains('income tax') || name.contains('tds') || code == 'IT' || code == 'TDS') {
-          incomeTax = total;
-        } else if (code == 'NET') {
+        if (code == 'NET') {
           netSalary = total;
+          continue;
+        }
+        if (code == 'GROSS' || code == 'TAXABLE') {
+          // Keep Gross and Taxable excluded from individual items
+          continue;
+        }
+
+        // Determine category: Earning vs Deduction
+        bool isDeduction = false;
+        final category = line.categoryId;
+        if (category != null) {
+          final catName = category.name.toLowerCase();
+          if (catName.contains('deduction') || code.contains('DED') || name.toLowerCase().contains('deduction')) {
+            isDeduction = true;
+          }
+        } else if (code.contains('PT') || code.contains('TDS') || code.contains('IT') || name.toLowerCase().contains('tax') || name.toLowerCase().contains('deduction')) {
+          isDeduction = true;
+        }
+
+        if (isDeduction) {
+          if (total > 0) {
+            deductionsList.add(line);
+            totalDeductions += total;
+          }
         } else {
-          final category = line['category_id'];
-          if (category is List && category.length > 1) {
-            final catName = category[1].toString().toLowerCase();
-            if (catName.contains('deduction') || code.contains('DED')) {
-              totalDeductions += total;
-            } else if (catName.contains('allowance') || catName.contains('earning') || code.contains('ALW')) {
-              totalEarnings += total;
-            }
+          if (total > 0) {
+            earningsList.add(line);
+            totalEarnings += total;
           }
         }
       }
 
-      double rawEarnings = basicPay + totalEarnings + hra + conveyance;
-      double rawDeductions = totalDeductions + professionalTax + incomeTax;
-
-      if (rawEarnings < 0) {
-        totalEarnings = 0.0;
-        basicPay = 0.0;
-        hra = 0.0;
-        conveyance = 0.0;
-      } else {
-        totalEarnings = rawEarnings;
-        basicPay = basicPay.abs();
-        hra = hra.abs();
-        conveyance = conveyance.abs();
+      if (netSalary == 0) {
+        netSalary = (totalEarnings - totalDeductions).abs();
       }
-
-      totalDeductions = rawDeductions.abs();
-      professionalTax = professionalTax.abs();
-      incomeTax = incomeTax.abs();
-
-      netSalary = (totalEarnings - totalDeductions).abs();
-    } else {
-      basicPay = 0;
-      hra = 0;
-      conveyance = 0;
-      professionalTax = 0;
-      incomeTax = 0;
-      totalEarnings = 0;
-      totalDeductions = 0;
-      netSalary = 0;
     }
 
     String format(double value) => "₹${value.toStringAsFixed(0)}";
@@ -93,13 +74,13 @@ class SalaryBreakdownCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade100,
+          color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade200,
         ),
       ),
       child: Column(
@@ -116,19 +97,24 @@ class SalaryBreakdownCard extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Earnings Section
-          _buildSectionHeader(AppLocalizations.of(context)!.earnings, format(totalEarnings), Colors.green),
-          const SizedBox(height: 10),
-          _buildItemRow(AppLocalizations.of(context)!.basic_pay, basicPay, totalEarnings, const Color(0xFF4e54c8)),
-          if (hra > 0) _buildItemRow(AppLocalizations.of(context)!.house_rent_allowance, hra, totalEarnings, const Color(0xFF4e54c8)),
-          if (conveyance > 0) _buildItemRow(AppLocalizations.of(context)!.conveyance_allowance, conveyance, totalEarnings, const Color(0xFF4e54c8)),
+          if (earningsList.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text("No earnings", style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
+            )
+          else
+            ...earningsList.map((e) => _buildItemRow(e.name, e.total, totalEarnings, const Color(0xFF4e54c8))),
 
           const SizedBox(height: 24),
           
           // Deductions Section
-          _buildSectionHeader(AppLocalizations.of(context)!.deductions.toUpperCase(), '- ${format(totalDeductions)}', Colors.red),
-          const SizedBox(height: 10),
-          if (professionalTax > 0) _buildItemRow(AppLocalizations.of(context)!.professional_tax, professionalTax, totalDeductions, Colors.redAccent, isDeduction: true),
-          if (incomeTax > 0) _buildItemRow(AppLocalizations.of(context)!.income_tax, incomeTax, totalDeductions, Colors.redAccent, isDeduction: true),
+          if (deductionsList.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text("No deductions", style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
+            )
+          else
+            ...deductionsList.map((d) => _buildItemRow(d.name, d.total, totalDeductions, Colors.redAccent, isDeduction: true)),
 
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16.0),

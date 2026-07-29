@@ -237,6 +237,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validated_overtime => 'Validated OT';
 
   @override
+  String get session_label => 'Session';
+
+  @override
+  String get session_timeline => 'Session Timeline';
+
+  @override
+  String get no_gps_location => 'No GPS Location';
+
+  @override
+  String get session_active => 'Session Active';
+
+  @override
+  String get sessions_label => 'Sessions';
+
+  @override
   String get location => 'Location';
 
   @override
@@ -1179,6 +1194,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String sessions_count(Object count) {
+    return '$count sessions';
+  }
+
+  @override
+  String get file_too_large => 'File size exceeds the limit of 10 MB.';
+
+  @override
   String get search_projects => 'Search projects...';
 
   @override
@@ -1413,4 +1436,443 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get total => 'Total';
+
+  @override
+  String get total_worked => 'Total Worked';
+
+  @override
+  String get good_morning => 'Good morning';
+
+  @override
+  String get good_afternoon => 'Good afternoon';
+
+  @override
+  String get good_evening => 'Good evening';
+
+  @override
+  String get ats_home => 'Home';
+
+  @override
+  String get ats_jobs => 'Jobs';
+
+  @override
+  String get ats_applications => 'Applications';
+
+  @override
+  String get ats_candidates => 'Candidates';
+
+  @override
+  String get ats_profile => 'Profile';
+
+  @override
+  String get ats_open_roles => 'Open roles';
+
+  @override
+  String get ats_this_week => 'This week';
+
+  @override
+  String ats_new_applications_came_in(num count) {
+    return '$count new applications came in';
+  }
+
+  @override
+  String get ats_recent_applications => 'Recent Applications';
+
+  @override
+  String get ats_view_all => 'View all';
+
+  @override
+  String get ats_no_recent_applications => 'No recent applications';
+
+  @override
+  String get ats_job_positions => 'Job Positions';
+
+  @override
+  String get ats_search_hint => 'Search ...';
+
+  @override
+  String get ats_no_jobs_found => 'No job requisitions found';
+
+  @override
+  String get ats_tweak_filters => 'Try tweaking your search or filters';
+
+  @override
+  String get ats_recruitment => 'Recruitment';
+
+  @override
+  String get ats_candidates_folder => 'Candidates Folder';
+
+  @override
+  String get ats_search_candidate_hint =>
+      'Search name, degree, email, or skill...';
+
+  @override
+  String get tab_all => 'All';
+
+  @override
+  String get tab_new => 'New';
+
+  @override
+  String get tab_screening => 'Screening';
+
+  @override
+  String get tab_first_interview => 'First Interview';
+
+  @override
+  String get tab_second_interview => 'Second Interview';
+
+  @override
+  String get tab_offered => 'Offered';
+
+  @override
+  String get tab_hired => 'Hired';
+
+  @override
+  String get tab_refused => 'Refused';
+
+  @override
+  String get tab_ij => 'IJ';
+
+  @override
+  String get tab_hr_stage => 'HR Stage';
+
+  @override
+  String get tab_contract_proposal => 'Contract Proposal';
+
+  @override
+  String get tab_contract_signed => 'Contract Signed';
+
+  @override
+  String get tab_published => 'Published';
+
+  @override
+  String get tab_unpublished => 'Unpublished';
+
+  @override
+  String get tab_ongoing => 'Ongoing';
+
+  @override
+  String get ats_no_candidates => 'No candidates in this stage';
+
+  @override
+  String get ats_search_apps_hint =>
+      'Search subject, job, email, or candidate...';
+
+  @override
+  String get ats_candidate_prefix => 'Candidate';
+
+  @override
+  String get ats_stage_prefix => 'Stage';
+
+  @override
+  String get ats_avail_prefix => 'Avail';
+
+  @override
+  String get ats_no_job_linked => 'No job linked';
+
+  @override
+  String get ats_unassigned => 'Unassigned';
+
+  @override
+  String ats_no_applications_in_stage(String stage) {
+    return 'No applications in \'$stage\' stage';
+  }
+
+  @override
+  String get this_week => 'This week';
+
+  @override
+  String get working_hours_logged => 'Working hours logged';
+
+  @override
+  String duration_mins(int minutes) {
+    return '$minutes mins';
+  }
+
+  @override
+  String get duration_mins_one => '1 min';
+
+  @override
+  String duration_hours(int hours) {
+    return '$hours hrs';
+  }
+
+  @override
+  String get duration_hours_one => '1 hr';
+
+  @override
+  String duration_hours_mins(int hours, int minutes) {
+    return '$hours hrs $minutes mins';
+  }
+
+  @override
+  String get my_profile => 'My Profile';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get not_specified => 'Not specified';
+
+  @override
+  String get information => 'Information';
+
+  @override
+  String get member_since => 'Member Since';
+
+  @override
+  String get designation => 'Designation';
+
+  @override
+  String get website => 'Website';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get applicationProfile => 'Application Profile';
+
+  @override
+  String get ats_no_linked_position => 'No Linked Position';
+
+  @override
+  String get ats_stage => 'Stage';
+
+  @override
+  String get ats_availability => 'Availability';
+
+  @override
+  String get ats_not_specified => 'Not specified';
+
+  @override
+  String get ats_info => 'Info';
+
+  @override
+  String get ats_details => 'Details';
+
+  @override
+  String get ats_additional_info => 'Additional Info';
+
+  @override
+  String get ats_notes_comments => 'Notes & Comments';
+
+  @override
+  String get ats_candidate_identity => 'Candidate Identity';
+
+  @override
+  String get ats_candidate_name => 'Candidate Name';
+
+  @override
+  String get ats_email_address => 'Email Address';
+
+  @override
+  String get ats_phone_number => 'Phone Number';
+
+  @override
+  String get ats_linkedin_profile => 'LinkedIn Profile';
+
+  @override
+  String get ats_not_linked => 'Not linked';
+
+  @override
+  String get ats_salary_details => 'Salary details';
+
+  @override
+  String get ats_current_ctc => 'Current CTC';
+
+  @override
+  String get ats_expected_salary => 'Expected Salary';
+
+  @override
+  String get ats_proposed_salary => 'Proposed Salary';
+
+  @override
+  String get ats_salary_negotiable => 'Salary Negotiable';
+
+  @override
+  String get ats_yes => 'Yes';
+
+  @override
+  String get ats_no => 'No';
+
+  @override
+  String get ats_experience_details => 'Experience details';
+
+  @override
+  String get ats_total_experience => 'Total Experience';
+
+  @override
+  String get ats_relevant_experience => 'Relevant Experience';
+
+  @override
+  String get ats_notice_period => 'Notice Period';
+
+  @override
+  String get ats_np_negotiable => 'NP Negotiable';
+
+  @override
+  String get ats_holding_offer => 'Holding Offer';
+
+  @override
+  String get ats_recruitment_assignments => 'Recruitment Assignments';
+
+  @override
+  String get ats_recruiter_handler => 'Recruiter / Handler';
+
+  @override
+  String get ats_job_position => 'Job Position';
+
+  @override
+  String get ats_experience_type => 'Experience Type';
+
+  @override
+  String get ats_company => 'Company';
+
+  @override
+  String get ats_bio_details => 'Bio details';
+
+  @override
+  String get ats_gender => 'Gender';
+
+  @override
+  String get ats_birthday => 'Birthday';
+
+  @override
+  String get ats_blood_group => 'Blood Group';
+
+  @override
+  String get ats_marital_status => 'Marital Status';
+
+  @override
+  String get ats_contact_addresses => 'Contact Addresses';
+
+  @override
+  String get ats_current_address => 'Current Address';
+
+  @override
+  String get ats_permanent_address => 'Permanent Address';
+
+  @override
+  String get ats_applicant_comments => 'Applicant Comments';
+
+  @override
+  String get ats_recruiter_comments => 'Recruiter Comments';
+
+  @override
+  String get ats_general_notes => 'General Notes';
+
+  @override
+  String get ats_no_records_provided => 'No records provided.';
+
+  @override
+  String get ats_applied_on => 'Applied On';
+
+  @override
+  String get ats_job_documents => 'Job Documents';
+
+  @override
+  String get ats_no_documents_found =>
+      'No documents found for this job position.';
+
+  @override
+  String get ats_primary_skills_required => 'Primary Skills Required';
+
+  @override
+  String get ats_secondary_skills_required => 'Secondary Skills Required';
+
+  @override
+  String get ats_job_description => 'Job Description';
+
+  @override
+  String get ats_key_responsibilities => 'Key Responsibilities';
+
+  @override
+  String get ats_minimum_requirements => 'Minimum Requirements';
+
+  @override
+  String get ats_job_directory_summary => 'Job Directory Summary';
+
+  @override
+  String get ats_experience_required => 'Experience Required';
+
+  @override
+  String get ats_budget_salary => 'Budget / Salary';
+
+  @override
+  String get ats_employment_type => 'Employment Type';
+
+  @override
+  String get ats_full_time => 'Full-time';
+
+  @override
+  String get ats_status => 'Status';
+
+  @override
+  String get ats_published => 'Published';
+
+  @override
+  String get ats_draft => 'Draft';
+
+  @override
+  String get ats_priority => 'Priority';
+
+  @override
+  String get ats_not_spec => 'Not Spec';
+
+  @override
+  String get ats_candidate_profile => 'Candidate Profile';
+
+  @override
+  String get ats_contact_bio => 'Contact & Bio';
+
+  @override
+  String get ats_skills_meta => 'Skills & Meta';
+
+  @override
+  String get ats_primary_contact => 'Primary Contact';
+
+  @override
+  String get ats_mobile_phone => 'Mobile Phone';
+
+  @override
+  String get ats_alternate_phone => 'Alternate Phone';
+
+  @override
+  String get ats_not_provided => 'Not provided';
+
+  @override
+  String get ats_recruitment_information => 'Recruitment Information';
+
+  @override
+  String get ats_contact_partner_name => 'Contact Partner Name';
+
+  @override
+  String get ats_candidate_manager => 'Candidate Manager';
+
+  @override
+  String get ats_odoo_company => 'Odoo Company';
+
+  @override
+  String get ats_candidate_status_info => 'Candidate Status Info';
+
+  @override
+  String get ats_availability_date => 'Availability Date';
+
+  @override
+  String get ats_recruitment_stage => 'Recruitment Stage';
+
+  @override
+  String get ats_odoo_skills_list => 'Odoo Skills List';
+
+  @override
+  String get ats_no_skills_mapped => 'No skills mapped for this candidate yet.';
+
+  @override
+  String get ats_download_resume => 'Download Resume';
+
+  @override
+  String get ats_type => 'Type';
+
+  @override
+  String get help_desk => 'Help Desk';
 }

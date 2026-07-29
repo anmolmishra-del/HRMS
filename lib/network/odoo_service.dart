@@ -1,10 +1,11 @@
-import 'package:intl/intl.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/main.dart';
+
 class OdooService {
   final String baseUrl;
   OdooClient _client;
+  Set<String>? _supportedNotificationFields;
 
   OdooService(this.baseUrl, {OdooSession? session})
     : _client = OdooClient(baseUrl, sessionId: session);
@@ -13,10 +14,40 @@ class OdooService {
   void setSession(OdooSession session) {
     _client.close();
     _client = OdooClient(baseUrl, sessionId: session);
+    // Clear cache when session/user changes
+    _supportedNotificationFields = null;
   }
 
   void close() {
     _client.close();
+  }
+
+  /// Fetches the supported fields for the mail.notification model dynamically and caches them.
+  Future<Set<String>> getSupportedNotificationFields() async {
+    if (_supportedNotificationFields != null) {
+      return _supportedNotificationFields!;
+    }
+    try {
+      final response = await executeModelMethod(
+        'mail.notification',
+        'fields_get',
+        [],
+        kwargs: {
+          'attributes': ['type'],
+        },
+        silent: true,
+      );
+      if (response is Map) {
+        _supportedNotificationFields = response.keys.map((k) => k.toString()).toSet();
+        debugPrint('OdooService: mail.notification supported fields detected: $_supportedNotificationFields');
+      } else {
+        _supportedNotificationFields = {};
+      }
+    } catch (e) {
+      debugPrint('OdooService: fields_get for mail.notification failed: $e');
+      _supportedNotificationFields = {};
+    }
+    return _supportedNotificationFields!;
   }
 
   /// Authenticates the user with the Odoo backend.
@@ -123,10 +154,14 @@ class OdooService {
       return await _client.callKw(payload);
     } catch (e) {
       String errorStr = e.toString().toLowerCase();
-      debugPrint('================ ODOO RPC EXCEPTION ================');
-      debugPrint('Payload: $payload');
-      debugPrint('Error: $e');
-      debugPrint('====================================================');
+      if (!silent) {
+        debugPrint('================ ODOO RPC EXCEPTION ================');
+        debugPrint('Payload: $payload');
+        debugPrint('Error: $e');
+        debugPrint('====================================================');
+      } else {
+        debugPrint('OdooService: executeModelMethod silent exception for $model.$method (${e.toString().split('\n').first})');
+      }
 
       if (!silent && (errorStr.contains('socketexception') || 
           errorStr.contains('connection refused') || 
@@ -191,8 +226,11 @@ class OdooService {
     required DateTime fromDate,
     required DateTime toDate,
   }) async {
-    final String fromStr = DateFormat('yyyy-MM-dd 00:00:00').format(fromDate);
-    final String toStr = DateFormat('yyyy-MM-dd 23:59:59').format(toDate);
+    final DateTime localStart = DateTime(fromDate.year, fromDate.month, fromDate.day);
+    final DateTime localEnd = DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59);
+
+    final String fromStr = localStart.toUtc().toIso8601String().replaceAll('T', ' ').substring(0, 19);
+    final String toStr = localEnd.toUtc().toIso8601String().replaceAll('T', ' ').substring(0, 19);
 
     final response = await executeModelMethod(
       'hr.attendance',
@@ -560,7 +598,7 @@ class OdooService {
           'id', 'name', 'category_id', 'company_id', 'equipment_assign_to',
           'department_id', 'employee_id', 'maintenance_team_id', 'technician_user_id',
           'scrap_date', 'note', 'partner_id', 'partner_ref', 'model', 'serial_no',
-          'comp_serial_no', 'effective_date', 'cost', 'warranty_date',
+           'effective_date', 'cost', 'warranty_date',
           'expected_mtbf', 'mtbf', 'estimated_next_failure', 'latest_failure_date', 'mttr'
         ],
       },
@@ -629,6 +667,25 @@ class OdooService {
   /// Fetches notifications for a specific partner.
   Future<List<dynamic>> fetchNotifications(int partnerId) async {
     debugPrint('OdooService: fetchNotifications partnerId=$partnerId - Fetching metadata...');
+    
+    // Check supported fields dynamically
+    final supportedFields = await getSupportedNotificationFields();
+    final requestedFields = [
+      'id', 
+      'notification_status', 
+      'mail_message_id', 
+      'notification_type',
+      'failure_type', 
+      'failure_reason', 
+      'res_partner_id'
+    ];
+    if (supportedFields.contains('is_read')) {
+      requestedFields.add('is_read');
+    }
+    if (supportedFields.contains('read_date')) {
+      requestedFields.add('read_date');
+    }
+
     // 1. Fetch notification metadata
     final notifications = await executeModelMethod(
       'mail.notification',
@@ -639,10 +696,7 @@ class OdooService {
           ['res_partner_id', '=', partnerId],
           ['notification_type', '=', 'inbox']
         ],
-        'fields': [
-          'id', 'notification_status', 'mail_message_id', 'notification_type',
-          'failure_type', 'failure_reason', 'res_partner_id', 'is_read', 'read_date'
-        ],
+        'fields': requestedFields,
         'order': 'id desc',
         'limit': 50,
       },
@@ -703,16 +757,29 @@ class OdooService {
   /// Marks a notification as read.
   Future<void> markNotificationAsRead(int notificationId) async {
     debugPrint('OdooService: markNotificationAsRead notificationId=$notificationId');
-    await executeModelMethod(
-      'mail.notification',
-      'write',
-      [[notificationId], {
-        'is_read': true,
-        'read_date': DateTime.now().toUtc().toIso8601String(),
-      }],
-      silent: true,
-    );
-    debugPrint('OdooService: markNotificationAsRead - Success');
+    
+    // Check supported fields dynamically
+    final supportedFields = await getSupportedNotificationFields();
+    final Map<String, dynamic> writeValues = {};
+    
+    if (supportedFields.contains('is_read')) {
+      writeValues['is_read'] = true;
+    }
+    if (supportedFields.contains('read_date')) {
+      writeValues['read_date'] = DateTime.now().toUtc().toIso8601String();
+    }
+
+    if (writeValues.isNotEmpty) {
+      await executeModelMethod(
+        'mail.notification',
+        'write',
+        [[notificationId], writeValues],
+        silent: true,
+      );
+      debugPrint('OdooService: markNotificationAsRead - Success with $writeValues');
+    } else {
+      debugPrint('OdooService: markNotificationAsRead - Skipping write since no read status fields are supported on the server');
+    }
   }
 
   /// Fetches companies.
@@ -984,7 +1051,7 @@ class OdooService {
       'search_read',
       [],
       kwargs: {
-        'domain': [['id', '=', documentId]],
+        'domain': [['id', '=', documentId], '|', ['active', '=', true], ['active', '=', false]],
         'fields': ['id', 'name', 'datas', 'type', 'url'],
       },
     );

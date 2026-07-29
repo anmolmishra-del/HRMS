@@ -10,6 +10,7 @@ import 'package:flutter_app/features/document/models/document_model.dart';
 import 'package:flutter_app/features/document/state/document_state.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 
 class DocBoxPage extends StatefulWidget {
   const DocBoxPage({super.key});
@@ -46,6 +47,7 @@ class _DocBoxPageState extends State<DocBoxPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocConsumer<DocumentCubit, DocumentState>(
       listener: (context, state) {
@@ -108,90 +110,95 @@ class _DocBoxPageState extends State<DocBoxPage> {
             .toSet()
             .toList();
 
-        return Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          body: Column(
-            children: [
-              _buildHeader(context, state.documents.length, l10n),
-              Expanded(
-                child: RefreshIndicator(
-                  color: AppColors.indigo,
-                  onRefresh: () => context.read<DocumentCubit>().fetchDocuments(),
-                  child: CustomScrollView(
-                    slivers: [
-                      // Folder section
-                      if (folders.isNotEmpty)
+        return LoadingOverlay(
+          isLoading: state.status == DocumentStatus.submitting,
+          child: Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Column(
+              children: [
+                _buildHeader(context, state.documents.length, l10n),
+                Expanded(
+                  child: RefreshIndicator(
+                    color: AppColors.indigo,
+                    onRefresh: () => context.read<DocumentCubit>().fetchDocuments(),
+                    child: CustomScrollView(
+                      slivers: [
+                        // Folder section
+                        if (folders.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: _buildFolderList(folders, l10n),
+                          ),
+                        // Filter tabs (All, Files, Links, Archived)
                         SliverToBoxAdapter(
-                          child: _buildFolderList(folders, l10n),
+                          child: _buildFilterTabs(l10n),
                         ),
-                      // Filter tabs (All, Files, Links, Archived)
-                      SliverToBoxAdapter(
-                        child: _buildFilterTabs(l10n),
-                      ),
-                      // Document list
-                      if (state.status == DocumentStatus.loading)
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          sliver: SliverToBoxAdapter(
-                            child: Shimmer.fromColors(
-                              baseColor: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[800]!
-                                  : Colors.grey[300]!,
-                              highlightColor: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[700]!
-                                  : Colors.grey[100]!,
-                              child: Column(
-                                children: List.generate(
-                                  5,
-                                  (index) => Container(
-                                    height: 80,
-                                    margin: const EdgeInsets.only(bottom: 12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(20),
+                        // Document list
+                        if (state.status == DocumentStatus.loading)
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            sliver: SliverToBoxAdapter(
+                              child: Shimmer.fromColors(
+                                baseColor: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey[800]!
+                                    : Colors.grey[300]!,
+                                highlightColor: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[100]!,
+                                child: Column(
+                                  children: List.generate(
+                                    5,
+                                    (index) => Container(
+                                      height: 80,
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        )
-                      else if (filteredDocs.isEmpty)
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: _buildEmptyState(l10n),
-                        )
-                      else
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) => _buildDocCard(context, filteredDocs[index], l10n),
-                              childCount: filteredDocs.length,
+                          )
+                        else if (filteredDocs.isEmpty)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: _buildEmptyState(l10n),
+                          )
+                        else
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => _buildDocCard(context, filteredDocs[index], l10n),
+                                childCount: filteredDocs.length,
+                              ),
                             ),
                           ),
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 100), // Space to avoid bottom fab/nav bar
                         ),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 100), // Space to avoid bottom fab/nav bar
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton.extended(
-            backgroundColor: AppColors.brightBlue,
-            elevation: 8,
-            onPressed: () => _showAddDocumentDialog(context, l10n),
-            icon: const Icon(Icons.add_rounded, color: Colors.white),
-            label: const Text("Add Document", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            floatingActionButton: FloatingActionButton.extended(
+              backgroundColor: AppColors.brightBlue,
+              elevation: 8,
+              onPressed: () => _showAddDocumentDialog(context, l10n),
+              icon: const Icon(Icons.add_rounded, color: Colors.white),
+              label: const Text("Add Document", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
           ),
         );
       },
     );
   }
   Widget _buildHeader(BuildContext context, int totalCount, AppLocalizations l10n) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 12, 20, 20),
       decoration: const BoxDecoration(
@@ -235,11 +242,15 @@ class _DocBoxPageState extends State<DocBoxPage> {
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade200,
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -268,11 +279,15 @@ class _DocBoxPageState extends State<DocBoxPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade200,
+                    width: 1,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -648,6 +663,16 @@ class _DocBoxPageState extends State<DocBoxPage> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () {
+                          if (!doc.active) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please unarchive this file to view it"),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            Navigator.pop(ctx);
+                            return;
+                          }
                           final cubit = context.read<DocumentCubit>();
                           Navigator.pop(ctx);
                           cubit.openDocument(doc.id);
@@ -665,6 +690,16 @@ class _DocBoxPageState extends State<DocBoxPage> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () {
+                          if (!doc.active) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please unarchive this file to view it"),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            Navigator.pop(ctx);
+                            return;
+                          }
                           final cubit = context.read<DocumentCubit>();
                           Navigator.pop(ctx);
                           cubit.downloadDocument(doc.id);
@@ -798,7 +833,7 @@ class _DocBoxPageState extends State<DocBoxPage> {
                             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                           ),
                           onPressed: () async {
-                            final result = await FilePicker.platform.pickFiles(
+                            final result = await FilePicker.pickFiles(
                               type: FileType.any,
                             );
                             if (result != null && result.files.single.path != null) {
@@ -853,6 +888,15 @@ class _DocBoxPageState extends State<DocBoxPage> {
                         if (selectedFile == null) {
                           messenger.showSnackBar(
                             const SnackBar(content: Text("Please select a file to upload")),
+                          );
+                          return;
+                        }
+                        if (selectedFile!.lengthSync() > 10 * 1024 * 1024) {
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text("File size exceeds the allowed limit of 10 MB"),
+                              backgroundColor: Colors.orange,
+                            ),
                           );
                           return;
                         }

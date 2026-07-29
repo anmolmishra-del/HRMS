@@ -6,6 +6,7 @@ import 'package:flutter_app/features/attendance/cubit/attendance_report_state.da
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'daily_attendance_detail.dart';
 
 /// Main page for displaying the Check-In/Check-Out attendance report.
 class InOutReportPage extends StatelessWidget {
@@ -52,11 +53,16 @@ class InOutReportPage extends StatelessWidget {
                   }
                   
                   // Display the list of attendance records
+                  final consolidated = _consolidateDailyRecords(state.records);
+                  if (consolidated.isEmpty) {
+                    return _buildEmptyState(context, l10n);
+                  }
+                  
                   return ListView.builder(
                     padding: const EdgeInsets.all(20),
-                    itemCount: state.records.length,
+                    itemCount: consolidated.length,
                     itemBuilder: (context, index) {
-                      final record = state.records[index];
+                      final record = consolidated[index];
                       return _AttendanceCard(record: record);
                     },
                   );
@@ -67,6 +73,85 @@ class InOutReportPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _consolidateDailyRecords(List<dynamic> records) {
+    final Map<String, List<Map<String, dynamic>>> groups = {};
+    for (final rawRec in records) {
+      if (rawRec is! Map) continue;
+      final rec = Map<String, dynamic>.from(rawRec);
+      final rawCheckIn = rec['check_in'];
+      if (rawCheckIn == null || rawCheckIn == false) continue;
+      
+      final String checkInStr = rawCheckIn.toString();
+      final DateTime checkInLocal = DateTime.parse("${checkInStr.replaceAll(' ', 'T')}Z").toLocal();
+      final dateKey = DateFormat('yyyy-MM-dd').format(checkInLocal);
+      
+      if (!groups.containsKey(dateKey)) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey]!.add(rec);
+    }
+    
+    final List<Map<String, dynamic>> consolidated = [];
+    final sortedKeys = groups.keys.toList()..sort((a, b) => b.compareTo(a));
+    
+    for (final key in sortedKeys) {
+      final dayRecords = groups[key]!;
+      if (dayRecords.isEmpty) continue;
+      
+      dayRecords.sort((a, b) {
+        final aIn = a['check_in'].toString();
+        final bIn = b['check_in'].toString();
+        return aIn.compareTo(bIn);
+      });
+      
+      final earliestRecord = dayRecords.first;
+      
+      double totalWorkedHours = 0.0;
+      double totalOvertimeHours = 0.0;
+      double totalValidatedOT = 0.0;
+      
+      String? latestCheckOutStr;
+      DateTime? latestCheckOut;
+      Map<String, dynamic>? latestCheckOutRecord;
+      bool stillWorking = false;
+      
+      for (final rec in dayRecords) {
+        totalWorkedHours += (rec['worked_hours'] ?? 0.0).toDouble();
+        totalOvertimeHours += (rec['overtime_hours'] ?? 0.0).toDouble();
+        totalValidatedOT += (rec['validated_overtime_hours'] ?? 0.0).toDouble();
+        
+        final checkOutVal = rec['check_out'];
+        if (checkOutVal == null || checkOutVal == false || checkOutVal.toString().isEmpty) {
+          stillWorking = true;
+        } else {
+          final DateTime outTime = DateTime.parse("${checkOutVal.toString().replaceAll(' ', 'T')}Z").toLocal();
+          if (latestCheckOut == null || outTime.isAfter(latestCheckOut)) {
+            latestCheckOut = outTime;
+            latestCheckOutStr = checkOutVal.toString();
+            latestCheckOutRecord = rec;
+          }
+        }
+      }
+      
+      final Map<String, dynamic> consolidatedRecord = {
+        'check_in': earliestRecord['check_in'],
+        'check_out': stillWorking ? false : latestCheckOutStr,
+        'worked_hours': totalWorkedHours,
+        'overtime_hours': totalOvertimeHours,
+        'validated_overtime_hours': totalValidatedOT,
+        'in_latitude': earliestRecord['in_latitude'],
+        'in_longitude': earliestRecord['in_longitude'],
+        'out_latitude': latestCheckOutRecord != null ? latestCheckOutRecord['out_latitude'] : null,
+        'out_longitude': latestCheckOutRecord != null ? latestCheckOutRecord['out_longitude'] : null,
+        'entries': dayRecords,
+      };
+      
+      consolidated.add(consolidatedRecord);
+    }
+    
+    return consolidated;
   }
 
   /// Helper widget to show when no records are found.
@@ -231,6 +316,22 @@ class _AttendanceCard extends StatelessWidget {
   final dynamic record;
   const _AttendanceCard({required this.record});
 
+  String _formatDuration(double hours, AppLocalizations l10n) {
+    if (hours <= 0) return l10n.duration_mins(0);
+    final int totalMinutes = (hours * 60).round();
+    final int h = totalMinutes ~/ 60;
+    final int m = totalMinutes % 60;
+    if (h > 0) {
+      if (m > 0) {
+        return l10n.duration_hours_mins(h, m);
+      } else {
+        return h == 1 ? l10n.duration_hours_one : l10n.duration_hours(h);
+      }
+    } else {
+      return m == 1 ? l10n.duration_mins_one : l10n.duration_mins(m);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -261,6 +362,12 @@ class _AttendanceCard extends StatelessWidget {
 
     final bool isClosed = checkOut != null;
 
+    double displayWorkedHours = workedHours;
+    if (!isClosed) {
+      displayWorkedHours = DateTime.now().difference(checkIn).inSeconds / 3600.0;
+      if (displayWorkedHours < 0) displayWorkedHours = 0.0;
+    }
+
     // Check if location data was captured
     final bool hasInLoc = inLat != null && inLat != 0.0;
     final bool hasOutLoc = outLat != null && outLat != 0.0;
@@ -284,103 +391,138 @@ class _AttendanceCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Upper section: Status icon, Date, and Worked Hours
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: (isClosed ? AppColors.successGreen : AppColors.orange).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isClosed ? Icons.check_circle_outline : Icons.timer_outlined,
-                    color: isClosed ? AppColors.successGreen : AppColors.orange,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        DateFormat('EEEE, dd MMM').format(checkIn),
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).colorScheme.onSurface),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DailyAttendanceDetailPage(record: record),
+              ),
+            );
+          },
+          child: Column(
+            children: [
+              // Upper section: Status icon, Date, and Worked Hours
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: (isClosed ? AppColors.successGreen : AppColors.orange).withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isClosed ? l10n.completed : l10n.still_working,
-                        style: TextStyle(
-                          color: isClosed ? Theme.of(context).colorScheme.onSurface.withOpacity(0.6) : AppColors.orange,
-                          fontSize: 12,
+                      child: Icon(
+                        isClosed ? Icons.check_circle_outline : Icons.timer_outlined,
+                        color: isClosed ? AppColors.successGreen : AppColors.orange,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            DateFormat('EEEE, dd MMM').format(checkIn),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).colorScheme.onSurface),
+                          ),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                isClosed ? l10n.completed : l10n.still_working,
+                                style: TextStyle(
+                                  color: isClosed ? Theme.of(context).colorScheme.onSurface.withOpacity(0.6) : AppColors.orange,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              if (record['entries'] != null && (record['entries'] as List).length > 1) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.blue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    l10n.sessions_count((record['entries'] as List).length),
+                                    style: const TextStyle(color: AppColors.blue, fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          _formatDuration(displayWorkedHours, l10n),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).primaryColor),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${workedHours.toStringAsFixed(2)} hrs',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).primaryColor),
-                    ),
-                    if (overtimeHours > 0)
-                      Text(
-                        '+${overtimeHours.toStringAsFixed(2)} OT',
-                        style: const TextStyle(fontSize: 11, color: AppColors.successGreen, fontWeight: FontWeight.w600),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          // Lower section: Time Details (In, Out, Break) and Locations
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildTimeInfo(context, l10n.in_label, DateFormat('hh:mm:ss a').format(checkIn), AppColors.blue, 
-                      subtitle: hasInLoc ? '${inLat.toStringAsFixed(2)}, ${inLong.toStringAsFixed(2)}' : null),
-                    _buildTimeInfo(
-                      context,
-                      l10n.out, 
-                      isClosed ? DateFormat('hh:mm:ss a').format(checkOut) : '--:--', 
-                      isClosed ? AppColors.dangerRed : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                      subtitle: hasOutLoc ? '${outLat.toStringAsFixed(2)}, ${outLong.toStringAsFixed(2)}' : null
+                        if (overtimeHours > 0)
+                          Text(
+                            '+${_formatDuration(overtimeHours, l10n)} OT',
+                            style: const TextStyle(fontSize: 11, color: AppColors.successGreen, fontWeight: FontWeight.w600),
+                          ),
+                      ],
                     ),
                   ],
                 ),
-                // Show Validated Overtime row if applicable
-                if (validatedOT > 0) ...[
-                  const SizedBox(height: 12),
-                  const Divider(height: 1, indent: 20, endIndent: 20),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.verified_outlined, size: 14, color: AppColors.successGreen),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${l10n.validated_overtime}: ${validatedOT.toStringAsFixed(2)} hrs',
-                        style: const TextStyle(fontSize: 12, color: AppColors.successGreen, fontWeight: FontWeight.bold),
+              ),
+              const Divider(height: 1),
+              // Lower section: Time Details (In, Out, Break) and Locations
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildTimeInfo(context, l10n.in_label, DateFormat('hh:mm:ss a').format(checkIn), AppColors.blue, 
+                          subtitle: hasInLoc ? '${inLat.toStringAsFixed(2)}, ${inLong.toStringAsFixed(2)}' : null),
+                        _buildTimeInfo(
+                          context,
+                          l10n.out, 
+                          isClosed ? DateFormat('hh:mm:ss a').format(checkOut) : '--:--', 
+                          isClosed ? AppColors.dangerRed : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          subtitle: hasOutLoc ? '${outLat.toStringAsFixed(2)}, ${outLong.toStringAsFixed(2)}' : null
+                        ),
+                      ],
+                    ),
+                    // Show Validated Overtime row if applicable
+                    if (validatedOT > 0) ...[
+                      const SizedBox(height: 12),
+                      const Divider(height: 1, indent: 20, endIndent: 20),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.verified_outlined, size: 14, color: AppColors.successGreen),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${l10n.validated_overtime}: ${validatedOT.toStringAsFixed(2)} hrs',
+                            style: const TextStyle(fontSize: 12, color: AppColors.successGreen, fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

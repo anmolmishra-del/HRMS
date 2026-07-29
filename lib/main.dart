@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
@@ -18,12 +21,32 @@ import 'package:flutter_app/features/projects/cubit/projects_cubit.dart';
 import 'package:flutter_app/features/projects/cubit/project_tasks_cubit.dart';
 import 'package:flutter_app/features/document/cubit/document_cubit.dart';
 import 'package:flutter_app/routes.dart';
+import 'package:flutter_app/ats/features/jobs/cubit/job_cubit.dart';
+import 'package:flutter_app/ats/features/my_applications/cubit/my_application_cubit.dart';
+import 'package:flutter_app/ats/features/interview_schedule/cubit/interview_cubit.dart';
+import 'package:flutter_app/ats/features/profile/cubit/profile_cubit.dart';
+import 'package:flutter_app/ats/features/auth/cubit/login_cubit.dart';
+import 'package:flutter_app/ats/features/candidatefolder/candidate/cubit/candidate_cubit.dart';
+
+import 'package:flutter_app/core/services/firebase_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Background message: ${message.notification?.title}");
+  await AppFirebaseService().showLocalNotification(message);
+}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // HttpOverrides.global = MyHttpOverrides();
+  await AppFirebaseService().initialize();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -44,6 +67,12 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => ProjectsCubit()),
         BlocProvider(create: (context) => ProjectTasksCubit()),
         BlocProvider(create: (context) => DocumentCubit()..fetchDocuments()),
+        BlocProvider(create: (context) => JobCubit()),
+        BlocProvider(create: (context) => MyApplicationCubit()),
+        BlocProvider(create: (context) => InterviewScheduleCubit()),
+        BlocProvider(create: (context) => RecruiterProfileCubit()),
+        BlocProvider(create: (context) => AtsLoginCubit()),
+        BlocProvider(create: (context) => CandidateCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
@@ -75,3 +104,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

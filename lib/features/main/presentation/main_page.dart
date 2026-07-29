@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app/core/constants/app_colors.dart';
 import 'package:flutter_app/features/chat/presentation/chat_list_page.dart';
 import 'package:flutter_app/features/home/presentation/home_page.dart';
@@ -9,57 +10,132 @@ import 'package:flutter_app/features/profile/profile_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
+import 'package:flutter_app/core/services/firebase_service.dart';
+
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
+  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        backgroundColor: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
+        title: Row(
+          children: [
+            Icon(Icons.exit_to_app_rounded, color: Colors.orange.shade400, size: 28),
+            const SizedBox(width: 12),
+            const Text(
+              "Exit App",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
+        ),
+        content: const Text(
+          "Are you sure you want to exit the application?",
+          style: TextStyle(fontSize: 15, height: 1.4),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: TextButton.styleFrom(
+              foregroundColor: isDark ? Colors.white70 : Colors.grey.shade600,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: const Text("Cancel", style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade400,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: const Text("Exit", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppFirebaseService().checkAndHandlePendingNotification(context);
+    });
+
     return BlocProvider(
       create: (_) => MainCubit(),
-              child: BlocBuilder<MainCubit, MainState>(
-                builder: (context, state) {
-                  final l10n = AppLocalizations.of(context)!;
-                  return Scaffold(
-                    body: IndexedStack(
-                      index: state.selectedIndex,
-                      children: [
-                        HomePage(),
-                        PayrollScreen(), // My Pay
-                        ChatListPage(),
-                        ProfileScreen(), // Profile
-                      ],
-                    ),
+      child: BlocBuilder<MainCubit, MainState>(
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context)!;
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (bool didPop, dynamic result) async {
+              if (didPop) return;
 
-                    extendBody: true,
-                    bottomNavigationBar: SafeArea(
-                      child: Container(
-                        margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(32),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.brightBlue.withOpacity(0.15),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildNavItem(context, state, 0, Icons.home_outlined, Icons.home, l10n.home),
-                            _buildNavItem(context, state, 1, Icons.payment_outlined, Icons.payment, l10n.my_pay),
-                            _buildNavItem(context, state, 2, Icons.chat_bubble_outline, Icons.chat_bubble, l10n.chat),
-                            _buildNavItem(context, state, 3, Icons.person_outline, Icons.person, l10n.profile),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              if (state.selectedIndex != 0) {
+                // If not on Home tab, switch to Home tab
+                context.read<MainCubit>().changeTab(0);
+              } else {
+                // If on Home tab, show exit confirmation prompt
+                final shouldExit = await _showExitConfirmationDialog(context);
+                if (shouldExit) {
+                  await SystemNavigator.pop();
+                }
+              }
+            },
+            child: Scaffold(
+              body: IndexedStack(
+                index: state.selectedIndex,
+                children: [
+                  HomePage(),
+                  PayrollScreen(), // My Pay
+                  ChatListPage(),
+                  ProfileScreen(), // Profile
+                ],
               ),
+
+              extendBody: true,
+              bottomNavigationBar: SafeArea(
+                child: Container(
+                  margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.brightBlue.withOpacity(0.15),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem(context, state, 0, Icons.home_outlined, Icons.home, l10n.home),
+                      _buildNavItem(context, state, 1, Icons.payment_outlined, Icons.payment, l10n.my_pay),
+                      _buildNavItem(context, state, 2, Icons.chat_bubble_outline, Icons.chat_bubble, l10n.chat),
+                      _buildNavItem(context, state, 3, Icons.person_outline, Icons.person, l10n.profile),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 

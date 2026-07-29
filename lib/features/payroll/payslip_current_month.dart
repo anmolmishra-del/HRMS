@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/core/constants/app_colors.dart';
+import 'package:flutter_app/features/payroll/models/payslip_model.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_app/features/profile/cubit/profile_cubit.dart';
 
 class CurrentMonthCard extends StatelessWidget {
-  final Map<String, dynamic>? payslipData;
+  final Payslip? payslip;
   final bool showSalary;
   final VoidCallback onToggleShowSalary;
 
   const CurrentMonthCard({
     super.key,
-    this.payslipData,
+    this.payslip,
     required this.showSalary,
     required this.onToggleShowSalary,
   });
@@ -23,61 +26,51 @@ class CurrentMonthCard extends StatelessWidget {
     double deductions = 0;
     double netSalary = 0;
 
-    double hra = 0;
-    double conveyance = 0;
-    double professionalTax = 0;
-    double incomeTax = 0;
+    if (payslip != null) {
+      double totalEarnings = 0;
+      double totalDeductions = 0;
 
-    if (payslipData != null && payslipData!.containsKey('lines')) {
-      final lines = payslipData!['lines'] as List<dynamic>;
-      for (final line in lines) {
-        final code = line['code']?.toString().toUpperCase() ?? '';
-        final name = line['name']?.toString().toLowerCase() ?? '';
-        final total = (line['total'] is num) ? (line['total'] as num).toDouble() : 0.0;
+      for (final line in payslip!.lines) {
+        final code = line.code.toUpperCase();
+        final name = line.name.toLowerCase();
+        final total = line.total.abs();
 
-        if (code == 'BASIC' || code == 'BASIC_SALARY' || name.contains('basic')) {
-          basicPay = total;
-        } else if (code == 'NET') {
+        if (code == 'NET') {
           netSalary = total;
-        } else if (code == 'HRA') {
-          hra = total;
-        } else if (name.contains('conveyance') || code == 'CONV') {
-          conveyance = total;
-        } else if (name.contains('professional tax') || code == 'PT') {
-          professionalTax = total;
-        } else if (name.contains('income tax') || name.contains('tds') || code == 'IT' || code == 'TDS') {
-          incomeTax = total;
+          continue;
+        }
+        if (code == 'GROSS' || code == 'TAXABLE') {
+          continue;
+        }
+
+        // Determine category: Earning vs Deduction
+        bool isDeduction = false;
+        final category = line.categoryId;
+        if (category != null) {
+          final catName = category.name.toLowerCase();
+          if (catName.contains('deduction') || code.contains('DED') || name.contains('deduction')) {
+            isDeduction = true;
+          }
+        } else if (code.contains('PT') || code.contains('TDS') || code.contains('IT') || name.contains('tax') || name.contains('deduction')) {
+          isDeduction = true;
+        }
+
+        if (isDeduction) {
+          totalDeductions += total;
         } else {
-          final category = line['category_id'];
-          if (category is List && category.length > 1) {
-            final catName = category[1].toString().toLowerCase();
-            if (catName.contains('deduction') || code.contains('DED')) {
-              deductions += total;
-            } else if (catName.contains('allowance') || catName.contains('earning') || code.contains('ALW')) {
-              allowance += total;
-            }
+          totalEarnings += total;
+          if (code == 'BASIC' || code == 'BASIC_SALARY' || name.contains('basic')) {
+            basicPay = total;
           }
         }
       }
 
-      double rawEarnings = basicPay + allowance + hra + conveyance;
-      double rawDeductions = deductions + professionalTax + incomeTax;
+      allowance = (totalEarnings - basicPay).abs();
+      deductions = totalDeductions;
 
-      if (rawEarnings < 0) {
-        basicPay = 0.0;
-        hra = 0.0;
-        conveyance = 0.0;
-        allowance = 0.0;
-      } else {
-        allowance = allowance + hra + conveyance;
-        basicPay = basicPay.abs();
-        hra = hra.abs();
-        conveyance = conveyance.abs();
-        allowance = allowance.abs();
+      if (netSalary == 0) {
+        netSalary = (totalEarnings - totalDeductions).abs();
       }
-
-      deductions = rawDeductions.abs();
-      netSalary = ((rawEarnings < 0 ? 0.0 : rawEarnings) - deductions).abs();
     } else {
       basicPay = 0;
       allowance = 0;
@@ -86,17 +79,11 @@ class CurrentMonthCard extends StatelessWidget {
     }
 
     String currentMonth = "${DateTime.now().month}-${DateTime.now().year}";
-    if (payslipData != null) {
-      if (payslipData!.containsKey('date_to') && payslipData!['date_to'] != null) {
-        try {
-          final dateStr = payslipData!['date_to'].toString();
-          final parsedDate = DateTime.parse(dateStr);
-          currentMonth = "${parsedDate.month}-${parsedDate.year}";
-        } catch (e) {
-          debugPrint('Error parsing date_to: $e');
-        }
-      } else if (payslipData!.containsKey('name') && payslipData!['name'] != null) {
-        currentMonth = payslipData!['name'].toString();
+    if (payslip != null) {
+      if (payslip!.dateTo != null) {
+        currentMonth = "${payslip!.dateTo!.month}-${payslip!.dateTo!.year}";
+      } else {
+        currentMonth = payslip!.name;
       }
     }
     String format(double value) => "₹${value.toStringAsFixed(0)}";
@@ -181,36 +168,61 @@ class CurrentMonthCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.net_salary,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
+                  GestureDetector(
+                    onTap: onToggleShowSalary,
+                    child: Row(
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.net_salary,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: onToggleShowSalary,
-                        child: Icon(
+                        const SizedBox(width: 8),
+                        Icon(
                           showSalary ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                           color: Colors.white70,
                           size: 18,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    showSalary ? format(netSalary) : '₹ ••••••',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        showSalary ? format(netSalary) : '₹ ••••••',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      () {
+                        final profileState = context.read<ProfileCubit>().state;
+                        final employeeName = profileState.employee?.name;
+                        if (employeeName != null && employeeName.isNotEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              employeeName.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white70,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }(),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   

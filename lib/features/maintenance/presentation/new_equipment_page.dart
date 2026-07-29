@@ -389,7 +389,7 @@ class _NewEquipmentPageState extends State<NewEquipmentPage> with SingleTickerPr
         'partner_ref': _partnerRefController.text,
         'model': _modelController.text,
         'serial_no': _serialNoController.text,
-        'comp_serial_no': _compSerialNoController.text,
+        // 'comp_serial_no': _compSerialNoController.text,
         'effective_date': _effectiveDate?.toIso8601String().split('T')[0],
         'cost': double.tryParse(_costController.text) ?? 0.0,
         'warranty_date': _warrantyDate?.toIso8601String().split('T')[0],

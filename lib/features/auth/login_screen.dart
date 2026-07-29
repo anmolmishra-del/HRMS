@@ -327,6 +327,7 @@ class LoginScreen extends StatelessWidget {
         _buildPopupMenuItem(context, 'English', 'en', langCode == 'en'),
         _buildPopupMenuItem(context, 'हिंदी (Hindi)', 'hi', langCode == 'hi'),
         _buildPopupMenuItem(context, 'తెలుగు (Telugu)', 'te', langCode == 'te'),
+        _buildPopupMenuItem(context, 'اردو (Urdu)', 'ur', langCode == 'ur'),
       ],
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

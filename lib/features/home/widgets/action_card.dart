@@ -4,7 +4,9 @@ import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/routes.dart';
 import 'package:flutter_app/core/utils/responsive_util.dart';
 class AttendanceActions extends StatelessWidget {
-  const AttendanceActions({super.key});
+  const AttendanceActions({super.key, this.itemCount = 8});
+
+  final int itemCount;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,7 @@ class AttendanceActions extends StatelessWidget {
         'routeName': Routes.docbox,
       },
       {
-        'title': l10n.company_calendar,
+        'title': l10n.holidays_calendar,
         'icon': Icons.calendar_today_rounded,
         'color': const Color(0xFF00ACC1),
         'routeName': Routes.holidayCalendar,
@@ -53,27 +55,27 @@ class AttendanceActions extends StatelessWidget {
         'routeName': Routes.events,
       },
       {
-        'title': 'My Projects',
+        'title': l10n.projects,
         'icon': Icons.assignment_rounded,
         'color': const Color(0xFF3F51B5), // AppColors.indigo equivalent
         'routeName': Routes.projects,
       },
     ];
 
+    final visibleActions = actions.take(itemCount).toList();
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: actions.length,
+      itemCount: visibleActions.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: ResponsiveUtil.getCrossAxisCount(context, mobile: 2, tablet: 4),
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
-        childAspectRatio: ResponsiveUtil.isTablet(context) 
-            ? 1.2 
-            : (MediaQuery.of(context).size.height < 780 ? 2.25 : 1.55),
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: ResponsiveUtil.isTablet(context) ? 2.5 : 2.2,
       ),
       itemBuilder: (context, index) {
-        final action = actions[index];
+        final action = visibleActions[index];
 
         return AttendanceActionCard(
           title: action['title'] as String,

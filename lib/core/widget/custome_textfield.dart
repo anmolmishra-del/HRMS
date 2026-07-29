@@ -53,9 +53,9 @@ class CustomTextFormField extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: fillColor ?? (isDark ? Colors.white.withOpacity(0.05) : AppColors.inputBg),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: errorText != null 
-                ? Border.all(color: AppColors.red, width: 1) 
+                ? Border.all(color: AppColors.red, width: 2) 
                 : (isDark ? Border.all(color: Colors.white.withOpacity(0.1), width: 1) : null),
           ),
           child: TextFormField(
@@ -69,7 +69,7 @@ class CustomTextFormField extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
               fontSize: 15,
             ),
-            cursorColor: AppColors.primaryPurple,
+            cursorColor: AppColors.blue,
             decoration: InputDecoration(
               prefixIcon: Icon(prefixIcon, color: isDark ? Colors.white.withOpacity(0.5) : AppColors.iconGrey),
               suffixIcon: suffixIcon,

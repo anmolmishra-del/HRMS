@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/core/services/firebase_service.dart';
 import 'package:flutter_app/features/auth/login/cubit/login_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/features/chat/cubit/chat_cubit.dart';
@@ -10,6 +11,8 @@ import 'package:flutter_app/features/notifications/cubit/notification_cubit.dart
 import 'package:flutter_app/features/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_app/routes.dart';
 import 'package:flutter_app/main.dart';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class InAppNotificationWrapper extends StatefulWidget {
   final Widget child;
@@ -24,6 +27,7 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
   Timer? _hideTimer;
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
   
   String _title = '';
   String _message = '';
@@ -48,10 +52,30 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
       begin: const Offset(0.0, -1.5),
       end: const Offset(0.0, 0.0),
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    // Listen for FCM messages while in the foreground
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint('InAppNotificationWrapper: FCM Message Received in Foreground');
+      final notification = message.notification;
+      if (notification != null) {
+        final String? rawBody = (message.data['body'] != null && message.data['body'].toString().isNotEmpty)
+            ? message.data['body'].toString()
+            : notification.body;
+        final bodyText = AppFirebaseService().parseNotificationBody(rawBody, data: message.data);
+        _showNotification(
+          notification.title ?? 'New Notification',
+          bodyText,
+          Icons.notifications_active_rounded,
+          bypassLoginCheck: true,
+        );
+      }
+    });
   }
 
-  void _showNotification(String title, String message, IconData icon, {String? route, VoidCallback? onTap}) {
-    if (context.read<LoginCubit>().state.status != LoginStatus.success) {
+  void _showNotification(String title, String message, IconData icon, {String? route, VoidCallback? onTap, bool bypassLoginCheck = false}) {
+    debugPrint('InAppNotificationWrapper: _showNotification called for "$title": "$message" (bypassLoginCheck: $bypassLoginCheck)');
+    if (!bypassLoginCheck && context.read<LoginCubit>().state.status != LoginStatus.success) {
+      debugPrint('InAppNotificationWrapper: Suppressed notification because LoginStatus is not success (Current: ${context.read<LoginCubit>().state.status})');
       return; // Do not show notifications if not fully logged in
     }
 
@@ -64,7 +88,7 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
       _isDismissed = false;
     });
     
-    _controller.forward();
+    _controller.forward(from: 0.0);
     
     _hideTimer?.cancel();
     _hideTimer = Timer(const Duration(seconds: 5), () {
@@ -76,6 +100,7 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
   void dispose() {
     _controller.dispose();
     _hideTimer?.cancel();
+    _fcmSubscription?.cancel();
     super.dispose();
   }
 
@@ -85,6 +110,22 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
       textDirection: TextDirection.ltr,
       child: MultiBlocListener(
         listeners: [
+          BlocListener<LoginCubit, LoginState>(
+            listenWhen: (previous, current) => previous.status != current.status,
+            listener: (context, state) {
+              if (state.status == LoginStatus.success || state.status == LoginStatus.initial) {
+                debugPrint('InAppNotificationWrapper: Resetting tracking state because LoginStatus changed to ${state.status}');
+                setState(() {
+                  _previousChannels = [];
+                  _previousNotificationCount = 0;
+                  _isFirstLoad = true;
+                  _isFirstNotifLoad = true;
+                  _controller.reset();
+                  _hideTimer?.cancel();
+                });
+              }
+            },
+          ),
           BlocListener<ChatCubit, ChatState>(
             listenWhen: (previous, current) {
               final allChannels = [...current.channels, ...current.directMessages];
@@ -98,8 +139,6 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
             },
             listener: (context, state) {
               final allChannels = [...state.channels, ...state.directMessages];
-              
-              context.read<NotificationCubit>().fetchNotifications();
 
               for (var channel in allChannels) {
                 final prevChannel = _previousChannels.firstWhere(
@@ -107,7 +146,9 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
                   orElse: () => channel.copyWith(unreadCount: 0)
                 );
                 
-                if (channel.unreadCount > prevChannel.unreadCount && state.currentChatId != channel.id.toString()) {
+                if (channel.unreadCount > prevChannel.unreadCount && 
+                    state.currentChatId != channel.id.toString() &&
+                    !channel.isLastMessageFromMe) {
                   _showNotification(
                     channel.displayName,
                     channel.lastMessage.isNotEmpty ? channel.lastMessage : 'Sent a new message',
@@ -203,7 +244,7 @@ class _InAppNotificationWrapperState extends State<InAppNotificationWrapper> wit
                                 children: [
                                   CircleAvatar(
                                     backgroundColor: const Color(0xFF5A67D8).withOpacity(0.1), // AppColors.primaryPurple fallback
-                                    child: const Icon(Icons.notifications_active, color: Color(0xFF5A67D8)),
+                                    child: Icon(_icon, color: const Color(0xFF5A67D8)),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(

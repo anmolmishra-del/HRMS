@@ -29,6 +29,12 @@ class ChatChannel extends Equatable {
   final String? sfuChannelUuid;
   final String? sfuServerUrl;
   final bool active;
+  final int? partnerId;
+
+  // Last message status checkmarks
+  final bool isLastMessageFromMe;
+  final int? lastMessageId;
+  final bool isLastMessageRead;
 
   const ChatChannel({
     required this.id,
@@ -50,9 +56,14 @@ class ChatChannel extends Equatable {
     this.sfuChannelUuid,
     this.sfuServerUrl,
     this.active = true,
+    this.partnerId,
+    this.isLastMessageFromMe = false,
+    this.lastMessageId,
+    this.isLastMessageRead = false,
   });
 
   factory ChatChannel.fromJson(Map<String, dynamic> json, String currentUserName, int currentPartnerId) {
+    print('ChatChannel.fromJson raw payload: id=${json['id']}, name=${json['name']}, display_name=${json['display_name']}, type=${json['channel_type']}');
     final typeStr = json['channel_type']?.toString() ?? 'channel';
     ChannelType type;
     if (typeStr == 'chat') {
@@ -90,14 +101,21 @@ class ChatChannel extends Equatable {
     String? imStatus,
     DateTime? lastInterestDt,
     String? image,
+    int? partnerId,
+    bool? isLastMessageFromMe,
+    int? lastMessageId,
+    bool? isLastMessageRead,
+    String? lastMessage,
+    String? lastMessageTime,
+    DateTime? lastMessageRaw,
   }) {
     return ChatChannel(
       id: id,
       name: name,
       displayName: displayName ?? this.displayName,
-      lastMessage: lastMessage,
-      lastMessageTime: lastMessageTime,
-      lastMessageRaw: lastMessageRaw,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastMessageTime: lastMessageTime ?? this.lastMessageTime,
+      lastMessageRaw: lastMessageRaw ?? this.lastMessageRaw,
       unreadCount: unreadCount ?? this.unreadCount,
       isPinned: isPinned ?? this.isPinned,
       memberCount: memberCount,
@@ -111,6 +129,10 @@ class ChatChannel extends Equatable {
       sfuChannelUuid: sfuChannelUuid,
       sfuServerUrl: sfuServerUrl,
       active: active,
+      partnerId: partnerId ?? this.partnerId,
+      isLastMessageFromMe: isLastMessageFromMe ?? this.isLastMessageFromMe,
+      lastMessageId: lastMessageId ?? this.lastMessageId,
+      isLastMessageRead: isLastMessageRead ?? this.isLastMessageRead,
     );
   }
 
@@ -118,7 +140,7 @@ class ChatChannel extends Equatable {
   List<Object?> get props => [
     id, name, displayName, lastMessage, lastMessageTime,
     unreadCount, isPinned, memberCount, image, type,
-    imStatus, active
+    imStatus, active, partnerId, isLastMessageFromMe, lastMessageId, isLastMessageRead
   ];
 }
 
@@ -144,6 +166,7 @@ class ChatMessage extends Equatable {
   final bool needAction;
   final List<int>? starredPartnerIds;
   final int? parentId;
+  final String? parentMessagePreview;
   final List<int>? reactionIds;
 
   const ChatMessage({
@@ -166,6 +189,7 @@ class ChatMessage extends Equatable {
     this.needAction = false,
     this.starredPartnerIds,
     this.parentId,
+    this.parentMessagePreview,
     this.reactionIds,
   });
 
@@ -193,6 +217,7 @@ class ChatMessage extends Equatable {
       needAction: needAction,
       starredPartnerIds: starredPartnerIds,
       parentId: parentId,
+      parentMessagePreview: parentMessagePreview,
       reactionIds: reactionIds,
     );
   }
@@ -200,7 +225,7 @@ class ChatMessage extends Equatable {
   @override
   List<Object?> get props => [
     id, senderId, message, date, formattedDate,
-    isMe, type, status, attachments
+    isMe, type, status, attachments, parentId, parentMessagePreview
   ];
 }
 

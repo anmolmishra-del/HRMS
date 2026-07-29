@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/core/utils/shared_pref.dart';
 import 'package:flutter_app/network/odoo_service.dart';
@@ -7,7 +9,84 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_app/features/profile/models/employee_model.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
-  ProfileCubit() : super(const ProfileState());
+  Timer? _pollingTimer;
+
+  ProfileCubit() : super(const ProfileState()) {
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!isClosed) {
+        checkAtsAccessSilently();
+      }
+    });
+  }
+
+  Future<void> checkAtsAccessSilently() async {
+    if (isClosed) return;
+    try {
+      final prefs = SharedPref();
+      final sessionData = await prefs.getObject('session');
+      final baseUrl = await prefs.getString('baseUrl');
+      if (sessionData == null || baseUrl == null) return;
+
+      final session = OdooSession(
+        id: sessionData['id']?.toString() ?? '',
+        userId: sessionData['userId'] is int
+            ? sessionData['userId']
+            : int.parse(sessionData['userId']?.toString() ?? '0'),
+        partnerId: sessionData['partnerId'] is int
+            ? sessionData['partnerId']
+            : int.parse(sessionData['partnerId']?.toString() ?? '0'),
+        companyId: sessionData['companyId'] is int
+            ? sessionData['companyId']
+            : int.parse(sessionData['companyId']?.toString() ?? '0'),
+        allowedCompanies: const <Company>[],
+        userLogin: sessionData['userLogin']?.toString() ?? '',
+        userName: sessionData['userName']?.toString() ?? '',
+        userLang: sessionData['userLang']?.toString() ?? "en_US",
+        userTz: sessionData['userTz']?.toString() ?? "UTC",
+        isSystem: sessionData['isSystem'] is bool
+            ? sessionData['isSystem']
+            : false,
+        dbName: sessionData['dbName']?.toString() ?? '',
+        serverVersion: sessionData['serverVersion']?.toString() ?? "",
+      );
+
+      final odooService = OdooService(baseUrl, session: session);
+
+      try {
+        final List<dynamic> accessResponse = await odooService.executeModelMethod(
+          'master.control',
+          'search_read',
+          [],
+          kwargs: {
+            'domain': [
+              ['user_ids', 'in', [session.userId]],
+              ['code', '=', 'ats'],
+            ],
+            'fields': ['id', 'code'],
+          },
+          silent: true,
+        );
+        final bool isAtsEnabled = accessResponse.isNotEmpty;
+        
+        if (state.isAtsEnabled != isAtsEnabled) {
+          debugPrint('ProfileCubit: fetched ATS access via master.control silently = $isAtsEnabled');
+          await prefs.saveBool('is_ats_enabled', isAtsEnabled);
+          if (!isClosed) {
+            emit(state.copyWith(isAtsEnabled: isAtsEnabled));
+          }
+        }
+      } finally {
+        odooService.close();
+      }
+    } catch (e) {
+      debugPrint('ProfileCubit: checkAtsAccessSilently failed: $e');
+    }
+  }
 
   /// Clears all in-memory profile data back to initial.
   /// Call this on logout so stale data never leaks into a new session.
@@ -38,11 +117,20 @@ class ProfileCubit extends Cubit<ProfileState> {
             'Using cached profile data for employee: $currentEmployeeId',
           );
           try {
+            final atsProfileImage = await prefs.getString('ats_profile_image');
+            if (atsProfileImage != null && atsProfileImage.isNotEmpty) {
+              cachedData['image_1920'] = atsProfileImage;
+            }
             final employee = Employee.fromJson(
               cachedData as Map<String, dynamic>,
             );
+            final cachedIsAtsEnabled = await prefs.getBool('is_ats_enabled') ?? false;
             emit(
-              state.copyWith(status: ProfileStatus.success, employee: employee),
+              state.copyWith(
+                status: ProfileStatus.success, 
+                employee: employee,
+                isAtsEnabled: cachedIsAtsEnabled,
+              ),
             );
           } catch (e) {
             debugPrint('Error parsing cached employee data: $e');
@@ -100,6 +188,45 @@ class ProfileCubit extends Cubit<ProfileState> {
           session.userId,
         );
 
+        // Fetch missing fields from standard search_read safely
+        Map<String, dynamic> extraFields = {};
+        final fieldsToFetch = [
+          'identification_id',
+          'passport_id',
+          'blood_group',
+          'emergency_contact',
+          'emergency_phone',
+          'coach_id',
+          'mobile_phone',
+          'permanent_address',
+          'x_permanent_address',
+          'permanent_street',
+          'employment_type',
+          'employee_type',
+          'emp_type',
+          'company_id'
+        ];
+        for (final field in fieldsToFetch) {
+          try {
+            final List<dynamic> res = await odooService.executeModelMethod(
+              'hr.employee',
+              'search_read',
+              [],
+              kwargs: {
+                'domain': [['id', '=', int.parse(currentEmployeeId)]],
+                'fields': [field],
+              },
+              silent: true,
+            );
+            if (res.isNotEmpty && res[0] is Map && res[0][field] != null && res[0][field] != false) {
+              extraFields[field] = res[0][field];
+            }
+          } catch (e) {
+            debugPrint('Field $field is not supported.');
+          }
+        }
+        debugPrint('Fetched extra employee fields successfully: $extraFields');
+
         // Fetch Resume and Skills in parallel
         final results = await Future.wait([
           odooService.getResumeLines(int.parse(currentEmployeeId)),
@@ -107,8 +234,18 @@ class ProfileCubit extends Cubit<ProfileState> {
         ]);
 
         final fullData = Map<String, dynamic>.from(employeeResponse);
+        extraFields.forEach((key, value) {
+          if (!fullData.containsKey(key) || fullData[key] == null || fullData[key] == false) {
+            fullData[key] = value;
+          }
+        });
         fullData['resume_line_ids'] = results[0];
         fullData['employee_skill_ids'] = results[1];
+
+        final atsProfileImage = await prefs.getString('ats_profile_image');
+        if (atsProfileImage != null && atsProfileImage.isNotEmpty) {
+          fullData['image_1920'] = atsProfileImage;
+        }
 
         final employee = Employee.fromJson(fullData);
 
@@ -116,12 +253,52 @@ class ProfileCubit extends Cubit<ProfileState> {
         debugPrint('ID: ${employee.id}');
         debugPrint('Name: ${employee.name}');
         debugPrint('Code: ${employee.employeeCode}');
+        debugPrint('Full JSON data: ${jsonEncode(fullData)}');
         debugPrint('---------------------------');
+
+        // Fetch ATS Access from master.control using current Odoo user session
+        bool isAtsEnabled = false;
+        try {
+          final List<dynamic> accessResponse = await odooService.executeModelMethod(
+            'master.control',
+            'search_read',
+            [],
+            kwargs: {
+              'domain': [
+                ['user_ids', 'in', [session.userId]],
+                ['code', '=', 'ats'],
+              ],
+              'fields': ['id', 'code'],
+            },
+            silent: true,
+          );
+          if (accessResponse.isNotEmpty) {
+            isAtsEnabled = true;
+          }
+          debugPrint('ProfileCubit: fetched ATS access via master.control = $isAtsEnabled');
+        } catch (e) {
+          debugPrint('ProfileCubit: master.control access check failed: $e. Falling back to local heuristic.');
+          // Fallback to local heuristic check
+          isAtsEnabled = (employee.jobTitle?.toLowerCase().contains('recruiter') ?? false) ||
+                         (employee.jobId?.name.toLowerCase().contains('recruiter') ?? false) ||
+                         (employee.departmentId?.name.toLowerCase().contains('recruitment') ?? false) ||
+                         (employee.departmentId?.name.toLowerCase().contains('recruiting') ?? false) ||
+                         (employee.workEmail?.toLowerCase().contains('recruiter') ?? false);
+        }
+
+        // Save ATS access status to SharedPreferences
+        await prefs.saveBool('is_ats_enabled', isAtsEnabled);
 
         // Save fresh data keyed to the current user
         await prefs.saveObject('employee_data', fullData);
 
-        emit(state.copyWith(status: ProfileStatus.success, employee: employee));
+        if (!isClosed) {
+          emit(state.copyWith(
+            status: ProfileStatus.success, 
+            employee: employee,
+            isAtsEnabled: isAtsEnabled,
+          ));
+        }
       } finally {
         odooService.close();
       }
@@ -150,5 +327,11 @@ class ProfileCubit extends Cubit<ProfileState> {
       return e.message;
     }
     return e.toString();
+  }
+
+  @override
+  Future<void> close() {
+    _pollingTimer?.cancel();
+    return super.close();
   }
 }

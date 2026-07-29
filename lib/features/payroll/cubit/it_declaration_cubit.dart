@@ -62,6 +62,7 @@ class ItDeclarationCubit extends Cubit<ItDeclarationState> {
     }
   }
 
+
   Future<void> fetchPeriodLines(int periodId) async {
     try {
       final lines = await _apiService.fetchPeriodLines(periodId);
@@ -180,6 +181,38 @@ class ItDeclarationCubit extends Cubit<ItDeclarationState> {
       ));
     }
   }
+
+Future<void> downloadDeclaration(int id) async {
+  emit(state.copyWith(status: ItDeclarationStatus.loading));
+
+  try {
+    // Generate the report on Odoo server
+    await _apiService.downloadItDeclaration(id, {});
+    
+    // Fetch the PDF attachment URL path
+    final urlPath = await _apiService.downloadSubmissionPdf(id);
+    
+    if (urlPath.isNotEmpty) {
+      // Download the file and open it on the device
+      await _apiService.downloadAndOpenFile(urlPath, defaultFileName: 'IT_Declaration_$id.pdf');
+      
+      emit(state.copyWith(
+        status: ItDeclarationStatus.success,
+        successMessage: 'IT Declaration downloaded successfully',
+      ));
+    } else {
+      emit(state.copyWith(
+        status: ItDeclarationStatus.failure,
+        errorMessage: 'Failed to retrieve IT Declaration download link',
+      ));
+    }
+  } catch (e) {
+    emit(state.copyWith(
+      status: ItDeclarationStatus.failure,
+      errorMessage: e.toString(),
+    ));
+  }
+}
 
   Future<void> returnToDraft(int id, String reason, int employeeId) async {
     emit(state.copyWith(status: ItDeclarationStatus.loading));

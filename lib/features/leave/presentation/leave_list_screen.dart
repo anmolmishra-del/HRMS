@@ -10,6 +10,7 @@ import 'package:flutter_app/routes.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 import 'package:flutter_app/core/utils/responsive_util.dart';
+import 'package:flutter_app/core/widget/loading_overlay.dart';
 
 class LeaveListScreen extends StatefulWidget {
   const LeaveListScreen({super.key});
@@ -32,124 +33,139 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          _buildHeader(context, l10n),
-          Expanded(
-            child: BlocBuilder<LeaveCubit, LeaveState>(
-              builder: (context, state) {
-                return RefreshIndicator(
-                  onRefresh: () => context.read<LeaveCubit>().fetchLeavesAndTypes(),
-                  color: AppColors.indigo,
-                  child: CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      if (state.status == LeaveStatus.loading && state.leaves.isEmpty)
-                        SliverFillRemaining(
-                          child: Shimmer.fromColors(
-                            baseColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[300]!,
-                            highlightColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[700]! : Colors.grey[100]!,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    height: 20,
-                                    width: 140,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  GridView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      crossAxisSpacing: 12,
-                                      mainAxisSpacing: 12,
-                                      childAspectRatio: 1.2,
-                                    ),
-                                    itemCount: 4,
-                                    itemBuilder: (context, index) => Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 32),
-                                  Container(
-                                    height: 20,
-                                    width: 120,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: 2,
-                                      padding: EdgeInsets.zero,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemBuilder: (context, index) => Container(
-                                        height: 100,
-                                        margin: const EdgeInsets.only(bottom: 16),
+    return BlocListener<LeaveCubit, LeaveState>(
+      listenWhen: (previous, current) => previous.status != current.status || previous.errorMessage != current.errorMessage || previous.successMessage != current.successMessage,
+      listener: (context, state) {
+        if (state.status == LeaveStatus.submitted && state.successMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.successMessage!), backgroundColor: Colors.green),
+          );
+          context.read<LeaveCubit>().clearMessages();
+        } else if (state.status == LeaveStatus.failure && state.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+          );
+          context.read<LeaveCubit>().clearMessages();
+        }
+      },
+      child: BlocBuilder<LeaveCubit, LeaveState>(
+        builder: (context, state) {
+          return LoadingOverlay(
+            isLoading: state.status == LeaveStatus.submitting,
+            child: Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              body: Column(
+                children: [
+                  _buildHeader(context, l10n),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => context.read<LeaveCubit>().fetchLeavesAndTypes(),
+                      color: AppColors.indigo,
+                      child: CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          if (state.status == LeaveStatus.loading && state.leaves.isEmpty)
+                            SliverFillRemaining(
+                              child: Shimmer.fromColors(
+                                baseColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[300]!,
+                                highlightColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[700]! : Colors.grey[100]!,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        height: 20,
+                                        width: 140,
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(24),
+                                          borderRadius: BorderRadius.circular(4),
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 16),
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 12,
+                                          mainAxisSpacing: 12,
+                                          childAspectRatio: 1.2,
+                                        ),
+                                        itemCount: 4,
+                                        itemBuilder: (context, index) => Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(24),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 32),
+                                      Container(
+                                        height: 20,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Expanded(
+                                        child: ListView.builder(
+                                          itemCount: 2,
+                                          padding: EdgeInsets.zero,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          itemBuilder: (context, index) => Container(
+                                            height: 100,
+                                            margin: const EdgeInsets.only(bottom: 16),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(24),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
+                              ),
+                            )
+                          else if (state.status == LeaveStatus.failure && state.leaves.isEmpty)
+                            SliverFillRemaining(
+                              child: Center(child: Text("Error: ${state.errorMessage}", style: const TextStyle(color: Colors.red))),
+                            )
+                          else ...[
+                            if (state.leaveTypes.isNotEmpty)
+                              SliverToBoxAdapter(
+                                child: _BalanceSummary(leaveTypes: state.leaveTypes, l10n: l10n),
+                              ),
+                            SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                              sliver: Builder(
+                                builder: (context) {
+                                  final activeLeaves = state.leaves.where((l) => l.state != 'cancel' && l.state != 'refuse').toList();
+                                  if (activeLeaves.isEmpty) {
+                                    return SliverFillRemaining(hasScrollBody: false, child: _buildEmptyState(context, l10n));
+                                  }
+                                  return SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, index) => _LeaveCard(leave: activeLeaves[index]),
+                                      childCount: activeLeaves.length,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                          ),
-                        )
-                      else if (state.status == LeaveStatus.failure && state.leaves.isEmpty)
-                        SliverFillRemaining(
-                          child: Center(child: Text("Error: ${state.errorMessage}", style: const TextStyle(color: Colors.red))),
-                        )
-                      else ...[
-                        if (state.leaveTypes.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: _BalanceSummary(leaveTypes: state.leaveTypes, l10n: l10n),
-                          ),
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-                          sliver: Builder(
-                            builder: (context) {
-                              final activeLeaves = state.leaves.where((l) => l.state != 'cancel' && l.state != 'refuse').toList();
-                              if (activeLeaves.isEmpty) {
-                                return SliverFillRemaining(hasScrollBody: false, child: _buildEmptyState(context, l10n));
-                              }
-                              return SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) => _LeaveCard(leave: activeLeaves[index]),
-                                  childCount: activeLeaves.length,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ],
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
+              floatingActionButton: _buildFAB(context, l10n, state),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: BlocBuilder<LeaveCubit, LeaveState>(
-        builder: (context, state) {
-          return _buildFAB(context, l10n, state);
+          );
         },
       ),
     );
@@ -319,9 +335,10 @@ class _BalanceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -374,7 +391,7 @@ class _LeaveCard extends StatelessWidget {
   String _getStatusText(AppLocalizations l10n) {
     switch (leave.state) {
       case 'validate': return l10n.approved;
-      case 'confirm': return l10n.pending;
+      case 'confirm': return 'To Approve';
       case 'refuse': return l10n.refused;
       case 'cancel': return l10n.cancelled;
       case 'draft': return l10n.draft;
@@ -393,8 +410,13 @@ class _LeaveCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
-          BoxShadow(color: Theme.of(context).shadowColor.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: ClipRRect(
@@ -475,13 +497,19 @@ class _LeaveCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          if (leave.state == 'draft')
+          if (leave.state == 'draft') ...[
             TextButton.icon(
               onPressed: () => _showDeleteDialog(context, l10n),
               icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
               label: Text(l10n.delete_draft, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 12)),
-            )
-          else
+            ),
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: () => context.read<LeaveCubit>().submitLeave(leave.id),
+              icon: const Icon(Icons.send_rounded, size: 18, color: Colors.green),
+              label: Text(l10n.submit, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+            ),
+          ] else
             TextButton.icon(
               onPressed: () => _showCancelDialog(context, l10n),
               icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.orangeAccent),

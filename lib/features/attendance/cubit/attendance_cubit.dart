@@ -74,11 +74,25 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       // Fetch base hours (completed sessions today)
       final baseHours = await _fetchBaseHours(odooService, empId);
 
+      // Fetch weekly hours
+      final baseWeekly = await _fetchWeeklyHours(odooService, empId);
+
+      // Calculate live weekly hours
+      List<double> liveWeekly = List.from(baseWeekly);
+      if (isCheckedIn) {
+        int todayIndex = DateTime.now().weekday - 1;
+        if (todayIndex >= 0 && todayIndex < 7) {
+          liveWeekly[todayIndex] += _calculateCurrentSessionHours();
+        }
+      }
+
       emit(state.copyWith(
         status: AttendanceStatus.success,
         isCheckedIn: isCheckedIn,
         baseHours: baseHours,
         todayHours: _formatHours(baseHours + _calculateCurrentSessionHours()),
+        baseWeeklyHours: baseWeekly,
+        weeklyHours: liveWeekly,
       ));
 
       _startTicker(); // Always start ticker to keep UI clock updated
@@ -93,10 +107,20 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     _ticker?.cancel();
     _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!isClosed) {
-        // Even if not checked in, we emit state to trigger UI rebuild for the current time clock
-        final totalHours = state.baseHours + _calculateCurrentSessionHours();
+        final currentSessionHours = _calculateCurrentSessionHours();
+        final totalHours = state.baseHours + currentSessionHours;
+
+        List<double> liveWeekly = List.from(state.baseWeeklyHours);
+        if (state.isCheckedIn) {
+          int todayIndex = DateTime.now().weekday - 1;
+          if (todayIndex >= 0 && todayIndex < 7) {
+            liveWeekly[todayIndex] += currentSessionHours;
+          }
+        }
+
         emit(state.copyWith(
           todayHours: _formatHours(totalHours),
+          weeklyHours: liveWeekly,
           clearSuccess: true,
           clearError: true,
         ));
@@ -146,8 +170,8 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       kwargs: {
         'domain': [
           ['employee_id', '=', empId],
-          ['check_in', '>=', todayStart.toIso8601String()],
-          ['check_in', '<', todayEnd.toIso8601String()],
+          ['check_in', '>=', _toUtcOdooString(todayStart)],
+          ['check_in', '<', _toUtcOdooString(todayEnd)],
           ['check_out', '!=', false],
         ],
         'fields': ['worked_hours'],
@@ -208,6 +232,16 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       }
 
       final baseHours = await _fetchBaseHours(odooService, empId);
+      final baseWeekly = await _fetchWeeklyHours(odooService, empId);
+
+      List<double> liveWeekly = List.from(baseWeekly);
+      if (!currentlyCheckedIn) {
+        int todayIndex = DateTime.now().weekday - 1;
+        if (todayIndex >= 0 && todayIndex < 7) {
+          liveWeekly[todayIndex] += _calculateCurrentSessionHours();
+        }
+      }
+
       final successMsg = currentlyCheckedIn ? "Checked out successfully" : "Checked in successfully";
 
       emit(state.copyWith(
@@ -215,6 +249,8 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         isCheckedIn: !currentlyCheckedIn,
         baseHours: baseHours,
         todayHours: _formatHours(baseHours + _calculateCurrentSessionHours()),
+        baseWeeklyHours: baseWeekly,
+        weeklyHours: liveWeekly,
         successMessage: successMsg,
       ));
 
@@ -276,5 +312,59 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     } catch (e) {
       throw 'Failed to acquire GPS location. Please make sure you are in a clear area and try again.';
     }
+  }
+
+  /// Fetches weekly attendance records from Odoo (Monday to Sunday)
+  Future<List<double>> _fetchWeeklyHours(OdooService odooService, int empId) async {
+    DateTime now = DateTime.now();
+    int currentWeekday = now.weekday; // Monday is 1, Sunday is 7
+    DateTime monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: currentWeekday - 1));
+    DateTime nextMonday = monday.add(const Duration(days: 7));
+
+    try {
+      final weeklyRecords = await odooService.executeModelMethod(
+        'hr.attendance',
+        'search_read',
+        [],
+        kwargs: {
+          'domain': [
+            ['employee_id', '=', empId],
+            ['check_in', '>=', _toUtcOdooString(monday)],
+            ['check_in', '<', _toUtcOdooString(nextMonday)]
+          ],
+          'fields': ['check_in', 'worked_hours'],
+        },
+      );
+
+      List<double> weekHours = List.filled(7, 0.0);
+      if (weeklyRecords != null && weeklyRecords is List) {
+        for (var rec in weeklyRecords) {
+          if (rec['check_in'] != null) {
+            String checkInStr = rec['check_in'];
+            if (!checkInStr.endsWith('Z')) {
+              checkInStr = '${checkInStr.replaceAll(' ', 'T')}Z';
+            }
+            DateTime checkIn = DateTime.parse(checkInStr).toLocal();
+            int dayIndex = checkIn.weekday - 1; // Monday is 0, Sunday is 6
+            if (dayIndex >= 0 && dayIndex < 7) {
+              double hours = 0.0;
+              if (rec['worked_hours'] != null) {
+                hours = double.tryParse(rec['worked_hours'].toString()) ?? 0.0;
+              }
+              weekHours[dayIndex] += hours;
+            }
+          }
+        }
+      }
+      return weekHours;
+    } catch (e) {
+      debugPrint('AttendanceCubit: Error fetching weekly hours: $e');
+      return List.filled(7, 0.0);
+    }
+  }
+
+  /// Converts a local DateTime to a UTC string format expected by Odoo
+  String _toUtcOdooString(DateTime localDateTime) {
+    return localDateTime.toUtc().toIso8601String().replaceAll('T', ' ').substring(0, 19);
   }
 }
