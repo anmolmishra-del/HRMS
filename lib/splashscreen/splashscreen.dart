@@ -459,7 +459,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      "Srivyn",
+                      "Srivyn Plarforms",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,

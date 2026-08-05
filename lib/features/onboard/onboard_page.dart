@@ -28,7 +28,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const LoginScreen(),
+        pageBuilder: (_, __, _) => const LoginScreen(),
         transitionDuration: const Duration(milliseconds: 500),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -46,12 +46,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       OnboardingData(
         title: l10n.welcome_title,
         subtitle: l10n.welcome_subtitle,
-        image: AppImages.land,
+        image: 'assets/images/ob1.png',
       ),
       OnboardingData(
         title: l10n.attendance_payroll,
         subtitle: l10n.attendance_payroll_subtitle,
-        image: AppImages.land2,
+        image: 'assets/images/ob2.png',
+      ),
+       OnboardingData(
+        title: 'Manage Work with Ease',
+        subtitle: 'Track attendance, access payroll, complete tasks, and stay productive anywhere.',
+        image: 'assets/images/ob3.png',
       ),
     ];
 
@@ -73,12 +78,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Positioned(
             top: -100,
             right: -100,
-            child: _buildCircle(300, Colors.blue.withOpacity(0.05)),
+            child: _buildCircle(300, Colors.blue.withValues(alpha: 0.05)),
           ),
           Positioned(
             bottom: 50,
             left: -50,
-            child: _buildCircle(200, Colors.blue.withOpacity(0.03)),
+            child: _buildCircle(200, Colors.blue.withValues(alpha: 0.03)),
           ),
 
           SafeArea(
@@ -174,71 +179,98 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildIndicator(int index, String langCode) {
-    bool isActive = _currentPage == index;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: isActive ? 24 : 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF1976D2) : Colors.blue.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
-  }
+ Widget _buildIndicator(int index, String langCode) {
+  bool active = _currentPage == index;
 
-  Widget _buildPage(OnboardingData data) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Image Container with Shadow
-              Container(
-                height: MediaQuery.of(context).size.height * 0.35,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  // Optional shadow for the image area
-                ),
-                child: Image.asset(
-                  data.image,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-
-              // Text Content
-              Text(
-                data.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A237E),
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                data.subtitle,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueGrey.withOpacity(0.7),
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 350),
+    margin: const EdgeInsets.symmetric(horizontal: 5),
+    width: active ? 28 : 10,
+    height: 10,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20),
+      gradient: active
+          ? const LinearGradient(
+              colors: [
+                Color(0xFF1E3A8A),
+                Color(0xFF2563EB),
+              ], 
+            )
+          : null,
+      color: active ? null : Colors.grey.shade300,
+    ),
+  );
 }
 
+ Widget _buildPage(OnboardingData data) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    child: Column(
+      children: [
+        const Spacer(),
+
+        // Illustration
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              height: 320,
+              width: 320,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF1976D2).withOpacity(.15),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+
+            Hero(
+              tag: data.image,
+              child: Image.asset(
+                data.image,
+                height: 330,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 40),
+
+        Text(
+          data.title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+            height: 1.2,
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            data.subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+              height: 1.7,
+            ),
+          ),
+        ),
+
+        const Spacer(),
+      ],
+    ),
+  );
+ }}
 class OnboardingData {
   final String title;
   final String subtitle;

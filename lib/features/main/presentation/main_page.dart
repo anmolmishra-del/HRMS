@@ -11,9 +11,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_app/l10n/app_localizations.dart';
 
 import 'package:flutter_app/core/services/firebase_service.dart';
+import 'package:flutter_app/core/services/in_app_update_service.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AppFirebaseService().checkAndHandlePendingNotification(context);
+      InAppUpdateService.checkForUpdate(context);
+    });
+  }
 
   Future<bool> _showExitConfirmationDialog(BuildContext context) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -69,10 +85,6 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppFirebaseService().checkAndHandlePendingNotification(context);
-    });
-
     return BlocProvider(
       create: (_) => MainCubit(),
       child: BlocBuilder<MainCubit, MainState>(

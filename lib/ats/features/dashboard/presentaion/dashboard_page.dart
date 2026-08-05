@@ -595,7 +595,7 @@ class _HorizontalCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -608,7 +608,7 @@ class _HorizontalCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color, size: 20),
@@ -631,7 +631,7 @@ class _HorizontalCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6) ?? const Color(0xFF64748B),
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6) ?? const Color(0xFF64748B),
                   ),
                 ),
               ],
